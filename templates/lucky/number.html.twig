@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head><title>Lucky Number Generator</title>
+<style>
+body {
+	display:block;
+}
+
+.btn {
+	font-size: 35px;
+	background: #0099CC;
+	border: 1px solid;
+	border-color: #0022CC;
+	border-radius: 10px;
+	padding: 2px;
+	color: #FFFFFF;
+	text-decoration: none;
+}
+
+.btn:hover {
+	background: #0011CC;
+}
+</style>
+</head>
+<body>
+
+<h1>Your {{ lucky }} number is {{ number }}</h1>
+
+<a class="btn" href="{{ btn_url }}">Generate</a>
+</body>
+</html>
