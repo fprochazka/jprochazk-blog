@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Blog</title>
+	<style>
+	a {
+		font-size: 15px;
+	}
+	</style>
+	</head>
+<body>
+
+	<h1>blog</h1>
+	{% for item in posts %}
+		<div class="post">
+			<a class="post-title" href="{{ item["link"] }}">{{ item["title"] }}</a>
+			<p class="post-content">{{ item["content"] }}</p>
+		</div>
+	{% endfor %}
+
+</body>
+</html>
