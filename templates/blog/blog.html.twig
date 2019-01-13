@@ -11,11 +11,15 @@
 <body>
 
 	<h1>blog</h1>
+	<div>
+		<a class="new-post-link" href="{{ new }}">Create new post</a>
+	</div>
 	{% for item in posts %}
-		<div class="post">
-			<a class="post-title" href="{{ item["link"] }}">{{ item["title"] }}</a>
-			<p class="post-content">{{ item["content"] }}</p>
-		</div>
+	<br>
+	<div class="post">
+		<a class="post-title" href="{{ item["link"] }}">{{ item["title"] }}</a>
+		<p class="post-content">{{ item["content"] }}</p>
+	</div>
 	{% endfor %}
 
 </body>

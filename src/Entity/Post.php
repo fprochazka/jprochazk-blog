@@ -26,6 +26,11 @@ class Post
      */
     private $content;
 
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    private $subtime;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -51,6 +56,18 @@ class Post
     public function setContent(string $content): self
     {
         $this->content = $content;
+
+        return $this;
+    }
+
+    public function getSubtime(): ?\DateTimeInterface
+    {
+        return $this->subtime;
+    }
+
+    public function setSubtime(\DateTimeInterface $subtime): self
+    {
+        $this->subtime = $subtime;
 
         return $this;
     }
