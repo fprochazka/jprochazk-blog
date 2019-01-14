@@ -14,8 +14,32 @@ use App\Entity\Post;
 
 class BlogController extends AbstractController
 {
-    private function getPostURL($post_num) {
+    private function getPostURL(int $post_num) {
         return $this->generateurl('app_blog_post_show', array('num' => $post_num));
+    }
+
+    private function getPostByID(int $id) {
+        return $this->getDoctrine()->getRepository(Post::class)->find($id);
+    }
+
+    private function restrictText(string $content, int $length) {
+        if(strlen($content) > $length) {
+            return substr($content, 0, $length).'...';
+        } else {
+            return $content;
+        }
+    }
+
+    private function getPosts(int $start, int $count) {
+        $posts = array();
+        for($i = $start; $i < $start+$count; ++$i){
+            if($post = $this->getPostByID($i)) $posts[$i] = [
+                "title" => $post->getTitle(), 
+                "content" => $this->restrictText($post->getContent(), 50), 
+                "link" => $this->getPostURL($i)
+            ];
+        }
+        return $posts;
     }
 
     /**
@@ -23,17 +47,8 @@ class BlogController extends AbstractController
       */
     public function list($page)
     {
-        $posts = array();
-        for($i = $page; $i < $page+10; ++$i){
-            $post = $this->getDoctrine()->getRepository(Post::class)->find($i);
-            if(!$post) {
-                continue;
-            }
-            $posts[$i] = ["title" => $post->getTitle(), "content" => $post->getContent(), "link" => $this->getPostURL($i)];
-        }
-
         return $this->render('blog/blog.html.twig', [
-            "posts" => $posts,
+            "posts" => $this->getPosts($page, 10),
             "new" => $this->generateurl('app_blog_post_new'),
         ]);
     }
@@ -42,12 +57,11 @@ class BlogController extends AbstractController
       * @Route("/blog/post/{num<\d+>}", name="app_blog_post_show")
       */
     public function show($num) {
-            $post = $this->getDoctrine()->getRepository(Post::class)->find($num);
+            $post = $this->getPostByID($num);
             $date = $post->getSubtime()->format('Y-m-d');
-            $fpost = ["title" => $post->getTitle(), "content" => $post->getContent(), "date" => $date];
 
             return $this->render('blog/post.html.twig', [
-                "post" => $fpost,
+                "post" => ["title" => $post->getTitle(), "content" => $post->getContent(), "date" => $date],
                 "home" => $this->generateurl('app_blog_list')
             ]);
     }

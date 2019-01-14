@@ -17,8 +17,8 @@
 	{% for item in posts %}
 	<br>
 	<div class="post">
-		<a class="post-title" href="{{ item["link"] }}">{{ item["title"] }}</a>
-		<p class="post-content">{{ item["content"] }}</p>
+		<a class="post-title">{{ item["title"] }}</a>
+		<p class="post-content">{{ item["content"] }}<br><a href="{{ item["link"] }}">read &#62;&#62;</a></p>
 	</div>
 	{% endfor %}
 
