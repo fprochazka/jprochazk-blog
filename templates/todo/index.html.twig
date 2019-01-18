@@ -4,6 +4,9 @@
 
 {% block stylesheets %}
 	<style>
+	.task-wrapper {
+		width: 300px;
+	}
 	#new {
 		display: inline-block;
 		padding: 10px;
@@ -26,14 +29,13 @@
 		border-radius: 3px;
 		padding-top: 5px;
 		padding-bottom: 5px;
-		width: auto;
+		width: 238px;
 	}
 
 	#tasks {
 		margin: 10px;
 		padding: 10px;
 		display: block;
-		width: 300px;
 		border: 2px solid #009FFF;
 		border-radius: 3px;
 	}
@@ -141,6 +143,7 @@
 {% endblock %}
 
 {% block body %}
+<div class="task-wrapper">
 	<div id="new">
 		{{ form_start(form) }}
 			{{ form_widget(form.title, {'attr' : {'placeholder' : ' What do you need to do?'}}) }}
@@ -155,4 +158,5 @@
 			</div>
 		{% endfor %}
 	</div>
+</div>
 {% endblock %}
