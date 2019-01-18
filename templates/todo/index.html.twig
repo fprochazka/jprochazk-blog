@@ -79,7 +79,7 @@
 
 					success: function(data, status) {
 						console.log("success, " + status);
-						$('#tasks').append(
+						$('#tasks').prepend(
 							'<div class="item"><input type="checkbox" name="task" value="'+ data.message['id'] +'">'+ data.message['title'] +'</div>'
 						);
 						$('#tasks input').click(function(){
@@ -149,7 +149,7 @@
 	</div>
 
 	<div id="tasks">
-		{% for item in tasks %}
+		{% for item in tasks|reverse %}
 			<div class="item">
 			<input type="checkbox" name="task" value="{{ item['id'] }}">{{ item["name"] }}
 			</div>
