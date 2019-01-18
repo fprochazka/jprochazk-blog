@@ -18,15 +18,23 @@ class TodoController extends AbstractController
 		return $this->getDoctrine()->getRepository(Task::class)->find($id);
 	}
 
+	private function getAllTasks() {
+		return $this->getDoctrine()->getRepository(Task::class)->findAll();
+	}
+
 	private function getTasks() {
+		$temp_tasks = $this->getAllTasks();
 		$tasks = array();
-        for($i = 0; $i < 10; ++$i) {
-        	if(!$task = $this->getTaskByID($i)) continue;
-        	$tasks[$i] = [ 
+		$i = 0;
+
+		foreach($temp_tasks as $task) {
+			$tasks[$i] = [ 
         		'id' => $task->getId(),
         		'name' => $task->getTitle() 
         	];
-    	}
+			++$i;
+		}
+
     	return $tasks;
 	}
 
