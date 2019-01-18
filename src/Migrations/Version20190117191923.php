@@ -8,7 +8,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20190113145117 extends AbstractMigration
+final class Version20190117191923 extends AbstractMigration
 {
     public function up(Schema $schema) : void
     {
@@ -16,7 +16,9 @@ final class Version20190113145117 extends AbstractMigration
         $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'postgresql', 'Migration can only be executed safely on \'postgresql\'.');
 
         $this->addSql('CREATE SEQUENCE post_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
+        $this->addSql('CREATE SEQUENCE task_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
         $this->addSql('CREATE TABLE post (id INT NOT NULL, title VARCHAR(127) NOT NULL, content VARCHAR(8000) NOT NULL, subtime TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))');
+        $this->addSql('CREATE TABLE task (id INT NOT NULL, title VARCHAR(255) NOT NULL, date TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))');
     }
 
     public function down(Schema $schema) : void
@@ -26,6 +28,8 @@ final class Version20190113145117 extends AbstractMigration
 
         $this->addSql('CREATE SCHEMA public');
         $this->addSql('DROP SEQUENCE post_id_seq CASCADE');
+        $this->addSql('DROP SEQUENCE task_id_seq CASCADE');
         $this->addSql('DROP TABLE post');
+        $this->addSql('DROP TABLE task');
     }
 }

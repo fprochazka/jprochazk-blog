@@ -1,0 +1,158 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tasks{% endblock %}
+
+{% block stylesheets %}
+	<style>
+	#new {
+		display: inline-block;
+		padding: 10px;
+	}
+	#new button {
+		background-color: #009FFF;
+		border: 1px solid #009FFF;
+		border-radius: 3px;
+		color: #FFFFFF;
+		text-align: center;
+		text-decoration: none;
+		padding: 4px 10px 6px;
+	}
+	#new button:hover {
+		background-color: #0011FF;
+		border-color: #0011FF;
+	}
+	#new input {
+		border: 2px solid #009FFF;
+		border-radius: 3px;
+		padding-top: 5px;
+		padding-bottom: 5px;
+		width: auto;
+	}
+
+	#tasks {
+		margin: 10px;
+		padding: 10px;
+		display: block;
+		width: 300px;
+		border: 2px solid #009FFF;
+		border-radius: 3px;
+	}
+	#tasks .item {
+		padding: 10px;
+		padding-bottom: 5px;
+		border-bottom: 2px solid #009FFF;
+		border-radius: 3px;
+	}
+	#tasks .item input {
+		margin: 5px;
+		margin-bottom: 0;
+		padding: 0;
+	}
+	</style>
+{% endblock %}
+
+{% block javascripts %}
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script>
+	jQuery(function($) {
+	if ('placeholder' in document.createElement('input')) {}
+	else {
+		$('#new input').val(function() { if (this.value.length == 0) return $(this).attr('placeholder'); });
+	    $('#new')
+	    .delegate('input', 'focus', function() { if (this.value === $(this).attr("placeholder")) this.value = ''; })
+	    .delegate('input', 'blur', function() { if (this.value.length == 0) this.value = $(this).attr("placeholder"); });
+	}});
+	</script>
+
+	<script>
+		$(document).ready(function(){
+			$("#new button").click(function(){
+				var data = {
+					title: $('#new').find('#form_title').val()
+				};
+				console.log("sending:");
+				console.log(data);
+				$.ajax({
+					url: "{{ path('app_todo_new') }}",
+					type: 'POST',
+					data: data,
+
+					success: function(data, status) {
+						console.log("success, " + status);
+						$('#tasks').append(
+							'<div class="item"><input type="checkbox" name="task" value="'+ data.message['id'] +'">'+ data.message['title'] +'</div>'
+						);
+						$('#tasks input').click(function(){
+							var data = {
+								id: parseInt($(this).attr("value"))
+							};
+
+							$.ajax({
+								url: "{{ path('app_todo_del') }}",
+								type: 'POST',
+								data: data,
+
+								success: function() {
+									$('#tasks input').each(function(){
+										var sID = parseInt($(this).attr("value"));
+										if(sID == data.id) {
+											$(this).parent().remove();
+										}
+									});
+								},
+								error: function(xhr, textStatus, errorThrown) {  
+									console.log(xhr);
+			                  		console.log(textStatus);
+			                  		console.log(errorThrown);
+			               		}  
+							});
+						});
+					}
+				});
+			});
+
+			$('#tasks input').click(function(){
+				var data = {
+					id: parseInt($(this).attr("value"))
+				};
+
+				$.ajax({
+					url: "{{ path('app_todo_del') }}",
+					type: 'POST',
+					data: data,
+
+					success: function() {
+						$('#tasks input').each(function(){
+							var sID = parseInt($(this).attr("value"));
+							if(sID == data.id) {
+								$(this).parent().remove();
+							}
+						});
+					},
+					error: function(xhr, textStatus, errorThrown) {  
+						console.log(xhr);
+                  		console.log(textStatus);
+                  		console.log(errorThrown);
+               		}  
+				});
+			});
+		});
+	</script>
+{% endblock %}
+
+{% block body %}
+	<div id="new">
+		{{ form_start(form) }}
+			{{ form_widget(form.title, {'attr' : {'placeholder' : ' What do you need to do?'}}) }}
+			{{ form_widget(form.save) }}
+		{{ form_end(form) }}
+	</div>
+
+	<div id="tasks">
+		{% for item in tasks %}
+			<div class="item">
+			<input type="checkbox" name="task" value="{{ item['id'] }}">{{ item["name"] }}
+			</div>
+		{% endfor %}
+	</div>
+{% endblock %}
