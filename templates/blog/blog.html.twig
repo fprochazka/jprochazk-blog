@@ -1,26 +1,25 @@
-<!DOCTYPE html>
-<html>
-	<head>
-		<title>Blog</title>
+{% extends 'base.html.twig' %}
+
+{% block title %}Blog{% endblock %}
+
+{% block stylesheets %}
 	<style>
 	a {
 		font-size: 15px;
 	}
 	</style>
-	</head>
-<body>
+{% endblock %}
 
+{% block body %}
 	<h1>blog</h1>
 	<div>
-		<a class="new-post-link" href="{{ new }}">Create new post</a>
+		<a class="new-post-link" href="{{ path('app_blog_post_new') }}">Create new post</a>
 	</div>
 	{% for item in posts %}
 	<br>
 	<div class="post">
 		<a class="post-title">{{ item["title"] }}</a>
-		<p class="post-content">{{ item["content"] }}<br><a href="{{ item["link"] }}">read &#62;&#62;</a></p>
+		<p class="post-content">{{ item["content"] }}<br><a href="{{ path('app_blog_post_show', {'num' : item['id']}) }}">read &#62;&#62;</a></p>
 	</div>
 	{% endfor %}
-
-</body>
-</html>
+{% endblock %}
