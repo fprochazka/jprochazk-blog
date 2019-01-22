@@ -8,7 +8,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20190117191923 extends AbstractMigration
+final class Version20190120191923 extends AbstractMigration
 {
 
 	public function up(Schema $schema): void
@@ -16,7 +16,7 @@ final class Version20190117191923 extends AbstractMigration
 		// this up() migration is auto-generated, please modify it to your needs
 		$this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'postgresql', 'Migration can only be executed safely on \'postgresql\'.');
 
-		$this->addSql('CREATE TABLE post (id SERIAL NOT NULL, title VARCHAR(127) NOT NULL, content VARCHAR(8000) NOT NULL, subtime TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id));');
+		$this->addSql('CREATE TABLE task (id SERIAL NOT NULL, title VARCHAR(255) NOT NULL, date TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id));');
 	}
 
 	public function down(Schema $schema)
