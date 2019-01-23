@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Blog</title>
+	<style>
+	.post {
+		/*text-align: center;*/
+	}
+	a {
+		font-size: 15px;
+	}
+	.post.title {
+		font-size: 2.2em;
+	}
+	</style>
+	</head>
+<body>
+	<div class="post">
+		<div class="post title">{{ post["title"] }}</div>
+		{{ post["date"] }}
+		<p class="post content">{{ post["content"] }}</p>
+	</div>
+	<div>
+		<a class="home-link" href="{{ home }}">&#60; Back</a>
+	</div>
+
+</body>
+</html>
