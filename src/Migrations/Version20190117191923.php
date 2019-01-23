@@ -23,5 +23,9 @@ final class Version20190117191923 extends AbstractMigration
 	{
 		throw new \LogicException("Method " . __METHOD__ . " not implemented");
 	}
-
+        $this->addSql('DROP SEQUENCE post_id_seq CASCADE');
+        $this->addSql('DROP SEQUENCE task_id_seq CASCADE');
+        $this->addSql('DROP TABLE post');
+        $this->addSql('DROP TABLE task');
+    }
 }

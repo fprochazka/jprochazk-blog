@@ -14,10 +14,6 @@ use App\Entity\Post;
 
 class BlogController extends AbstractController
 {
-    private function getPostURL(int $post_num) {
-        return $this->generateurl('app_blog_post_show', array('num' => $post_num));
-    }
-
     private function getPostByID(int $id) {
         return $this->getDoctrine()->getRepository(Post::class)->find($id);
     }
@@ -36,7 +32,7 @@ class BlogController extends AbstractController
             if($post = $this->getPostByID($i)) $posts[$i] = [
                 "title" => $post->getTitle(), 
                 "content" => $this->restrictText($post->getContent(), 50), 
-                "link" => $this->getPostURL($i)
+                "id" => $i,
             ];
         }
         return $posts;
@@ -48,8 +44,7 @@ class BlogController extends AbstractController
     public function list($page)
     {
         return $this->render('blog/blog.html.twig', [
-            "posts" => $this->getPosts($page, 10),
-            "new" => $this->generateurl('app_blog_post_new'),
+            "posts" => $this->getPosts($page, 10)
         ]);
     }
 
