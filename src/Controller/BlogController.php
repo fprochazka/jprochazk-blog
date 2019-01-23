@@ -60,19 +60,24 @@ class BlogController extends AbstractController
       * @Route("/post/{num<\d+>}", name="app_blog_post_show")
       */
     public function show($num) {
-            $post = $this->getPostByID($num);
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        if($post = $this->getPostByID($num)) {
             $date = $post->getSubtime()->format('Y-m-d');
 
             return $this->render('blog/post.html.twig', [
                 "post" => ["title" => $post->getTitle(), "content" => $post->getContent(), "date" => $date],
                 "home" => $this->generateurl('app_blog_list')
             ]);
+        } else {
+            return new Response('Page not found. <a href="/">Home</a>', Response::HTTP_NOT_FOUND);
+        }
     }
 
     /**
       * @Route("/new", name="app_blog_post_new")
       */
     public function createPost(Request $request) {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
         $post = new Post();
         $form = $this->createFormBuilder($post)
         ->add('title', TextType::class)
