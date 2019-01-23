@@ -11,6 +11,11 @@ use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 
 use App\Entity\Post;
+use App\Entity\Person;
+use App\Security\LoginFormAuthenticator;
+
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\UserProviderInterface;
 
 class BlogController extends AbstractController
 {
@@ -39,17 +44,20 @@ class BlogController extends AbstractController
     }
 
     /**
-      * @Route("/blog/{page<\d+>?1}", name="app_blog_list")
+      * @Route("/{page<\d+>?1}", name="app_blog_list")
       */
     public function list($page)
     {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        $current_user = $this->getUser();
         return $this->render('blog/blog.html.twig', [
-            "posts" => $this->getPosts($page, 10)
+            "posts" => $this->getPosts($page, 10),
+            "user_username" => $current_user->getUsername()
         ]);
     }
 
     /**
-      * @Route("/blog/post/{num<\d+>}", name="app_blog_post_show")
+      * @Route("/post/{num<\d+>}", name="app_blog_post_show")
       */
     public function show($num) {
             $post = $this->getPostByID($num);
@@ -62,7 +70,7 @@ class BlogController extends AbstractController
     }
 
     /**
-      * @Route("/blog/new", name="app_blog_post_new")
+      * @Route("/new", name="app_blog_post_new")
       */
     public function createPost(Request $request) {
         $post = new Post();
