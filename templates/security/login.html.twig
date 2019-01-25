@@ -1,22 +1,26 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Login{% endblock %}
-
+{% block stylesheets %}
+<style>	
+.form-control {
+	padding-left: 3px;
+	margin-bottom: 5px;
+	border: 1px solid #00AAFF;
+	border-radius: 3px;
+}
+</style>
+{% endblock %}
 {% block body %}
 <form method="post">
     {% if error %}
-        <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+        <div style="color: #FF2200;">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
     {% endif %}
 
-    <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
-    <label for="inputUsername" class="sr-only">Username</label>
-    <input type="text" value="{{ last_username }}" name="username" id="inputUsername" class="form-control" placeholder="Username" required autofocus>
-    <label for="inputPassword" class="sr-only">Password</label>
-    <input type="password" name="password" id="inputPassword" class="form-control" placeholder="Password" required>
+    <input type="text" value="{{ last_username }}" name="username" id="inputUsername" class="form-control" placeholder="Username" required autofocus><br>
+    <input type="password" name="password" id="inputPassword" class="form-control" placeholder="Password" required><br>
 
-    <input type="hidden" name="_csrf_token"
-           value="{{ csrf_token('authenticate') }}"
-    >
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
     <!-- {#
         Uncomment this section and add a remember_me option below your firewall to activate remember me functionality.
@@ -29,8 +33,6 @@
         </div>
     #} -->
 
-    <button class="btn btn-lg btn-primary" type="submit">
-        Sign in
-    </button>
+    <button type="submit" id="send">Sign in</button>
 </form>
 {% endblock %}

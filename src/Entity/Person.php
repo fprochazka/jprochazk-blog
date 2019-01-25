@@ -3,11 +3,13 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\PersonRepository")
+ * @UniqueEntity(fields={"username"}, message="There is already an account with this username")
  */
 class Person implements UserInterface, \Serializable
 {
@@ -27,6 +29,11 @@ class Person implements UserInterface, \Serializable
      * @ORM\Column(type="string", length=255)
      */
     private $password;
+
+    /**
+     * @ORM\Column(type="string", length=125)
+     */
+    private $role;
 
     public function getId(): ?int
     {
@@ -57,10 +64,22 @@ class Person implements UserInterface, \Serializable
         return $this;
     }
 
+    public function getRole(): ?string
+    {
+        return $this->role;
+    }
+
+    public function setRole(string $role): self
+    {
+        $this->role = $role;
+
+        return $this;
+    }
+
     public function getRoles()
     {
         return [
-            'ROLE_USER'
+            $this->getRole(),
         ];
     }
 

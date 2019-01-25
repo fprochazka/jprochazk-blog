@@ -2,11 +2,101 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
+        <title>{% block title %}{% endblock %}</title>
+        <style>
+		a {
+			font-size: 0.9375em;
+		}
+        body {
+			padding-top: 20px;
+			display: block;
+		}
+		.container-main {
+			background-color: #AAAAAA;
+			border: 4px solid #666666;
+			border-radius: 4px;
+			padding-left: 5%;
+			padding-right: 5%;
+			padding-bottom: 20px;
+			width: 50%;
+			float:left;
+		}
+		.container-side {
+			background-color: #AAAAAA;
+			border: 4px solid #666666;
+			border-radius: 4px;
+			padding-left: 5%;
+			padding-right: 5%;
+			padding-bottom: 20px;
+			width:20%;
+			float:right;
+		}
+
+		.wrapper.content {
+			padding-top: 20px;
+			padding-left: 5%;
+			padding-right: 5%;
+			padding-bottom: 20px;
+		}
+		.form-control {
+			padding-left: 3px;
+			margin-bottom: 5px;
+			border: 1px solid #000000;
+			border-radius: 3px;
+		}
+		</style>
         {% block stylesheets %}{% endblock %}
+        {% block javascripts %}
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		{% endblock %}
     </head>
     <body>
-        {% block body %}{% endblock %}
-        {% block javascripts %}{% endblock %}
+        {% block body %}
+	        <div class="container-side">
+	        {% block side %}
+				{% if is_granted('ROLE_USER') or is_granted('ROLE_ADMIN') %}
+					<h3>Hello, {{ app.user.username }}</h3>
+					<a href="{{ path('app_logout') }}"><button>Logout</button></a>
+				{% else %}
+					<h3>Welcome, guest!</h3>
+					<form method="post" action="{{ path('app_login') }}">
+						<br>
+					    {% if error %}
+					        <div style="color: #FF2200;">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+					    {% endif %}
+
+					    <input type="text" value="{{ last_username }}" name="username" id="inputUsername" class="form-control" placeholder="Username" required autofocus><br>
+					    <input type="password" name="password" id="inputPassword" class="form-control" placeholder="Password" required><br>
+
+					    <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+					    <!-- {#
+					        Uncomment this section and add a remember_me option below your firewall to activate remember me functionality.
+					        See https://symfony.com/doc/current/security/remember_me.html
+
+					        <div class="checkbox mb-3">
+					            <label>
+					                <input type="checkbox" name="_remember_me"> Remember me
+					            </label>
+					        </div>
+					    #} -->
+
+					    <button type="submit" id="send">Sign in</button>
+					</form>
+					or
+					<br>
+					<a href="{{ path('app_register') }}"><button>Register</button></a>
+				{% endif %}
+	        {% endblock %}
+	        </div>
+	        <div class="container-main">
+		    {% block main %}
+				<h1>Blog</h1>
+			    <div class="wrapper content">
+			    {% block content %}{% endblock %}
+				</div>
+	        {% endblock %}
+	    	</div>
+        {% endblock %}
     </body>
 </html>

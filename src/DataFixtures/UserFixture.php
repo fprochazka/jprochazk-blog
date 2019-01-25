@@ -23,7 +23,8 @@ class UserFixture extends Fixture
         $user->setUsername('admin');
         $user->setPassword(
         	$this->encoder->encodePassword($user, 'asdf')
-        ); //encode this
+        );
+        $user->setRole('ROLE_ADMIN');
 
         $manager->persist($user);
         $manager->flush();

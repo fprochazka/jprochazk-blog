@@ -1,18 +1,29 @@
-<!DOCTYPE html>
-<html>
-	<head>
-		<title>Blog</title>
-	<style>
-	a {
-		font-size: 15px;
-	}
-	</style>
-	</head>
-<body>
-
-	{{ form_start(form) }}
-	{{ form_widget(form) }}
+{% extends 'base.html.twig' %}
+{% block stylesheets %}
+<style>
+.newpost {
+	background-color: #FFFFFF;
+	border: 2px solid #666666;
+	border-radius: 3px;
+	padding: 1em;
+}
+textarea.form-control {
+	width: 98.45%;
+	height: 12.5em;
+	resize: none;
+}
+</style>
+{% endblock %}
+{% block javascripts %}
+<script>
+$('textarea').autoResize();
+</script>
+{% endblock %}
+{% block content %}
+	{{ form_start(form, {'attr' : {'class' : 'newpost'}}) }}
+	Title: 
+	{{ form_widget(form.title, {'attr' : {'class' : 'form-control'}}) }}<br>
+	{{ form_widget(form.content, {'attr' : {'class' : 'form-control'}}) }}<br>
+	{{ form_widget(form.save) }}<br>
 	{{ form_end(form) }}
-
-</body>
-</html>
+{% endblock %}
