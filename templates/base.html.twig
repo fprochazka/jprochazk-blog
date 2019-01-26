@@ -8,15 +8,39 @@
 			font-size: 0.9375em;
 		}
         body {
-			padding-top: 20px;
+        	padding: 0;
+        	margin: 0;
 			display: block;
+			background-color: #666666;
+		}
+		hr {
+			padding: 0;
+			margin: 8px auto;
+			height: 0;
+			width: 100%;
+			max-height: 0;
+			font-size: 1px;
+			line-height: 0;
+			clear: both;
+			border: none;
+			border-top: 1px solid #666666;
+			border-bottom: 1px solid #666666;
 		}
 		.container-main {
-			float: center;
-			padding-top: 1em;
-			padding-bottom: 1em;
-			margin-left: 15%;
-			margin-right: 15%;
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			left: 15%;
+			right: 15%;
+			background-color: #FFFFFF;
+			padding: 1em;
+			padding-top: 20px;
+			margin: 0;
+			height: 100%;
+		}
+		.container-menu {
+			width: 100%;
+			border-bottom: 2px solid #666666;
 		}
 		.container-left {
 			width: 75%;
@@ -40,51 +64,66 @@
 			border: 1px solid #000000;
 			border-radius: 3px;
 		}
+		button {
+			border: none;
+			padding: 6px 8px;
+			background-color: #AAAAAA;
+		}
+		button:hover {
+			background-color: #888888;
+		}
 		</style>
         {% block stylesheets %}{% endblock %}
-        {% block javascripts %}
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        {% block javascripts %}
 		{% endblock %}
     </head>
     <body>
         {% block body %}
+        
         <div class="container-main">
-	        <div class="container-side">
-	        {% block side %}
-				{% if is_granted('ROLE_USER') or is_granted('ROLE_ADMIN') %}
-					<h3>Hello, {{ app.user.username }}</h3>
-					<a href="{{ path('app_logout') }}"><button>Logout</button></a>
-				{% else %}
-					<h3>Welcome, guest!</h3>
-					<form method="post" action="{{ path('app_login') }}">
-						<br>
-					    {% if error %}
-					        <div style="color: #FF2200;">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
-					    {% endif %}
-
-					    <input type="text" value="{{ last_username }}" name="username" id="inputUsername" class="form-control" placeholder="Username" required autofocus><br>
-					    <input type="password" name="password" id="inputPassword" class="form-control" placeholder="Password" required><br>
-
-					    <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
-
-					    <!-- {#
-					        Uncomment this section and add a remember_me option below your firewall to activate remember me functionality.
-					        See https://symfony.com/doc/current/security/remember_me.html
-
-					        <div class="checkbox mb-3">
-					            <label>
-					                <input type="checkbox" name="_remember_me"> Remember me
-					            </label>
-					        </div>
-					    #} -->
-
-					    <button type="submit" id="send">Sign in</button>
-					</form>
-					or
-					<br>
-					<a href="{{ path('app_register') }}"><button>Register</button></a>
+        	<div class="container-menu">
+				<a href="{{ path('app_blog_list') }}"><button>Home</button></a>
+				{% if is_granted('ROLE_ADMIN') %}
+				<a href="{{ path('app_blog_post_new') }}"><button>New post</button></a>
 				{% endif %}
-	        {% endblock %}
+	        </div>
+	        <div class="container-side">
+		        {% block side %}
+					{% if is_granted('ROLE_USER') or is_granted('ROLE_ADMIN') %}
+						<h3>Hello, {{ app.user.username }}</h3>
+						<a href="{{ path('app_logout') }}"><button>Logout</button></a>
+					{% else %}
+						<h3>Welcome, guest!</h3>
+						<form method="post" action="{{ path('app_login') }}">
+							<br>
+						    {% if error %}
+						        <div style="color: #FF2200;">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+						    {% endif %}
+
+						    <input type="text" value="{{ last_username }}" name="username" id="inputUsername" class="form-control" placeholder="Username" required autofocus><br>
+						    <input type="password" name="password" id="inputPassword" class="form-control" placeholder="Password" required><br>
+
+						    <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+						    <!-- {#
+						        Uncomment this section and add a remember_me option below your firewall to activate remember me functionality.
+						        See https://symfony.com/doc/current/security/remember_me.html
+
+						        <div class="checkbox mb-3">
+						            <label>
+						                <input type="checkbox" name="_remember_me"> Remember me
+						            </label>
+						        </div>
+						    #} -->
+
+						    <button type="submit" id="send">Sign in</button>
+						</form>
+						or
+						<br>
+						<a href="{{ path('app_register') }}"><button>Register</button></a>
+					{% endif %}
+		        {% endblock %}
 	        </div>
 	        <div class="container-left">
 		    {% block main %}

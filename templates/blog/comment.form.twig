@@ -1,0 +1,23 @@
+<script>
+	$(document).ready(function(){
+		$("#comment-send button").click(function(){
+			var data = {
+				content: $('#comment-content').val()
+			};
+			$.ajax({
+				url: '{{ path("app_blog_post_comment", {"num" : post["num"]}) }}',
+				type: 'POST',
+				data: data,
+
+				success: function(data, status) {
+					console.log("success, " + status);
+					$('#comments').append(
+						'<div class="comment"><span id="author">'+ data.message["author"] + '</span>: <br><span id="date">('+ data.message["date"] +')</span><br><span id="content">'+ data.message["content"] + '</span></div>'
+					);
+				}
+			});
+		});
+	});
+</script><div>
+	<input type="textarea" id="comment-content"><br><button id="comment-send">Send</button>
+</div>

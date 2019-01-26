@@ -1,11 +1,66 @@
 {% extends 'base.html.twig' %}
 {% block stylesheets %}
 <style>
-.title {
-	font-size: 1.5625em;
-	font-weight: bold;
-}
+	.title {
+		font-size: 1.5625em;
+		font-weight: bold;
+	}
+
+	.comment {
+		padding-left: 1em;
+	}
+
+	#author {
+		font-size: 1.1em;
+		font-weight: bold
+	}
+
+	#date {
+		font-size: 0.8em;
+	}
+
+	#content {
+		margin-left: 1em;
+		padding-top: 0.5em;
+	}
+	#comment-content {
+		text-align: top left;
+		padding-bottom: 0.5em;
+		resize: none;
+		width: 100%;
+		height: 5em;
+	}
 </style>
+{% endblock %}
+{% block javascripts %}
+<script>
+	$(document).ready(function(){
+		$("#comment-send").click(function(){
+			var data = {
+				content: $('#comment-content').val()
+			};
+			console.log("sending: ");
+			console.log(data);
+			$.ajax({
+				url: '{{ path("app_blog_post_comment", {"num" : post["num"]}) }}',
+				type: 'POST',
+				data: data,
+
+				success: function(data, status) {
+					console.log("success, " + status);
+					$('#comments').append(
+						'<div class="comment"><span id="author">'+ data.message["author"] + '</span>: <br><span id="date">('+ data.message["date"] +')</span><br><span id="content">'+ data.message["content"] + '</span></div>'
+					);
+				},
+				error: function(xhr, textStatus, errorThrown) {  
+					console.log(xhr);
+              		console.log(textStatus);
+              		console.log(errorThrown);
+           		}  
+			});
+		});
+	});
+</script>
 {% endblock %}
 {% block content %}
 	<div class="post">
@@ -14,7 +69,16 @@
 		<hr>
 		<p class="post content">{{ post["content"] }}</p>
 	</div>
-	<div>
-		<a class="home-link" href="{{ path('app_blog_list') }}">Back</a>
+	<hr>
+	<div class="comments">
+		<h3>Comments</h3>
+		<div>
+			<textarea id="comment-content"></textarea><br><button id="comment-send">Send</button>
+		</div>
+		{% for comment in post["comments"] %}
+			<div class="comment">
+				<span id="author">{{ comment["author"] }}</span>: <br><span id="date">({{ comment["date"] }})</span><br><span id="content">{{ comment["content"] }}</span>
+			</div>
+		{% endfor %}
 	</div>
 {% endblock %}

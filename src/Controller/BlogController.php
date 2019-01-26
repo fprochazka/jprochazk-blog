@@ -6,6 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
@@ -13,6 +14,7 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 
 use App\Entity\Post;
 use App\Entity\Person;
+use App\Entity\Comment;
 use App\Security\LoginFormAuthenticator;
 
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -39,15 +41,26 @@ class BlogController extends AbstractController
             if($post = $this->getPostByID($i)) $posts[$i] = [
                 "title" => $post->getTitle(), 
                 "content" => $this->restrictText($post->getContent(), 50), 
-                "id" => $i,
+                "id" => $i
             ];
         }
         return $posts;
     }
 
     private function getComments(int $post_id, int $start, int $count) {
-        $post = getPostByID($post_id);
-        $comments = $post->getComments();
+        $unf_comments = $this->getPostByID($post_id)->getComments();
+        $comments = array();
+        $c = $start;
+        foreach($unf_comments as $comment){
+            if($c < $count) {
+                $comments[$c] = [
+                    "author" => $comment->getAuthor(),
+                    "content" => $comment->getContent(),
+                    "date" => $comment->getDate()->format('Y-m-d, H:i:s'),
+                ];
+            }
+        }
+        return $comments;
     }
 
     /**
@@ -77,12 +90,28 @@ class BlogController extends AbstractController
             $error = $authenticationUtils->getLastAuthenticationError();
             $lastUsername = $authenticationUtils->getLastUsername();
 
-            if(!is_null($current_user = $this->getUser())) return $this->render('blog/post.html.twig', [
-                "post" => ["title" => $post->getTitle(), "content" => $post->getContent(), "date" => $date, "author" => $post->getAuthor()],
-                "user_username" => $current_user->getUsername()
-            ]);
+            if(!is_null($current_user = $this->getUser())) {
+                return $this->render('blog/post.html.twig', [
+                    "post" => [
+                        "title" => $post->getTitle(), 
+                        "content" => $post->getContent(), 
+                        "date" => $date, 
+                        "author" => $post->getAuthor(),
+                        "comments" => $this->getComments($post->getId(), 0, 10),
+                        "num" => $num,
+                    ],
+                    "user_username" => $current_user->getUsername()
+                ]);
+            }
             return $this->render('blog/post.html.twig', [
-                "post" => ["title" => $post->getTitle(), "content" => $post->getContent(), "date" => $date, "author" => $post->getAuthor()],
+                "post" => [
+                    "title" => $post->getTitle(), 
+                    "content" => $post->getContent(), 
+                    "date" => $date, 
+                    "author" => $post->getAuthor(),
+                    "comments" => $this->getComments($post->getId(), 0, 10),
+                    "num" => $num,
+                ],
                 "user_username" => "guest",
                 "last_username" => $lastUsername, 
                 "error" => $error
@@ -131,4 +160,63 @@ class BlogController extends AbstractController
         }
     }
 
+    /**
+      * @Route("/post/{num<\d+>}/comment", name="app_blog_post_comment")
+      */
+    public function createComment($num, Request $request) {
+        if($current_user = $this->getUser()) {
+            if($current_user->getRole() == 'ROLE_ADMIN' || $current_user->getRole() == 'ROLE_USER') {
+                if($request->isXmlHttpRequest() || $request->query->get('showJson') == 1) {
+                    $content = $request->request->get('content');
+                    if(is_string($content)) {
+                        $date = date_create_from_format('H:i:s Y-m-d', date('H:i:s Y-m-d'));
+                        $comment = new Comment();
+                        $post = $this->getPostByID($num);
+
+                        $comment->setDate($date);
+                        $comment->setAuthor($current_user->getUsername());
+                        $comment->setContent($content);
+
+                        $post->addComment($comment);
+                        
+                        $entityManager = $this->getDoctrine()->getManager();
+                        $entityManager->persist($comment);
+                        $entityManager->flush();
+
+
+                        $responseData = [
+                            'author' => $current_user->getUsername(),
+                            'date' => $date,
+                            'content' => $content
+                        ];
+
+                        return new JsonResponse(array(
+                        'status' => 'OK',
+                        'message' => $responseData),
+                        200);
+                    } else {
+                        return new JsonResponse(array(
+                        'status' => 'Error',
+                        'message' => 'Content is not of type string'),
+                        400);
+                    }
+                } else {
+                    return new JsonResponse(array(
+                    'status' => 'Error',
+                    'message' => 'Not AJAX request'),
+                    400);
+                }
+            }   else {
+                return new JsonResponse(array(
+                'status' => 'Error',
+                'message' => 'Insufficient permissions'),
+                400);
+            }
+        } else {
+            return new JsonResponse(array(
+            'status' => 'Error',
+            'message' => 'User not logged in'),
+            400);
+        }
+    }
 }
