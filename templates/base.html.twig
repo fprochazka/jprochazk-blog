@@ -12,30 +12,26 @@
 			display: block;
 		}
 		.container-main {
-			background-color: #AAAAAA;
-			border: 4px solid #666666;
-			border-radius: 4px;
-			padding-left: 5%;
-			padding-right: 5%;
-			padding-bottom: 20px;
-			width: 50%;
-			float:left;
+			float: center;
+			padding-top: 1em;
+			padding-bottom: 1em;
+			margin-left: 15%;
+			margin-right: 15%;
+		}
+		.container-left {
+			width: 75%;
 		}
 		.container-side {
-			background-color: #AAAAAA;
-			border: 4px solid #666666;
-			border-radius: 4px;
-			padding-left: 5%;
-			padding-right: 5%;
-			padding-bottom: 20px;
-			width:20%;
-			float:right;
+			width: 25%;
+			float: right;
+			padding: 0;
 		}
 
 		.wrapper.content {
+			border-top: 2px solid #666666;
 			padding-top: 20px;
 			padding-left: 5%;
-			padding-right: 5%;
+			margin-right: 5%;
 			padding-bottom: 20px;
 		}
 		.form-control {
@@ -52,6 +48,7 @@
     </head>
     <body>
         {% block body %}
+        <div class="container-main">
 	        <div class="container-side">
 	        {% block side %}
 				{% if is_granted('ROLE_USER') or is_granted('ROLE_ADMIN') %}
@@ -89,7 +86,7 @@
 				{% endif %}
 	        {% endblock %}
 	        </div>
-	        <div class="container-main">
+	        <div class="container-left">
 		    {% block main %}
 				<h1>Blog</h1>
 			    <div class="wrapper content">
@@ -97,6 +94,7 @@
 				</div>
 	        {% endblock %}
 	    	</div>
+	    </div>
         {% endblock %}
     </body>
 </html>

@@ -35,7 +35,7 @@ class BlogController extends AbstractController
 
     private function getPosts(int $start, int $count) {
         $posts = array();
-        for($i = $start; $i < $start+$count; ++$i){
+        for($i = $start; $i < $start+$count; ++$i) {
             if($post = $this->getPostByID($i)) $posts[$i] = [
                 "title" => $post->getTitle(), 
                 "content" => $this->restrictText($post->getContent(), 50), 
@@ -43,6 +43,11 @@ class BlogController extends AbstractController
             ];
         }
         return $posts;
+    }
+
+    private function getComments(int $post_id, int $start, int $count) {
+        $post = getPostByID($post_id);
+        $comments = $post->getComments();
     }
 
     /**

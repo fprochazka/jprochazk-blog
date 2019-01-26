@@ -40,10 +40,6 @@
 {% endblock %}
 
 {% block content %}
-	<hr>
-	{% if is_granted('ROLE_ADMIN') %}
-	<a class="post new" href="{{ path('app_blog_post_new') }}"><button>Create new post</button></a>
-	{% endif %}
 	{% for item in posts %}
 	<div class="post">
 		<a class="post title">{{ item["title"] }}</a> <a class="post link" href="{{ path('app_blog_post_show', {'num' : item['id']}) }}">Read</a><br>
