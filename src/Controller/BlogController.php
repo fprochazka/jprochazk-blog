@@ -59,6 +59,7 @@ class BlogController extends AbstractController
                     "date" => $comment->getDate()->format('Y-m-d, H:i:s'),
                 ];
             }
+            ++$c;
         }
         return $comments;
     }
@@ -178,15 +179,14 @@ class BlogController extends AbstractController
                         $comment->setContent($content);
 
                         $post->addComment($comment);
-                        
+
                         $entityManager = $this->getDoctrine()->getManager();
                         $entityManager->persist($comment);
                         $entityManager->flush();
 
-
                         $responseData = [
                             'author' => $current_user->getUsername(),
-                            'date' => $date,
+                            'date' => $date->format('Y-m-d, H:i:s'),
                             'content' => $content
                         ];
 

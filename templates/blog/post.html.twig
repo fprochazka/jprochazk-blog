@@ -8,6 +8,11 @@
 
 	.comment {
 		padding-left: 1em;
+		margin-bottom: 2em;
+	}
+
+	.comment-new {
+		margin-bottom: 2em;
 	}
 
 	#author {
@@ -48,9 +53,10 @@
 
 				success: function(data, status) {
 					console.log("success, " + status);
-					$('#comments').append(
+					$('.comments').append(
 						'<div class="comment"><span id="author">'+ data.message["author"] + '</span>: <br><span id="date">('+ data.message["date"] +')</span><br><span id="content">'+ data.message["content"] + '</span></div>'
 					);
+					$('#comment-content').val("");
 				},
 				error: function(xhr, textStatus, errorThrown) {  
 					console.log(xhr);
@@ -70,15 +76,17 @@
 		<p class="post content">{{ post["content"] }}</p>
 	</div>
 	<hr>
-	<div class="comments">
+	<div class="comment-section">
 		<h3>Comments</h3>
-		<div>
+		<div class="comment-new">
 			<textarea id="comment-content"></textarea><br><button id="comment-send">Send</button>
 		</div>
-		{% for comment in post["comments"] %}
+		<div class="comments">
+		{% for comment in post["comments"]|reverse %}
 			<div class="comment">
 				<span id="author">{{ comment["author"] }}</span>: <br><span id="date">({{ comment["date"] }})</span><br><span id="content">{{ comment["content"] }}</span>
 			</div>
 		{% endfor %}
+		</div>
 	</div>
 {% endblock %}
