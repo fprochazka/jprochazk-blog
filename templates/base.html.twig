@@ -72,11 +72,98 @@
 		button:hover {
 			background-color: #888888;
 		}
+
+		span.survey.option.votes {
+			background:#BBBBBB;
+			float: right;
+		}
+		ul.survey.option {
+			padding-left: 2px;
+		}
+		.survey.send {
+			margin-left: 2px;
+		}
 		</style>
         {% block stylesheets %}{% endblock %}
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
         {% block javascripts %}
 		{% endblock %}
+		<script>
+			var countVotes = function() {
+				var total_votes = 0;
+				$("span.survey.option").each(function(){
+					var val = $(this).attr("value");
+					total_votes += parseInt(val);
+				});
+				$("span.survey.option").each(function(){
+					$(this).css("padding-left", function(){
+						var val = $(this).attr("value");
+						var str = ((val/total_votes)*100)+"px";
+						var f_str = (Math.floor((val/total_votes)*100))+"%";
+						$(this).html(f_str);
+						return str;
+					});
+				});
+			}
+			$(document).ready(function(){
+				$('input.survey.checkbox').click(function(){
+					var temp_id = $(this).attr("value");
+					$('input.survey.checkbox').each(function(){
+						if($(this).attr("value") != temp_id) {
+							$(this).prop("checked", false);
+						}
+					});
+				});
+
+				countVotes();
+				$('button.survey.send').click(function(){
+					var data = {
+						survey_id: 0,
+						vote_id: 0,
+					};
+
+					$("input.survey.checkbox").each(function() {
+						if($(this).prop("checked") == true) {
+							data.survey_id = $("div.survey.container").attr("id");
+							data.vote_id = $(this).attr("value");
+						}
+					});	
+					
+
+					console.log(data);
+					if(data.vote_id != "n" && data.survey_id != "n") {
+						//send request
+						$.ajax({
+							url: '{{ path("app_blog_survey_vote") }}',
+							type: 'POST',
+							data: data,
+
+							success: function(data, status) {
+								//show vote results
+								$("ul.survey.option.output").prop("hidden", false);
+
+								//hide vote options
+								$("ul.survey.option.input").remove();
+								$("button.survey.option.send").remove();
+
+								$("span.survey.option").each(function(){
+									if($(this).attr("id") == data.message["vote_id"]) {
+										$(this).attr("value", (parseInt($(this).attr("value"))+1));
+									}
+								});
+
+								countVotes();
+							},
+							error: function(xhr, textStatus, errorThrown) { 
+								console.log(textStatus+": "+xhr.responseJSON.message);
+				       		}  
+						});
+					}
+
+					
+				});
+			});
+		</script>			
     </head>
     <body>
         {% block body %}
@@ -123,6 +210,7 @@
 						<br>
 						<a href="{{ path('app_register') }}"><button>Register</button></a>
 					{% endif %}
+					{{ render('/survey') }}
 		        {% endblock %}
 	        </div>
 	        <div class="container-left">

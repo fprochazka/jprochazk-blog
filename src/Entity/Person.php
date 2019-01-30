@@ -35,6 +35,12 @@ class Person implements UserInterface, \Serializable
      */
     private $role;
 
+    /**
+     * @ORM\Column(type="array", nullable=true)
+     */
+    private $votes = [];
+    //stores a set of survey ids that the user has voted on
+
     public function getId(): ?int
     {
         return $this->id;
@@ -100,5 +106,41 @@ class Person implements UserInterface, \Serializable
             $this->username,
             $this->password
         ) = unserialize($string, ['allowed_classes' => false]);
+    }
+
+    public function getVotes(): ?array
+    {
+        return $this->votes;
+    }
+
+    // do not use- requires an entire array of vote ids to be submitted
+    public function setVotes(?array $vote): self
+    {
+        $this->votes = $vote;
+
+        return $this;
+    }
+
+    public function addVote(?int $survey_id, ?int $vote_id): self
+    {
+        $this->votes[$survey_id] = $vote_id;
+
+        return $this;
+    }
+
+    public function hasVoted(?int $survey_id): ?bool
+    {
+        $votes = $this->votes;
+        if($votes != []) {
+            foreach($votes as $key => $value) {
+                if($key == $survey_id) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        } else {
+            return false;
+        }
     }
 }

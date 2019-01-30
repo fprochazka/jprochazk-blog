@@ -16,6 +16,7 @@ use App\Entity\Post;
 use App\Entity\Person;
 use App\Entity\Comment;
 use App\Security\LoginFormAuthenticator;
+use App\Entity\Survey;
 
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
@@ -64,6 +65,17 @@ class BlogController extends AbstractController
         return $comments;
     }
 
+    private function getLatestSurvey() {
+        $surveys = $this->getDoctrine()->getRepository(Survey::class)->findAll();
+        $_survey;
+        foreach($surveys as $survey) $_survey = $survey;
+        return $_survey;
+    }
+
+    private function getSurvey(int $id) {
+        return $this->getDoctrine()->getRepository(Survey::class)->find($id);
+    }
+
     /**
       * @Route("/{page<\d+>?1}", name="app_blog_list")
       */
@@ -91,7 +103,7 @@ class BlogController extends AbstractController
             $error = $authenticationUtils->getLastAuthenticationError();
             $lastUsername = $authenticationUtils->getLastUsername();
 
-            if(!is_null($current_user = $this->getUser())) {
+            if($current_user = $this->getUser()) {
                 return $this->render('blog/post.html.twig', [
                     "post" => [
                         "title" => $post->getTitle(), 
@@ -198,6 +210,91 @@ class BlogController extends AbstractController
                         return new JsonResponse(array(
                         'status' => 'Error',
                         'message' => 'Content is not of type string'),
+                        400);
+                    }
+                } else {
+                    return new JsonResponse(array(
+                    'status' => 'Error',
+                    'message' => 'Not AJAX request'),
+                    400);
+                }
+            }   else {
+                return new JsonResponse(array(
+                'status' => 'Error',
+                'message' => 'Insufficient permissions'),
+                400);
+            }
+        } else {
+            return new JsonResponse(array(
+            'status' => 'Error',
+            'message' => 'User not logged in'),
+            400);
+        }
+    }
+
+    /**
+      * @Route("/survey", name="app_blog_survey")
+      */
+    public function renderSurvey() {
+        $survey = $this->getLatestSurvey();
+        if($this->getUser()) {
+            $voted = $this->getUser()->hasVoted($survey->getId());
+        } else {
+            $voted = true;
+        }
+
+        return $this->render(
+        'blog/blog.survey', [
+            "survey" => [
+                "id" => $survey->getId(),
+                "title" => $survey->getTitle(), 
+                "options" => $survey->getOptions(),
+                "voted" => $voted
+            ]
+        ]);
+    }
+
+    /**
+      * @Route("/survey/vote", name="app_blog_survey_vote")
+      */
+    public function surveyVote(Request $request) {
+        if($current_user = $this->getUser()) {
+            if($current_user->getRole() == 'ROLE_ADMIN' || $current_user->getRole() == 'ROLE_USER') {
+                if($request->isXmlHttpRequest() || $request->query->get('showJson') == 1) {
+
+                    $survey_id = (int)$request->request->get('survey_id');
+                    $vote_id = (int)$request->request->get('vote_id');
+
+                    $survey = $this->getSurvey($survey_id);
+
+                    if(!$survey->isLocked()) {
+                        if(!$current_user->hasVoted($survey_id)){
+
+                            $survey->incrementVote($vote_id);
+                            $current_user->addVote($survey_id, $vote_id);
+
+                            $entityManager = $this->getDoctrine()->getManager();
+                            //$entityManager->persist($survey);
+                            //$entityManager->persist($current_user);
+                            $entityManager->flush();
+
+                            $responseData = [
+                                'vote_id' => $vote_id
+                            ];
+                            return new JsonResponse(array(
+                            'status' => 'OK',
+                            'message' => $responseData),
+                            200);
+                        } else {
+                            return new JsonResponse(array(
+                            'status' => 'Error',
+                            'message' => 'User has already voted'),
+                            400);
+                        }
+                    } else {
+                        return new JsonResponse(array(
+                        'status' => 'Error',
+                        'message' => 'Survey is locked'),
                         400);
                     }
                 } else {

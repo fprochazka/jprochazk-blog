@@ -44,8 +44,6 @@
 			var data = {
 				content: $('#comment-content').val()
 			};
-			console.log("sending: ");
-			console.log(data);
 			$.ajax({
 				url: '{{ path("app_blog_post_comment", {"num" : post["num"]}) }}',
 				type: 'POST',
