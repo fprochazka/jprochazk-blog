@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -22,14 +24,19 @@ class Survey
     private $title;
 
     /**
-     * @ORM\Column(type="array")
-     */
-    private $options = [];
-
-    /**
      * @ORM\Column(type="boolean")
      */
     private $locked;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\SurveyOption", mappedBy="Survey")
+     */
+    private $Options;
+
+    public function __construct()
+    {
+        $this->Options = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -48,21 +55,45 @@ class Survey
         return $this;
     }
 
-    public function getOptions(): ?array
+    /**
+     * @return Collection|Surveyoption[]
+     */
+    public function getOptions(): Collection
     {
-        return $this->options;
+        return $this->Options;
     }
 
-    public function setOptions(array $options): self
+    public function getOption($option_id): SurveyOption
     {
-        $this->options = $options;
+        return $this->Options->get($option_id);
+    }
+
+    public function addOption(SurveyOption $option): self
+    {
+        if (!$this->Options->contains($option)) {
+            $this->Options[] = $option;
+            $option->setSurvey($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOption(SurveyOption $option): self
+    {
+        if ($this->Options->contains($option)) {
+            $this->Options->removeElement($option);
+            // set the owning side to null (unless already changed)
+            if ($option->getSurvey() === $this) {
+                $option->setSurvey(null);
+            }
+        }
 
         return $this;
     }
 
     public function incrementVote(int $vote_id): self
     {
-        $this->options[$vote_id]["votes"] += 1;
+        $this->getOption($vote_id)->incrementVotesBy(1);
 
         return $this;
     }

@@ -155,7 +155,7 @@
 								countVotes();
 							},
 							error: function(xhr, textStatus, errorThrown) { 
-								console.log(textStatus+": "+xhr.responseJSON.message);
+								console.log(textStatus+": "+xhr.responseJSON);
 				       		}  
 						});
 					}
@@ -173,6 +173,7 @@
 				<a href="{{ path('app_blog_list') }}"><button>Home</button></a>
 				{% if is_granted('ROLE_ADMIN') %}
 				<a href="{{ path('app_blog_post_new') }}"><button>New post</button></a>
+				<a href="{{ path('app_blog_survey_new') }}"><button>New survey</button></a>
 				{% endif %}
 	        </div>
 	        <div class="container-side">

@@ -11,12 +11,14 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use App\Form\SurveyType;
 
 use App\Entity\Post;
 use App\Entity\Person;
 use App\Entity\Comment;
 use App\Security\LoginFormAuthenticator;
 use App\Entity\Survey;
+use App\Entity\SurveyOption;
 
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
@@ -67,7 +69,6 @@ class BlogController extends AbstractController
 
     private function getLatestSurvey() {
         $surveys = $this->getDoctrine()->getRepository(Survey::class)->findAll();
-        $_survey;
         foreach($surveys as $survey) $_survey = $survey;
         return $_survey;
     }
@@ -233,6 +234,32 @@ class BlogController extends AbstractController
     }
 
     /**
+      * @Route("/survey/new", name="app_blog_survey_new")
+      */
+    public function createSurvey(Request $request) {
+        if($current_user = $this->getUser()) {
+            if($current_user->getRole() == 'ROLE_ADMIN') {
+                $survey = new Survey();
+                $form = $this->createForm(SurveyType::class, $survey);
+
+                $form->handleRequest($request);
+
+                if ($form->isSubmitted() && $form->isValid()) {
+                    return $this->redirectToRoute('app_blog_post_show', ['num' => $post->getId()]);
+                }
+
+                return $this->render('blog/blog.survey.new.twig', [
+                    'form' => $form->createView(),
+                ]);
+            } else {
+                return $this->redirectToRoute("app_blog_list");
+            }
+        } else {
+            return $this->redirectToRoute("app_blog_list");
+        }
+    }
+
+    /**
       * @Route("/survey", name="app_blog_survey")
       */
     public function renderSurvey() {
@@ -243,12 +270,24 @@ class BlogController extends AbstractController
             $voted = true;
         }
 
+        $count = 1;
+        $_options = $survey->getOptions();
+        foreach($_options as $option) {
+
+            $options[$count] = [
+                "name" => $option->getTitle(),
+                "votes" => $option->getVotes(),
+                "id" => $option->getId(),
+            ];
+            ++$count;
+        }
+
         return $this->render(
-        'blog/blog.survey', [
+        'blog/blog.survey.twig', [
             "survey" => [
                 "id" => $survey->getId(),
                 "title" => $survey->getTitle(), 
-                "options" => $survey->getOptions(),
+                "options" => $options,
                 "voted" => $voted
             ]
         ]);
@@ -274,13 +313,12 @@ class BlogController extends AbstractController
                             $current_user->addVote($survey_id, $vote_id);
 
                             $entityManager = $this->getDoctrine()->getManager();
-                            //$entityManager->persist($survey);
-                            //$entityManager->persist($current_user);
                             $entityManager->flush();
 
                             $responseData = [
                                 'vote_id' => $vote_id
                             ];
+                            
                             return new JsonResponse(array(
                             'status' => 'OK',
                             'message' => $responseData),
