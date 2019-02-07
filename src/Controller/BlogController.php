@@ -417,7 +417,7 @@ class BlogController extends AbstractController
         } 
         elseif($msg == "auth") {
             return $this->render('blog/error.html.twig', [
-                'msg' => 'Login is needed to access this page',
+                'msg' => 'Login to access this page',
             ]);
         }
         elseif($msg == "404") {

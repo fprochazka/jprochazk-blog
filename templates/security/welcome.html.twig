@@ -5,11 +5,11 @@
 	<h3>Welcome, guest!</h3>
 	<form method="post" action="{{ path('app_login') }}">
 		<br>
-	    {% if error %}
+	    {% if error is defined %}
 	        <div style="color: #FF2200;">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
 	    {% endif %}
 
-	    <input type="text" value="{{ last_username }}" name="username" id="inputUsername" class="form-control" placeholder="Username" required autofocus><br>
+	    <input type="text" {% if last_username is defined %}value="{{ last_username }}"{% endif %} name="username" id="inputUsername" class="form-control" placeholder="Username" required autofocus><br>
 	    <input type="password" name="password" id="inputPassword" class="form-control" placeholder="Password" required><br>
 
 	    <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
