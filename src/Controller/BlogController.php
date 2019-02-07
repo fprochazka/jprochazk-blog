@@ -26,8 +26,28 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 class BlogController extends AbstractController
 {
+    private function getAllPosts() {
+        return $this->getDoctrine()->getRepository(Post::class)->findAll();
+    }
+
+    private function getAllUsers() {
+        return $this->getDoctrine()->getRepository(Person::class)->findAll();
+    }
+
+    private function getAllSurveys() {
+        return $this->getDoctrine()->getRepository(Survey::class)->findAll();
+    }
+
     private function getPostByID(int $id) {
         return $this->getDoctrine()->getRepository(Post::class)->find($id);
+    }
+
+    private function getSurveyById(int $id) {
+        return $this->getDoctrine()->getRepository(Survey::class)->find($id);
+    }
+
+    private function getOptionById(int $id) {
+        return $this->getDoctrine()->getRepository(SurveyOption::class)->find($id);
     }
 
     private function restrictText(string $content, int $length) {
@@ -38,7 +58,22 @@ class BlogController extends AbstractController
         }
     }
 
-    private function getPosts(int $start, int $count) {
+    /*private function getPostsByAuthor(string $author) {
+        $posts = array();
+        foreach($this->getAllPosts() as $post) {
+            if($post->getAuthor() == $author) {
+                $posts[] = [
+                    'id' => $post->getId(),
+                    'title' => $post->getTitle(),
+                    'content' => $post->getContent(),
+                    'date' => $post->getSubtime()->format('H:i:s Y-m-d'),
+                    'author' => $post->getAuthor()
+                ];
+            }
+        }
+    }*/
+
+    private function getPosts(int $start, int $count = 0) {
         $posts = array();
         for($i = $start; $i < $start+$count; ++$i) {
             if($post = $this->getPostByID($i)) $posts[$i] = [
@@ -69,12 +104,9 @@ class BlogController extends AbstractController
 
     private function getLatestSurvey() {
         $surveys = $this->getDoctrine()->getRepository(Survey::class)->findAll();
+        $_survey = null;
         foreach($surveys as $survey) $_survey = $survey;
         return $_survey;
-    }
-
-    private function getSurvey(int $id) {
-        return $this->getDoctrine()->getRepository(Survey::class)->find($id);
     }
 
     /**
@@ -99,6 +131,7 @@ class BlogController extends AbstractController
       * @Route("/post/{num<\d+>}", name="app_blog_post_show")
       */
     public function show($num, AuthenticationUtils $authenticationUtils) {
+        $_error;
         if($post = $this->getPostByID($num)) {
             $date = $post->getSubtime()->format('Y-m-d');
             $error = $authenticationUtils->getLastAuthenticationError();
@@ -130,15 +163,16 @@ class BlogController extends AbstractController
                 "last_username" => $lastUsername, 
                 "error" => $error
             ]);
-        } else {
-            return new Response('Page not found. <a href="/">Home</a>', Response::HTTP_NOT_FOUND);
-        }
+        } else { $_error = "404"; }
+
+        return $this->redirectToRoute("app_blog_error", ['msg' => $_error]);
     }
 
     /**
       * @Route("/new", name="app_blog_post_new")
       */
     public function createPost(Request $request) {
+        $_error;
         if($current_user = $this->getUser()) {
             if($current_user->getRole() == 'ROLE_ADMIN') {
                 $post = new Post();
@@ -166,12 +200,52 @@ class BlogController extends AbstractController
                 return $this->render('blog/post.new.html.twig', [
                     'form' => $form->createView(),
                 ]);
-            } else {
-                return $this->redirectToRoute('app_blog_list');
-            }
-        } else {
-            return $this->redirectToRoute('app_blog_list');
-        }
+            } else { $_error = "perm"; }
+        } else { $_error = "auth"; }
+
+        return $this->redirectToRoute("app_blog_error", ['msg' => $_error]);
+    }
+
+    /**
+      * @Route("/survey/new", name="app_blog_survey_new")
+      */
+    public function createSurvey(Request $request) {
+        $_error;
+        if($current_user = $this->getUser()) {
+            if($current_user->getRole() == 'ROLE_ADMIN') {
+                $survey = new Survey();
+                $form = $this->createForm(SurveyType::class, $survey);
+
+                $form->handleRequest($request);
+
+                if ($form->isSubmitted() && $form->isValid()) {
+                    $entityManager = $this->getDoctrine()->getManager();
+
+                    $survey = $form->getData();
+                    
+                    $options = $survey->getOptions();
+                    $survey->resetOptions();
+                    foreach($options as $option) {
+                        $option->setVotes(0);
+                        $survey->addOption($option);
+                        $entityManager->persist($option);
+                    }
+
+                    $survey->unlock();
+
+                    $entityManager->persist($survey);
+                    $entityManager->flush();
+
+                    return $this->redirectToRoute("app_blog_list");
+                }
+
+                return $this->render('blog/blog.survey.new.twig', [
+                    'form' => $form->createView(),
+                ]);
+            } else { $_error = "perm"; }
+        } else { $_error = "auth"; }
+
+        return $this->redirectToRoute("app_blog_error", ['msg' => $_error]);
     }
 
     /**
@@ -234,63 +308,39 @@ class BlogController extends AbstractController
     }
 
     /**
-      * @Route("/survey/new", name="app_blog_survey_new")
-      */
-    public function createSurvey(Request $request) {
-        if($current_user = $this->getUser()) {
-            if($current_user->getRole() == 'ROLE_ADMIN') {
-                $survey = new Survey();
-                $form = $this->createForm(SurveyType::class, $survey);
-
-                $form->handleRequest($request);
-
-                if ($form->isSubmitted() && $form->isValid()) {
-                    return $this->redirectToRoute('app_blog_post_show', ['num' => $post->getId()]);
-                }
-
-                return $this->render('blog/blog.survey.new.twig', [
-                    'form' => $form->createView(),
-                ]);
-            } else {
-                return $this->redirectToRoute("app_blog_list");
-            }
-        } else {
-            return $this->redirectToRoute("app_blog_list");
-        }
-    }
-
-    /**
       * @Route("/survey", name="app_blog_survey")
       */
     public function renderSurvey() {
         $survey = $this->getLatestSurvey();
-        if($this->getUser()) {
-            $voted = $this->getUser()->hasVoted($survey->getId());
-        } else {
+        if($survey != null) {
             $voted = true;
+            if($current_user = $this->getUser()) {
+                $voted = $current_user->hasVoted($survey->getId());
+            }
+
+            $count = 1;
+            $_options = $survey->getOptions();
+            foreach($_options as $option) {
+                $options[$count] = [
+                    "name" => $option->getTitle(),
+                    "votes" => $option->getVotes(),
+                    "id" => $option->getId(),
+                ];
+                ++$count;
+            }
+
+            return $this->render(
+            'blog/blog.survey.twig', [
+                "survey" => [
+                    "id" => $survey->getId(),
+                    "title" => $survey->getTitle(), 
+                    "options" => $options,
+                    "voted" => $voted
+                ]
+            ]);
+        } else {
+            return new Response("");
         }
-
-        $count = 1;
-        $_options = $survey->getOptions();
-        foreach($_options as $option) {
-
-            $options[$count] = [
-                "name" => $option->getTitle(),
-                "votes" => $option->getVotes(),
-                "id" => $option->getId(),
-            ];
-            ++$count;
-        }
-
-        return $this->render(
-        'blog/blog.survey.twig', [
-            "survey" => [
-                "id" => $survey->getId(),
-                "title" => $survey->getTitle(), 
-                "options" => $options,
-                "voted" => $voted
-            ]
-        ]);
     }
 
     /**
@@ -304,12 +354,12 @@ class BlogController extends AbstractController
                     $survey_id = (int)$request->request->get('survey_id');
                     $vote_id = (int)$request->request->get('vote_id');
 
-                    $survey = $this->getSurvey($survey_id);
+                    $survey = $this->getSurveyById($survey_id);
 
                     if(!$survey->isLocked()) {
                         if(!$current_user->hasVoted($survey_id)){
 
-                            $survey->incrementVote($vote_id);
+                            $survey->getOptionById($vote_id)->incrementVote();
                             $current_user->addVote($survey_id, $vote_id);
 
                             $entityManager = $this->getDoctrine()->getManager();
@@ -318,7 +368,7 @@ class BlogController extends AbstractController
                             $responseData = [
                                 'vote_id' => $vote_id
                             ];
-                            
+
                             return new JsonResponse(array(
                             'status' => 'OK',
                             'message' => $responseData),
@@ -353,5 +403,136 @@ class BlogController extends AbstractController
             'message' => 'User not logged in'),
             400);
         }
+    }
+
+    /**
+     * @Route("/error", name="app_blog_error")
+     */
+    public function showError(Request $request) {
+        $msg = $request->query->get("msg");
+        if($msg == "perm") {
+            return $this->render('blog/error.html.twig', [
+                'msg' => 'Insufficient permissions',
+            ]);
+        } 
+        elseif($msg == "auth") {
+            return $this->render('blog/error.html.twig', [
+                'msg' => 'Login is needed to access this page',
+            ]);
+        }
+        elseif($msg == "404") {
+            return $this->render('blog/error.html.twig', [
+                'msg' => 'Page not found.',
+            ]);
+        }
+        else {
+            return $this->render('blog/error.html.twig', [
+                'msg' => 'Unknown error',
+            ]);
+        }
+    }
+
+    /**
+     * @Route("/admin", name="app_blog_admin")
+     */
+    public function showAdmin(Request $request) {
+        $_error;
+        $tab = $request->query->get('p');
+        if($current_user = $this->getUser()) {
+            if($current_user->getRole() == 'ROLE_ADMIN') {
+                if(!$tab) {
+                    return $this->redirectToRoute("app_blog_admin", ['p' => "users"]);
+                } else {
+                    //users + their posts
+                    if($tab == "users") {
+                        $users;
+                        foreach($this->getAllUsers() as $user) {
+                            $votes = [];
+                            if($user->getVotes()) {
+                                foreach($user->getVotes() as $key => $value) {
+                                    $survey_name = $this->getSurveyById($key)->getTitle();
+                                    $option_name = $this->getOptionById($value)->getTitle();
+                                    $votes[$survey_name] = $option_name;
+                                }
+                            }
+                            $users[] = [
+                                'id' => $user->getId(),
+                                'name' => $user->getUsername(),
+                                'role' => $user->getRole(),
+                                'votes' => $votes
+                            ];
+                            $votes = array();
+                        }
+                        return $this->render("blog/admin.html.twig", [
+                            'tab' => $tab,
+                            'users' => $users,
+                        ]);
+                    } 
+                    //posts standalone
+                    elseif($tab == "posts") {
+                        $posts;
+                        foreach($this->getAllPosts() as $post) {
+                            $comments;
+                            foreach($post->getComments() as $comment) {
+                                $comments[] = [
+                                    'id' => $comment->getId(),
+                                    'content' => $comment->getContent(),
+                                    'date' => $comment->getDate()->format('H:i:s, Y-m-d'),
+                                    'author' => $comment->getAuthor(),
+                                ];
+                            }
+
+                            $posts[] = [
+                                'id' => $post->getId(),
+                                'title' => $post->getTitle(),
+                                'content' => $post->getContent(),
+                                'date' => $post->getSubtime()->format('H:i:s Y-m-d'),
+                                'author' => $post->getAuthor(),
+                                'comments' => $comments,
+                            ];
+
+                            $comments = array();
+                        }
+                        return $this->render("blog/admin.html.twig", [
+                            'tab' => $tab,
+                            'posts' => $posts,
+                        ]);
+                    } 
+                    //surveys
+                    elseif($tab == "surveys") {
+                        $surveys = [];
+                        foreach($this->getAllSurveys() as $survey) {
+                            $options = [];
+                            foreach($survey->getOptions() as $option) {
+                                $options[] = [
+                                    "id" => $option->getId(),
+                                    "name" => $option->getTitle(),
+                                    "votes" => $option->getVotes(),
+                                ];
+                            }
+
+                            $surveys[] = [
+                                "id" => $survey->getId(),
+                                "title" => $survey->getTitle(), 
+                                "options" => $options
+                            ];
+
+                            $options = [];
+                        }
+                        return $this->render("blog/admin.html.twig", [
+                            'tab' => $tab,
+                            'surveys' => $surveys,
+                        ]);
+                    }
+
+                    else {
+                        return $this->render("blog/admin.html.twig", [
+                            'tab' => "error"
+                        ]);
+                    }
+                }
+            } else { $_error = "perm"; }
+        } else { $_error = "auth"; }
+        return $this->redirectToRoute("app_blog_error", ['msg' => $_error]);
     }
 }

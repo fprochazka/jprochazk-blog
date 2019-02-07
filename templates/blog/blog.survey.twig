@@ -1,7 +1,7 @@
 <br>
 <br>
 <div class="survey container" id="{{ survey["id"] }}">
-<span class="survey title">{{ survey["title"] }}</span>
+<span class="survey-title">{{ survey["title"] }}</span>
 {% if survey["voted"] %}
 	{% for option in survey["options"] %}
 		<ul class="survey option output"> {{ option["name"] }}:&#32;&#32;<span class="survey option votes" id="{{ option["id"] }}" value="{{ option["votes"] }}"></span></ul>

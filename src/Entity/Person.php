@@ -123,7 +123,11 @@ class Person implements UserInterface, \Serializable
 
     public function addVote(?int $survey_id, ?int $vote_id): self
     {
-        $this->votes[$survey_id] = $vote_id;
+        if(!isset($this->votes[$survey_id]) || !array_key_exists($survey_id, $this->votes)) {
+            $this->votes[$survey_id] = $vote_id;
+        } else {
+            throw new \LogicException("User has already voted on survey (id: ".$survey_id.")");
+        }
 
         return $this;
     }
@@ -131,14 +135,13 @@ class Person implements UserInterface, \Serializable
     public function hasVoted(?int $survey_id): ?bool
     {
         $votes = $this->votes;
-        if($votes != []) {
+        if($votes != null) {
             foreach($votes as $key => $value) {
                 if($key == $survey_id) {
                     return true;
-                } else {
-                    return false;
                 }
             }
+            return false;
         } else {
             return false;
         }

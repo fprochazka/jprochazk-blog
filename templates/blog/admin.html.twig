@@ -1,0 +1,101 @@
+{% extends 'base.html.twig' %}
+{% block javascripts %}
+<script src="/js/admin/showHideButton.js"></script>
+<script src="/js/admin/renderSurveys.js"></script>
+{% endblock %}
+{% block stylesheets %}
+<style>
+	.highlight {
+		background-color: #888888;
+	}
+	.list-item {
+		padding: 5px;
+	}
+	.list-item.post {
+		margin-left: 1em;
+	}
+	.list-item.comment {
+		margin-left: 2em;
+	}
+	.list-item.content {
+		margin-left: 2em;
+	}
+	.list-item.survey {
+		width: 50%;
+	}
+	.list-item.option {
+		padding: 5px;
+		margin: 0;
+	}
+
+	span.votecount {
+		background-color: #BBBBBB;
+		float: right;
+	}
+
+</style>
+{% endblock %}
+{% block content %}
+<h1>Administration</h1>
+<hr>
+<div class="navbar">
+	<a href="{{ path("app_blog_admin", {'p': 'users'}) }}"><button class="{% if tab == 'users' %}highlight{% endif %}">Users</button> </a>
+	<a href="{{ path("app_blog_admin", {'p': 'posts'}) }}"><button class="{% if tab == 'posts' %}highlight{% endif %}">Posts</button> </a>
+	<a href="{{ path("app_blog_admin", {'p': 'surveys'}) }}"><button class="{% if tab == 'surveys' %}highlight{% endif %}">Surveys</button></a>
+</div>
+<div class="list">
+{% if tab != "error" %}
+	{% if tab == "users" %}
+		{% for user in users %}
+			<div class="list-item user">
+				ID: {{ user['id'] }} | Username: {{ user['name'] }} | Role: {{ user['role'] }}<br>
+				Voted on: <button class="show-hide small" id="{{ user['id'] }}" name="voted">+</button><br>
+				<span id="{{ user['id'] }}" name="voted" hidden>
+					{% for key,value in user['votes'] %}
+					<div class="list-item vote">
+					Q: {{ key }}<br>
+					A: {{ value }}
+					</div>
+					{% endfor %}
+				</span>
+			</div>
+		{% endfor %}
+	{% elseif tab == "posts" %}
+		{% for post in posts %}
+			<div class="list-item post">
+				ID: {{ post['id'] }} | Title: {{ post['title'] }} | Date: {{ post['date'] }} | Author: {{ post['author'] }}<br>
+				Content: <button class="show-hide small" id="{{ post['id'] }}" name="content">+</button>
+				<span id="{{ post['id'] }}" name="content" hidden>
+					<div class="list-item content">
+						{{ post['content'] }}
+					</div>
+				</span>
+				Comments: <button class="show-hide small" id="{{ post['id'] }}" name="comments">+</button><br>
+				<span id="{{ post['id'] }}" name="comments" hidden>
+				{% for comment in post['comments'] %}
+					<div class="list-item comment">
+						ID: {{ comment['id'] }} | Date: {{ comment['date'] }} | Author: {{ comment['author'] }}<br>
+						Content: {{ comment['content'] }}
+					</div>
+				{% endfor %}
+				</span>
+				<br>
+			</div>
+		{% endfor %}
+	{% elseif tab == "surveys" %}
+		{% for survey in surveys %}
+		<div class="list-item survey" id="{{ survey['id'] }}">
+			<span class="list-item title">{{ survey["title"] }}</span><button class="show-hide small" id="{{ survey['id'] }}" name="option">+</button><br>
+			<span id="{{ survey['id'] }}" name="option" hidden>
+				{% for option in survey["options"] %}
+					<ul class="list-item option" id="{{ survey['id'] }}"><span>{{ option["name"] }}:</span><span class="votecount" id="{{ survey['id'] }}" value="{{ option['votes'] }}"></span></ul>
+				{% endfor %}
+			</span>
+		</div>
+		{% endfor %}
+	{% endif %}
+{% else %}
+	<span>Tab doesn't exist.</span>
+{% endif %}
+</div>
+{% endblock %}

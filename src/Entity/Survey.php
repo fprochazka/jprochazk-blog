@@ -6,6 +6,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
+use Symfony\Component\Form\Exception\LogicException;
+
 /**
  * @ORM\Entity(repositoryClass="App\Repository\SurveyRepository")
  */
@@ -30,6 +32,7 @@ class Survey
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\SurveyOption", mappedBy="Survey")
+     * @ORM\OrderBy=({"id" = "ASC"})
      */
     private $Options;
 
@@ -55,17 +58,47 @@ class Survey
         return $this;
     }
 
-    /**
-     * @return Collection|Surveyoption[]
-     */
-    public function getOptions(): Collection
+
+    public function resetOptions(): self
     {
-        return $this->Options;
+        $this->Options = new ArrayCollection();
+
+        return $this;
     }
 
-    public function getOption($option_id): SurveyOption
+    public function getOptionById(?int $id): SurveyOption
     {
-        return $this->Options->get($option_id);
+        foreach($this->Options as $option) {
+            if($option->getId() == $id) {
+                return $option;
+            }
+        } 
+        throw new \LogicException("could not find SurveyOption(id: ".$id.") in Survey(id: ".$this->getId().")");
+    }
+
+    /**
+     * @return Collection|SurveyOption[]
+     */
+    public function getOptions(): Collection
+    {   
+        $sorted_options = new ArrayCollection;
+        $unsorted_options = $this->Options;
+        $temp_ids = [];
+
+        //first retrieve id of each option
+        foreach($unsorted_options as $option) {
+            $temp_ids[] = $option->getId();
+        }
+
+        //sort these ids in ascending order (highest last)
+        sort($temp_ids);
+
+        //add each option in by its ID, thereby adding them in ascending order sorted by the ID
+        foreach($temp_ids as $id) {
+            $sorted_options[] = $this->getOptionById($id);
+        }
+
+        return $sorted_options;
     }
 
     public function addOption(SurveyOption $option): self
@@ -91,9 +124,11 @@ class Survey
         return $this;
     }
 
-    public function incrementVote(int $vote_id): self
+    public function incrementVote(SurveyOption $option): self
     {
-        $this->getOption($vote_id)->incrementVotesBy(1);
+        if($this->Options->contains($option)) {
+            $option->incrementVote();
+        }
 
         return $this;
     }
@@ -103,9 +138,16 @@ class Survey
         return $this->locked;
     }
 
-    public function lock(bool $locked): self
+    public function lock(): self
     {
-        $this->locked = $locked;
+        $this->locked = true;
+
+        return $this;
+    }
+
+    public function unlock(): self
+    {
+        $this->locked = false;
 
         return $this;
     }

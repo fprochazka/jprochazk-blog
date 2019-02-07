@@ -1,8 +1,22 @@
 {% extends 'base.html.twig' %}
+{% block javascripts %}
+<script src="/js/newSurveyForm.js"></script>
+{% endblock %}
 {% block content %}
-<div>
+<h1>Post a new survey</h1>
 	{{ form_start(form) }}
-	{{ form_widget(form) }}
+	<div>
+		<label for="survey_title" class="required" class="form-field">Question title</label><br>
+		{{ form_widget(form.title, {'attr': {'class': 'form-field'}}) }}
+	</div>
+	<div>
+	<br><br>
+		<label for="survey_options" class="required" class="form-field wide">Add options</label>
+		<div id="form-options">
+		{{ form_widget(form.options) }}
+		</div>
+	<br>
+	</div>
 	{{ form_end(form) }}
 </div>
 {% endblock %}

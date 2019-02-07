@@ -60,9 +60,9 @@ class SurveyOption
         return $this;
     }
 
-    public function incrementVotesBy(int $num): self
+    public function incrementVote(): self
     {
-        $this->votes += $num;
+        $this->votes += 1;
 
         return $this;
     }

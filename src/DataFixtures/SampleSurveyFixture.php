@@ -33,7 +33,7 @@ class SampleSurveyFixture extends Fixture
             ->addOption($firstOption)
             ->addOption($secondOption)
             ->addOption($thirdOption)
-            ->lock(false);
+            ->unlock();
 
 
         $manager->persist($firstOption);

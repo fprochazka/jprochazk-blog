@@ -3,167 +3,14 @@
     <head>
         <meta charset="UTF-8">
         <title>{% block title %}{% endblock %}</title>
-        <style>
-		a {
-			font-size: 0.9375em;
-		}
-        body {
-        	padding: 0;
-        	margin: 0;
-			display: block;
-			background-color: #666666;
-		}
-		hr {
-			padding: 0;
-			margin: 8px auto;
-			height: 0;
-			width: 100%;
-			max-height: 0;
-			font-size: 1px;
-			line-height: 0;
-			clear: both;
-			border: none;
-			border-top: 1px solid #666666;
-			border-bottom: 1px solid #666666;
-		}
-		.container-main {
-			position: absolute;
-			top: 0;
-			bottom: 0;
-			left: 15%;
-			right: 15%;
-			background-color: #FFFFFF;
-			padding: 1em;
-			padding-top: 20px;
-			margin: 0;
-			height: 100%;
-		}
-		.container-menu {
-			width: 100%;
-			border-bottom: 2px solid #666666;
-		}
-		.container-left {
-			width: 75%;
-		}
-		.container-side {
-			width: 25%;
-			float: right;
-			padding: 0;
-		}
-
-		.wrapper.content {
-			border-top: 2px solid #666666;
-			padding-top: 20px;
-			padding-left: 5%;
-			margin-right: 5%;
-			padding-bottom: 20px;
-		}
-		.form-control {
-			padding-left: 3px;
-			margin-bottom: 5px;
-			border: 1px solid #000000;
-			border-radius: 3px;
-		}
-		button {
-			border: none;
-			padding: 6px 8px;
-			background-color: #AAAAAA;
-		}
-		button:hover {
-			background-color: #888888;
-		}
-
-		span.survey.option.votes {
-			background:#BBBBBB;
-			float: right;
-		}
-		ul.survey.option {
-			padding-left: 2px;
-		}
-		.survey.send {
-			margin-left: 2px;
-		}
-		</style>
+        <link rel="stylesheet" href="/css/main.css">
         {% block stylesheets %}{% endblock %}
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script src="/js/autosize.min.js"></script>
+		<script src="/js/renderSurvey.js"></script>
+		<script src="/js/resizeBody.js"></script>
         {% block javascripts %}
 		{% endblock %}
-		<script>
-			var countVotes = function() {
-				var total_votes = 0;
-				$("span.survey.option").each(function(){
-					var val = $(this).attr("value");
-					total_votes += parseInt(val);
-				});
-				$("span.survey.option").each(function(){
-					$(this).css("padding-left", function(){
-						var val = $(this).attr("value");
-						var str = ((val/total_votes)*100)+"px";
-						var f_str = (Math.floor((val/total_votes)*100))+"%";
-						$(this).html(f_str);
-						return str;
-					});
-				});
-			}
-			$(document).ready(function(){
-				$('input.survey.checkbox').click(function(){
-					var temp_id = $(this).attr("value");
-					$('input.survey.checkbox').each(function(){
-						if($(this).attr("value") != temp_id) {
-							$(this).prop("checked", false);
-						}
-					});
-				});
-
-				countVotes();
-				$('button.survey.send').click(function(){
-					var data = {
-						survey_id: 0,
-						vote_id: 0,
-					};
-
-					$("input.survey.checkbox").each(function() {
-						if($(this).prop("checked") == true) {
-							data.survey_id = $("div.survey.container").attr("id");
-							data.vote_id = $(this).attr("value");
-						}
-					});	
-					
-
-					console.log(data);
-					if(data.vote_id != "n" && data.survey_id != "n") {
-						//send request
-						$.ajax({
-							url: '{{ path("app_blog_survey_vote") }}',
-							type: 'POST',
-							data: data,
-
-							success: function(data, status) {
-								//show vote results
-								$("ul.survey.option.output").prop("hidden", false);
-
-								//hide vote options
-								$("ul.survey.option.input").remove();
-								$("button.survey.option.send").remove();
-
-								$("span.survey.option").each(function(){
-									if($(this).attr("id") == data.message["vote_id"]) {
-										$(this).attr("value", (parseInt($(this).attr("value"))+1));
-									}
-								});
-
-								countVotes();
-							},
-							error: function(xhr, textStatus, errorThrown) { 
-								console.log(textStatus+": "+xhr.responseJSON);
-				       		}  
-						});
-					}
-
-					
-				});
-			});
-		</script>			
     </head>
     <body>
         {% block body %}
@@ -172,45 +19,14 @@
         	<div class="container-menu">
 				<a href="{{ path('app_blog_list') }}"><button>Home</button></a>
 				{% if is_granted('ROLE_ADMIN') %}
+				<a href="{{ path('app_blog_admin') }}"><button>Admin</button></a>
 				<a href="{{ path('app_blog_post_new') }}"><button>New post</button></a>
 				<a href="{{ path('app_blog_survey_new') }}"><button>New survey</button></a>
 				{% endif %}
 	        </div>
 	        <div class="container-side">
 		        {% block side %}
-					{% if is_granted('ROLE_USER') or is_granted('ROLE_ADMIN') %}
-						<h3>Hello, {{ app.user.username }}</h3>
-						<a href="{{ path('app_logout') }}"><button>Logout</button></a>
-					{% else %}
-						<h3>Welcome, guest!</h3>
-						<form method="post" action="{{ path('app_login') }}">
-							<br>
-						    {% if error %}
-						        <div style="color: #FF2200;">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
-						    {% endif %}
-
-						    <input type="text" value="{{ last_username }}" name="username" id="inputUsername" class="form-control" placeholder="Username" required autofocus><br>
-						    <input type="password" name="password" id="inputPassword" class="form-control" placeholder="Password" required><br>
-
-						    <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
-
-						    <!-- {#
-						        Uncomment this section and add a remember_me option below your firewall to activate remember me functionality.
-						        See https://symfony.com/doc/current/security/remember_me.html
-
-						        <div class="checkbox mb-3">
-						            <label>
-						                <input type="checkbox" name="_remember_me"> Remember me
-						            </label>
-						        </div>
-						    #} -->
-
-						    <button type="submit" id="send">Sign in</button>
-						</form>
-						or
-						<br>
-						<a href="{{ path('app_register') }}"><button>Register</button></a>
-					{% endif %}
+					{{ include('security/welcome.html.twig')}}
 					{{ render('/survey') }}
 		        {% endblock %}
 	        </div>

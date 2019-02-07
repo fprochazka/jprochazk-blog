@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+{% block stylesheets %}
+<style>
+	.error {
+		padding: 5px;
+		font-weight: bold;
+		color: #F64422;
+		font-size: 2.5em;
+	}
+</style>
+{% endblock %}
+{% block content %}
+<h1>Error:</h1>
+<div class="error">{{ msg }}</div>
+{% endblock %}

@@ -16,7 +16,7 @@ textarea.form-control {
 {% endblock %}
 {% block javascripts %}
 <script>
-$('textarea').autoResize();
+$(document).ready(function(){ autosize($('textarea.form-control')); });
 </script>
 {% endblock %}
 {% block content %}
