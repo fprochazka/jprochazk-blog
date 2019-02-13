@@ -12,6 +12,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use App\Form\SurveyType;
+use App\Form\SearchFormType;
 
 use App\Entity\Post;
 use App\Entity\Person;
@@ -57,21 +58,6 @@ class BlogController extends AbstractController
             return $content;
         }
     }
-
-    /*private function getPostsByAuthor(string $author) {
-        $posts = array();
-        foreach($this->getAllPosts() as $post) {
-            if($post->getAuthor() == $author) {
-                $posts[] = [
-                    'id' => $post->getId(),
-                    'title' => $post->getTitle(),
-                    'content' => $post->getContent(),
-                    'date' => $post->getSubtime()->format('H:i:s Y-m-d'),
-                    'author' => $post->getAuthor()
-                ];
-            }
-        }
-    }*/
 
     private function getPosts(int $start, int $count = 0) {
         $posts = array();
@@ -444,6 +430,68 @@ class BlogController extends AbstractController
             'message' => 'User not logged in'),
             400);
         }
+    }
+
+    /**
+     * @Route("/search_form", name="app_blog_search_form")
+     */
+    public function searchForm(Request $request) {
+        $form = $this->createForm(SearchFormType::class);
+
+        $form->handleRequest($request);
+
+        if($form->isSubmitted() && $form->isValid()){
+            $data = $form->getData();
+            return $this->redirectToRoute('app_blog_search_result', [
+                's' => $data['query'],
+            ]);
+        } else {
+            return $this->render('blog/search.form.twig', [
+                'search_form' => $form->createView()
+            ]);
+        }
+    }
+
+    /**
+     * @Route("/search", name="app_blog_search_result")
+     */
+    public function searchResults(Request $request) {
+
+        $str = $request->query->get('s');
+
+        $results = [];
+
+        $results_title = $this->getDoctrine()->getRepository(Post::class)->findByTitle($str);
+        $results_content = $this->getDoctrine()->getRepository(Post::class)->findByContent($str);
+
+        foreach($results_title as $result) {
+            $id = $result->getId();
+            if(!isset($results[$id]) || !array_key_exists($id, $results)) {
+                $results[$id] = [
+                    'title' => str_replace($str, '<span class="highlight">'.$str.'</span>', $result->getTitle()),
+                    'content' => str_replace($str, '<span class="highlight">'.$str.'</span>', $result->getContent()),
+                    'author' => $result->getAuthor(),
+                    'date' => $result->getSubtime()->format('H:i:s, Y-m-d'),
+                ];
+            }
+        }
+
+        foreach($results_content as $result) {
+            $id = $result->getId();
+            if(!isset($results[$id]) || !array_key_exists($id, $results)) {
+                $results[$id] = [
+                    'title' => str_replace($str, '<span class="highlight">'.$str.'</span>', $result->getTitle()),
+                    'content' => str_replace($str, '<span class="highlight">'.$str.'</span>', $result->getContent()),
+                    'author' => $result->getAuthor(),
+                    'date' => $result->getSubtime()->format('H:i:s, Y-m-d'),
+                ];
+            }
+        }
+
+        return $this->render('blog/search.html.twig', [
+            'search_string' => $str,
+            'results' => $results,
+        ]);
     }
 
     /**

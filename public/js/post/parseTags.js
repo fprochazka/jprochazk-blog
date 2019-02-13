@@ -15,6 +15,13 @@ $(document).ready(function() {
 		$('p.post.content').each(function(){
 			parseTags($(this));
 		});
+	} else if(path[1] == "search") {
+		$('div.list-item.content').each(function(){
+			parseTags($(this));
+		});
+		$('span.list-item.title').each(function(){
+			parseTags($(this));
+		});
 	} else {
 		$('span.post.content').each(function(){
 			parseTags($(this));

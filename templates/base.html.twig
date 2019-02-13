@@ -24,6 +24,9 @@
 				<a href="{{ path('app_blog_post_new') }}"><button>New post</button></a>
 				<a href="{{ path('app_blog_survey_new') }}"><button>New survey</button></a>
 				{% endif %}
+				<span style="float:right; margin-right: 2em">
+					{{ render(path('app_blog_search_form')) }}
+				</span>
 	        </div>
 	        <div class="container-side">
 		        {% block side %}

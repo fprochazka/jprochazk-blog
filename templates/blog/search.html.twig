@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block javascripts %}
+<script src="/js/admin/showHideButton.js"></script>
+{% endblock %}
+{% block stylesheets %}
+<style>
+	.highlight {
+		background-color: #e5e83e;
+	}
+	.list-item {
+		padding: 5px;
+	}
+	.list-item.post {
+		margin-left: 1em;
+	}
+	.list-item.content {
+		margin-left: 2em;
+	}
+</style>
+{% endblock %}
+
+{% block content %}
+
+Search results for "{{ search_string }}":
+
+{% for key,value in results %}
+<div class="list-item post">
+	ID: {{ key }} | <span class="list-item title">Title: {{ value['title'] }}</span> | Date: {{ value['date'] }} | Author: {{ value['author'] }}<br>
+	Content: <button class="show-hide small" id="{{ key }}" name="content">+</button>
+	<span id="{{ key }}" name="content" hidden>
+		<div class="list-item content">
+			{{ value['content'] }}
+		</div>
+	</span>
+</div>
+{% endfor %}
+
+{% endblock %}
