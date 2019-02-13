@@ -12,9 +12,35 @@ textarea.form-control {
 	height: 12.5em;
 	resize: none;
 }
+
+button.text-formatting {
+	width: 29px;
+	height: 25px;
+	padding: 3px;
+	font-size: 1.05em;
+	font-family: "Times New Roman", Times, serif;
+}
+
+button.text-formatting.strong {
+	font-weight: bold;
+}
+
+button.text-formatting.italic {
+	font-style: italic;
+	padding-right: 6px;
+}
+
+button.text-formatting.underline {
+	text-decoration: underline;
+}
+
+button.text-formatting.strikethrough {
+	text-decoration: line-through;
+}
 </style>
 {% endblock %}
 {% block javascripts %}
+<script src="/js/post/postFormatting.js"></script>
 <script>
 $(document).ready(function(){ autosize($('textarea.form-control')); });
 </script>

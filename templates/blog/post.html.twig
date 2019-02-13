@@ -69,7 +69,7 @@
 {% block content %}
 	<div class="post">
 		<div class="post title">{{ post["title"] }}</div>
-		by {{ post["author"]}}, {{ post["date"] }}
+		by {{ post["author"]}}, {{ post["date"] }}{% if is_granted('ROLE_ADMIN') %} - <a href="{{ path('app_blog_post_edit', {'id': post["id"]}) }}">EDIT</a>{% endif %}
 		<hr>
 		<p class="post content">{{ post["content"] }}</p>
 	</div>
@@ -81,8 +81,8 @@
 		</div>
 		<div class="comments">
 		{% for comment in post["comments"]|reverse %}
-			<div class="comment">
-				<span id="author">{{ comment["author"] }}</span>: <br><span id="date">({{ comment["date"] }})</span><br><span id="content">{{ comment["content"] }}</span>
+			<div class="comment" id="{{ comment["id"] }}">
+				<span id="author">{{ comment["author"] }}</span>: <br><span id="date">({{ comment["date"] }})</span><br><span id="content" for="{{ comment["id"] }}">{{ comment["content"] }}</span>
 			</div>
 		{% endfor %}
 		</div>

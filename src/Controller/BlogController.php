@@ -78,7 +78,7 @@ class BlogController extends AbstractController
         for($i = $start; $i < $start+$count; ++$i) {
             if($post = $this->getPostByID($i)) $posts[$i] = [
                 "title" => $post->getTitle(), 
-                "content" => $this->restrictText($post->getContent(), 50), 
+                "content" => $this->restrictText($post->getContent(), 100), 
                 "id" => $i
             ];
         }
@@ -92,6 +92,7 @@ class BlogController extends AbstractController
         foreach($unf_comments as $comment){
             if($c < $count) {
                 $comments[$c] = [
+                    "id" => $comment->getId(),
                     "author" => $comment->getAuthor(),
                     "content" => $comment->getContent(),
                     "date" => $comment->getDate()->format('Y-m-d, H:i:s'),
@@ -140,6 +141,7 @@ class BlogController extends AbstractController
             if($current_user = $this->getUser()) {
                 return $this->render('blog/post.html.twig', [
                     "post" => [
+                        "id" => $post->getId(),
                         "title" => $post->getTitle(), 
                         "content" => $post->getContent(), 
                         "date" => $date, 
@@ -152,6 +154,7 @@ class BlogController extends AbstractController
             }
             return $this->render('blog/post.html.twig', [
                 "post" => [
+                    "id" => $post->getId(),
                     "title" => $post->getTitle(), 
                     "content" => $post->getContent(), 
                     "date" => $date, 
@@ -169,7 +172,45 @@ class BlogController extends AbstractController
     }
 
     /**
-      * @Route("/new", name="app_blog_post_new")
+      * @Route("/post/edit/{id<\d+>}", name="app_blog_post_edit")
+      */
+    public function editPost($id, Request $request) {
+        $_error;
+        if($current_user = $this->getUser()) {
+            if($current_user->getRole() == 'ROLE_ADMIN') {
+                if($post = $this->getPostByID($id)) {
+                    $form = $this->createFormBuilder($post)
+                    ->add('title', TextType::class)
+                    ->add('content', TextareaType::class)
+                    ->add('save', SubmitType::class, ['label' => 'Submit post'])
+                    ->getForm();
+
+                    $form->handleRequest($request);
+
+                    if ($form->isSubmitted() && $form->isValid()) {
+                        $post = $form->getData();
+                        $date = date_create_from_format('Y-m-d', date('Y-m-d'));
+                        $post->setSubtime($date);
+
+                        $entityManager = $this->getDoctrine()->getManager();
+                        $entityManager->persist($post);
+                        $entityManager->flush();
+
+                        return $this->redirectToRoute('app_blog_post_show', ['num' => $post->getId()]);
+                    }
+
+                    return $this->render('blog/post.new.html.twig', [
+                        'form' => $form->createView(),
+                    ]);
+                }
+            } else { $_error = "perm"; }
+        } else { $_error = "auth"; }
+
+        return $this->redirectToRoute("app_blog_error", ['msg' => $_error]);
+    }
+
+    /**
+      * @Route("/post/new", name="app_blog_post_new")
       */
     public function createPost(Request $request) {
         $_error;
