@@ -18,7 +18,7 @@
         
         <div class="container-main">
         	<div class="container-menu">
-				<a href="{{ path('app_blog_list') }}"><button>Home</button></a>
+				<a href="{{ path('app_blog_post_list') }}"><button>Home</button></a>
 				{% if is_granted('ROLE_ADMIN') %}
 				<a href="{{ path('app_blog_admin') }}"><button>Admin</button></a>
 				<a href="{{ path('app_blog_post_new') }}"><button>New post</button></a>

@@ -80,7 +80,7 @@ class SecurityController extends AbstractController
                 'registrationForm' => $form->createView(),
             ]);
         } else {
-            return $this->redirectToRoute('app_blog_list');
+            return $this->redirectToRoute('app_blog_post_list');
         }
     }
 

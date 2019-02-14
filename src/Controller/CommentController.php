@@ -93,4 +93,39 @@ class CommentController extends AbstractController
 	    	], 200);
 	    }
     }
+
+	/**
+      * @Route("/post/{post_id<\d+>}/comment/delete/{comment_id<\d+>}", name="app_blog_post_comment_delete")
+      */
+    public function deleteComment($post_id, $comment_id, Request $request) {
+        if($request->isXmlHttpRequest() || $request->query->get('showJson') == 1) {
+            $request_username = $request->request->get('current_user');
+            if($this->getUser()->getUsername() == $request_username) {
+                $entityManager = $this->getDoctrine()->getManager();
+
+                $comment = $this->getDoctrine()->getRepository(Comment::class)->find($comment_id);
+                $post = $this->getDoctrine()->getRepository(Post::class)->find($post_id);
+
+                $post->removeComment($comment);
+
+                $entityManager->remove($comment);
+                $entityManager->flush();
+
+                return new JsonResponse([
+	                'status' => 'OK',
+	                'message' => 'deleted'
+            	], 200);
+	        } else {
+		       	return new JsonResponse([
+		        	'status' => 'Error',
+		        	'message' => 'perm',
+		        ], 200);
+		    }
+        } else {
+	        return new JsonResponse([
+		        'status' => 'Error',
+		        'message' => 'xml'
+	    	], 200);
+	    }
+    }
 }

@@ -28,6 +28,40 @@ $(document).ready(function(){
 		$(this).parent().remove();
 	});
 
+	$(document).on('click', 'a#comment-delete', function(e) {
+		e.preventDefault();
+
+		parentDiv = $(this).parent().parent();
+
+		var comment_id = $(this).parent().attr('for');
+		var post_id = path.post_id;
+
+		var data = {
+			current_user: path.current_user
+		}
+
+		var temp_url = path.post_comment_delete;
+		temp_url = temp_url.replace(/__post-id__/g, post_id);
+		temp_url = temp_url.replace(/__comment-id__/g, comment_id);
+
+		$.ajax({
+			url: temp_url,
+			type: 'POST',
+			data: data,
+
+			success: function(data, status) {
+				if (data.message == "xml") {
+					console.log("request is not XML");
+				} else if(data.message == "perm") {
+					console.log("user is unauthorized to delete this comment");
+				} else {
+					console.log("success, " + status);
+					parentDiv.remove();
+				}
+			}
+		});
+	});
+
 	$(document).on('click', 'button#comment-edit-cancel', function() {
 		var content = $(this).parent().find('textarea#comment-edit-content').text();
 

@@ -52,6 +52,10 @@
 		padding: 0.3em;
 	}
 
+	a#comment-delete {
+		font-size: 0.65em;
+	}
+
 	a#comment-edit {
 		font-size: 0.65em;
 	}
@@ -64,7 +68,8 @@
 		
 		"post_id": "{{ post["id"] }}",
 		"post_comment": "{{ path("app_blog_post_comment", {"post_id" : post["id"]}) }}",
-		"post_comment_edit": "/post/__post-id__/comment/edit/__comment-id__"
+		"post_comment_edit": "/post/__post-id__/comment/edit/__comment-id__",
+		"post_comment_delete": "/post/__post-id__/comment/delete/__comment-id__",
 	}
 </script>
 <script src="/js/post/comment.js"></script>
@@ -72,7 +77,7 @@
 {% block content %}
 	<div class="post">
 		<div class="post title">{{ post["title"] }}</div>
-		by {{ post["author"]}}, {{ post["date"] }}{% if is_granted('ROLE_ADMIN') %} - <a href="{{ path('app_blog_post_edit', {'id': post["id"]}) }}">EDIT</a>{% endif %}
+		by {{ post["author"]}}, {{ post["date"] }}{% if is_granted('ROLE_ADMIN') %} - <a href="{{ path('app_blog_post_edit', {'id': post["id"]}) }}">EDIT</a> - <a href="{{ path('app_blog_post_delete', {'id': post["id"]}) }}">DELETE</a>{% endif %}
 		<hr>
 		<p class="post content">{{ post["content"] }}</p>
 	</div>
@@ -85,7 +90,7 @@
 		<div class="comments">
 		{% for comment in post["comments"]|reverse %}
 			<div class="comment" id="{{ comment["id"] }}">
-				<span id="author">{{ comment["author"] }}</span>: <br><span id="date">({{ comment["date"] }})</span>{% if comment["canEdit"] %}<span id="comment-edit" for="{{ comment["id"] }}"> - <a href="" id="comment-edit">EDIT</a></span>{% endif %}<br><span id="content" for="{{ comment["id"] }}">{{ comment["content"] }}</span>
+				<span id="author">{{ comment["author"] }}</span>: <br><span id="date">({{ comment["date"] }})</span>{% if comment["canEdit"] %}<span id="comment-edit" for="{{ comment["id"] }}"> - <a href="" id="comment-edit">EDIT</a></span><span id="comment-delete" for="{{ comment["id"] }}"> - <a href="" id="comment-delete">DELETE</a></span>{% endif %}<br><span id="content" for="{{ comment["id"] }}">{{ comment["content"] }}</span>
 			</div>
 		{% endfor %}
 		</div>

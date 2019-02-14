@@ -14,7 +14,7 @@ class PostController extends AbstractController
 {
 
     /**
-      * @Route("/{page<\d+>?1}", name="app_blog_list")
+      * @Route("/{page<\d+>?1}", name="app_blog_post_list")
       */
     public function postList($page)
     {
@@ -77,7 +77,7 @@ class PostController extends AbstractController
                     $entityManager->persist($post);
                     $entityManager->flush();
 
-                    return $this->redirectToRoute('app_blog_post_show', ['num' => $post->getId()]);
+                    return $this->redirectToRoute('app_blog_post_show', ['id' => $post->getId()]);
                 }
 
                 return $this->render('blog/post/form.html.twig', [
@@ -124,33 +124,20 @@ class PostController extends AbstractController
     }
 
     /**
-      * @Route("/post/delete/{id<\d+>}", name="app_blog_post_edit")
+      * @Route("/post/delete/{id<\d+>}", name="app_blog_post_delete")
       */
     public function deletePost($id, Request $request) {
         $_error;
         if($current_user = $this->getUser()) {
             if($current_user->getRole() == 'ROLE_ADMIN') {
                 if($post = $this->getDoctrine()->getRepository(Post::class)->find($id)) {
-                    $form = $this->createForm(PostFormType::class, $post);
 
-                    $form->handleRequest($request);
+                    $entityManager = $this->getDoctrine()->getManager();
+                    $entityManager->remove($post);
+                    $entityManager->flush();
 
-                    if ($form->isSubmitted() && $form->isValid()) {
-                        $post = $form->getData();
-                        $date = date_create_from_format('Y-m-d', date('Y-m-d'));
-                        $post->setSubtime($date);
-
-                        $entityManager = $this->getDoctrine()->getManager();
-                        $entityManager->persist($post);
-                        $entityManager->flush();
-
-                        return $this->redirectToRoute('app_blog_post_show', ['num' => $post->getId()]);
-                    }
-
-                    return $this->render('blog/post/form.html.twig', [
-                        'form' => $form->createView(),
-                    ]);
-                }
+                    return $this->redirectToRoute('app_blog_post_list');
+                } else { $_error = "404"; }
             } else { $_error = "perm"; }
         } else { $_error = "auth"; }
 
