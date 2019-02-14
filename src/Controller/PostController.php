@@ -131,8 +131,13 @@ class PostController extends AbstractController
         if($current_user = $this->getUser()) {
             if($current_user->getRole() == 'ROLE_ADMIN') {
                 if($post = $this->getDoctrine()->getRepository(Post::class)->find($id)) {
-
                     $entityManager = $this->getDoctrine()->getManager();
+
+                    foreach($post->getComments() as $comment) {
+                        $post->removeComment($comment);
+                        $entityManager->remove($comment);
+                    }
+
                     $entityManager->remove($post);
                     $entityManager->flush();
 

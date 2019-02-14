@@ -142,6 +142,13 @@ class Person implements UserInterface, \Serializable
         return $this;
     }
 
+    public function removeVote(?int $survey_id): self
+    {
+        unset($this->votes[$survey_id]);
+
+        return $this;
+    }
+
     public function hasVoted(?int $survey_id): ?bool
     {
         $votes = $this->votes;

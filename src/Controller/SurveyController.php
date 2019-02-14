@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
+use App\Entity\Person;
 use App\Entity\Survey;
 use App\Entity\SurveyOption;
 use App\Form\SurveyType;
@@ -58,6 +59,37 @@ class SurveyController extends AbstractController
     }
 
     /**
+      * @Route("/survey/delete/{id<\d+>}", name="app_blog_survey_delete")
+      */
+    public function deleteSurvey($id, Request $request) {
+        $_error;
+        if($current_user = $this->getUser()) {
+            if($current_user->getRole() == 'ROLE_ADMIN') {
+                if($survey = $this->getDoctrine()->getRepository(Survey::class)->find($id)) {
+                    $entityManager = $this->getDoctrine()->getManager();
+
+                    $users = $this->getDoctrine()->getRepository(Person::class)->findAll();
+                    foreach($users as $user) {
+                        $user->removeVote($id);
+                    }
+
+                    foreach($survey->getOptions() as $option) {
+                        $survey->removeOption($option);
+                        $entityManager->remove($option);
+                    }
+
+                    $entityManager->remove($survey);
+                    $entityManager->flush();
+
+                    return $this->redirectToRoute("app_blog_post_list");
+                } else { $_error = "404"; }
+            } else { $_error = "perm"; }
+        } else { $_error = "auth"; }
+
+        return $this->redirectToRoute("app_blog_error", ['msg' => $_error]);
+    }
+
+    /**
       * @Route("/survey", name="app_blog_survey")
       */
     public function renderSurvey() {
@@ -89,7 +121,7 @@ class SurveyController extends AbstractController
             $vote_id = (int)$request->request->get('vote_id');
 
             $survey = $this->getDoctrine()->getRepository(Survey::class)->find($survey_id);
-
+            $current_user = $this->getUser();
             if(!$survey->isLocked()) {
                 if(!$current_user->hasVoted($survey_id)){
 
