@@ -19,7 +19,16 @@ class PostRepository extends ServiceEntityRepository
         parent::__construct($registry, Post::class);
     }
 
-/**
+    public function findAllByOffsetCount(int $offset, int $count = 0) {
+        return $this->createQueryBuilder('p')
+            ->orderBy('p.subtime', 'DESC')
+            ->getQuery()
+            ->setFirstResult($offset)
+            ->setMaxResults($count)
+            ->getResult();
+    }
+
+    /**
      * @return Post[]
      */
     public function findByContent(string $content, int $count = 10, int $offset = 0) {

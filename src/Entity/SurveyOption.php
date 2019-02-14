@@ -27,9 +27,18 @@ class SurveyOption
     private $votes;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Survey", inversedBy="Options")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Survey", inversedBy="Options", cascade={"persist"})
      */
     private $Survey;
+
+    public function toArray(): array
+    {
+        return [
+            "id" => $this->id,
+            "name" => $this->title,
+            "votes" => $this->votes,
+        ];
+    }
 
     public function getId(): ?int
     {

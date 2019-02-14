@@ -41,6 +41,16 @@ class Person implements UserInterface, \Serializable
     private $votes = [];
     //stores a set of survey ids that the user has voted on
 
+    public function toArray(): array 
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->username,
+            'role' => $this->role,
+            'votes' => $votes
+        ];
+    }
+
     public function getId(): ?int
     {
         return $this->id;

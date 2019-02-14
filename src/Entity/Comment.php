@@ -36,6 +36,17 @@ class Comment
      */
     private $date;
 
+    public function toArray(): array
+    {
+        return [
+            "id" => $this->id,
+            "content" => $this->content,
+            "author" => $this->author,
+            "date" => $this->date->format('Y-m-d, H:i:s'),
+            "canEdit" => false,
+        ];
+    }
+
     public function getId(): ?int
     {
         return $this->id;

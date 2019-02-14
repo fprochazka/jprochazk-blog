@@ -20,6 +20,20 @@ use App\Entity\Person;
 class SecurityController extends AbstractController
 {
     /**
+      * @Route("/security/welcome", name="app_blog_security_welcome")
+      */
+    public function welcomeMessage(AuthenticationUtils $utils)
+    {
+        $lastAuthenticationError = $this->utils->getLastAuthenticationError();
+        $lastUsername = $this->utils->getLastUsername();
+
+        return $this->render('security/welcome.html.twig', [
+            "last_username" => $lastUsername,
+            "autherror" => $lastAuthenticationError,
+        ]);
+    }
+
+    /**
      * @Route("/login", name="app_login")
      */
     public function login(AuthenticationUtils $authenticationUtils): Response

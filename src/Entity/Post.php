@@ -40,12 +40,28 @@ class Post
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Comment", mappedBy="post")
+     * @ORM\OrderBy({"id" = "ASC"})
      */
     private $comments;
 
     public function __construct()
     {
         $this->comments = new ArrayCollection();
+    }
+
+    public function toArray(): array
+    {
+        $comments = [];
+        foreach($this->comments as $comment) $comments[] = $comment->toArray();
+
+        return [
+            'id' => $this->id,
+            'title' => $this->title,
+            'content' => $this->content,
+            'date' => $this->subtime->format('H:i:s, Y-m-d'),
+            'author' => $this->author,
+            'comments' => $comments
+        ];
     }
 
     public function getId(): ?int

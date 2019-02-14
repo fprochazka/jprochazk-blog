@@ -85,9 +85,9 @@ var textformatting = {
 		if(textformatting.selection.rangeCount > 0) {
 			var str_selection = textformatting.selection.toString();
 			var str_node = '<'+start_tag+'>'+str_selection+'</'+end_tag+'>';
-			var textarea_content = $('textarea#form_content').val();
+			var textarea_content = $('textarea').val();
 			textarea_content = textarea_content.replace(str_selection, str_node);
-			$('textarea#form_content').val(textarea_content);
+			$('textarea').val(textarea_content);
 		}
 	},
 
@@ -108,14 +108,23 @@ var textformatting = {
 	},
 
 	init: function() {
-		$('<div class="text-formatting"></div>').insertBefore('textarea#form_content');
+
+		//find textarea inside new post form
+		textarea = $('form.newpost').find('textarea');
+
+		//insert text formatting div
+		$('<div class="text-formatting"></div>').insertBefore(textarea);
+
+		//create buttons in text formatting div
 		$('div.text-formatting').append('<button type="button" class="text-formatting strong">B</button> ');
-		$('button.text-formatting.strong').click(textformatting.strong);
 		$('div.text-formatting').append('<button type="button" class="text-formatting italic">I</button> ');
-		$('button.text-formatting.italic').click(textformatting.italic);
 		$('div.text-formatting').append('<button type="button" class="text-formatting underline">U</button> ');
-		$('button.text-formatting.underline').click(textformatting.underline);
 		$('div.text-formatting').append('<button type="button" class="text-formatting strikethrough">abc</button> ');
+
+		//set button onclick functions
+		$('button.text-formatting.strong').click(textformatting.strong);
+		$('button.text-formatting.italic').click(textformatting.italic);
+		$('button.text-formatting.underline').click(textformatting.underline);
 		$('button.text-formatting.strikethrough').click(textformatting.strikethrough);
 	}
 }

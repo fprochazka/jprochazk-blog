@@ -41,6 +41,18 @@ class Survey
         $this->Options = new ArrayCollection();
     }
 
+    public function toArray(): array 
+    {
+        $options = [];
+        foreach($this->getSortedOptions() as $option) $options[] = $option->toArray();
+
+        return [
+            "id" => $this->id,
+            "title" => $this->title, 
+            "options" => $options
+        ];
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -80,6 +92,11 @@ class Survey
      * @return Collection|SurveyOption[]
      */
     public function getOptions(): Collection
+    {   
+        return $this->Options;
+    }
+
+    public function getSortedOptions(): Collection
     {   
         $sorted_options = new ArrayCollection;
         $unsorted_options = $this->Options;

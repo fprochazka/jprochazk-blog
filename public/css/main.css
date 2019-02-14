@@ -20,6 +20,9 @@ hr {
 	border-top: 1px solid #666666;
 	border-bottom: 1px solid #666666;
 }
+h3 {
+	margin-bottom: 0;
+}
 .container-main {
 	position: absolute;
 	top: 0;
