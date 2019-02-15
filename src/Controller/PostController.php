@@ -42,8 +42,9 @@ class PostController extends AbstractController
         $_error;
         if($post = $this->getDoctrine()->getRepository(Post::class)->find($id)->toArray()) {
 
+        	$current_user_username = ($this->getUser()) ? $this->getUser()->getUsername() : "guest";
             foreach($post["comments"] as $key => $value) {
-                $authorname = $post["comments"][$key]["canEdit"] = ($this->getUser()->getUsername() == $post["comments"][$key]["author"]) ? true : false;
+                $authorname = $post["comments"][$key]["canEdit"] = ($current_user_username == $post["comments"][$key]["author"]) ? true : false;
             }
 
             return $this->render('blog/post/show.html.twig', [

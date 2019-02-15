@@ -17,7 +17,7 @@ security:
 
             logout:
                 path: app_logout
-                success_handler: 
+                success_handler: App\Security\LogoutSuccessHandler
 
             form_login:
                 login_path: app_login

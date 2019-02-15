@@ -28,7 +28,6 @@
 		margin-left: 1em;
 	}
 	#comment-content {
-		text-align: top left;
 		padding-bottom: 0.5em;
 		resize: none;
 		width: 100%;
@@ -64,13 +63,24 @@
 {% block javascripts %}
 <script>
 	var path = {
-		"current_user": {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_USER') %}"{{ app.user.username }}",{% else %}"",{% endif %}
+		"current_user": 
+		{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_USER') %}
+			'{{ app.user.username }}',
+		{% else %}
+			'',
+		{% endif %}
 		
-		"post_id": "{{ post["id"] }}",
-		"post_comment": "{{ path("app_blog_post_comment", {"post_id" : post["id"]}) }}",
-		"post_comment_edit": "/post/__post-id__/comment/edit/__comment-id__",
-		"post_comment_delete": "/post/__post-id__/comment/delete/__comment-id__",
-	}
+		"post_id": '{{ post["id"] }}',
+		"post_comment": '{{ path("app_blog_post_comment", {"post_id" : post["id"]}) }}',
+		"post_comment_edit": '/post/__post-id__/comment/edit/__comment-id__',
+		"post_comment_delete": '/post/__post-id__/comment/delete/__comment-id__',
+	};
+
+	$(document).ready(function(){
+		if($('textarea#comment-content').attr('readonly') != undefined) {
+			$('textarea#comment-content').val('Login to post comments.');
+		}
+	});
 </script>
 <script src="/js/post/comment.js"></script>
 {% endblock %}
@@ -85,7 +95,11 @@
 	<div class="comment-section">
 		<h3>Comments</h3>
 		<div class="comment-new">
+		{% if is_granted('ROLE_USER') or is_granted('ROLE_ADMIN') %}
 			<textarea id="comment-content"></textarea><br><button id="comment-send">Send</button>
+		{% else %}
+			<textarea id="comment-content" readonly></textarea><br>
+		{% endif %}
 		</div>
 		<div class="comments">
 		{% for comment in post["comments"]|reverse %}

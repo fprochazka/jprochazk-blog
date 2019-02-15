@@ -20,6 +20,8 @@ use Symfony\Component\Security\Http\Util\TargetPathTrait;
 
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
+use Symfony\Component\Security\Core\Exception\AuthenticationException;
+
 class LoginFormAuthenticator extends AbstractFormLoginAuthenticator
 {
     use TargetPathTrait;
@@ -82,12 +84,32 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
-        if ($targetPath = $this->getTargetPath($request->getSession(), $providerKey)) {
-            return new RedirectResponse($targetPath);
+        $referer = $request->headers->get('referer');
+        $urlArray = explode("/", str_replace("http://", "", $referer));
+        if($urlArray[1] == "post") {
+            if($urlArray[2] != "new") {
+                return new RedirectResponse($referer);
+            }
         }
+        return new RedirectResponse($this->router->generate('app_blog_post_list'));
 
-        // For example : return new RedirectResponse($this->router->generate('some_route'));
-        return new RedirectResponse($this->router->generate('app_blog_list'));
+    }
+
+    /**
+     * Override to change what happens after a bad username/password is submitted.
+     *
+     * @return RedirectResponse
+     */
+    public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
+    {
+        $referer = $request->headers->get('referer');
+        $urlArray = explode("/", str_replace("http://", "", $referer));
+        if($urlArray[1] == "post") {
+            if($urlArray[2] != "new") {
+                return new RedirectResponse($referer);
+            }
+        }
+        return new RedirectResponse($this->router->generate('app_blog_post_list'));
     }
 
     protected function getLoginUrl()
