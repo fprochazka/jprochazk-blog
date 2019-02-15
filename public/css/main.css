@@ -2,6 +2,9 @@ a {
 	font-size: 0.9375em;
 	text-decoration: none;
 }
+a:visited {
+  color: #0000ee;
+}
 body {
 	padding: 0;
 	margin: 0;

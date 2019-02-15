@@ -6,6 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 use App\Entity\Person;
@@ -81,7 +82,7 @@ class SurveyController extends AbstractController
                     $entityManager->remove($survey);
                     $entityManager->flush();
 
-                    return $this->redirectToRoute("app_blog_post_list");
+                    return new RedirectResponse($request->headers->get('referer'));
                 } else { $_error = "404"; }
             } else { $_error = "perm"; }
         } else { $_error = "auth"; }
@@ -93,8 +94,8 @@ class SurveyController extends AbstractController
       * @Route("/survey", name="app_blog_survey")
       */
     public function renderSurvey() {
-        if($survey = $this->getDoctrine()->getRepository(Survey::class)->findOneByHighestId()->toArray()) {
-            
+        if($survey = $this->getDoctrine()->getRepository(Survey::class)->findOneByHighestId()) {
+            $survey = $survey->toArray();
             if($current_user = $this->getUser()) {
                 $survey["voted"] = $current_user->hasVoted($survey["id"]);
             } else {

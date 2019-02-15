@@ -6,6 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 use App\Entity\Post;
 use App\Form\PostFormType;
@@ -134,14 +135,18 @@ class PostController extends AbstractController
                     $entityManager = $this->getDoctrine()->getManager();
 
                     foreach($post->getComments() as $comment) {
-                        $post->removeComment($comment);
-                        $entityManager->remove($comment);
+                       $post->removeComment($comment);
+                       $entityManager->remove($comment);
                     }
 
                     $entityManager->remove($post);
                     $entityManager->flush();
 
-                    return $this->redirectToRoute('app_blog_post_list');
+                	if((explode("/", str_replace("http://", "", $request->headers->get('referer'))))[1] == "post") {
+	                   return $this->redirectToRoute('app_blog_post_list');
+	                } else {
+	                	return new RedirectResponse($request->headers->get('referer'));
+	                }
                 } else { $_error = "404"; }
             } else { $_error = "perm"; }
         } else { $_error = "auth"; }

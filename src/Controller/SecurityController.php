@@ -83,7 +83,7 @@ class SecurityController extends AbstractController
             return $this->redirectToRoute('app_blog_post_list');
         }
     }
-
+    
     /**
      * @Route("/logout", name="app_logout")
      */
