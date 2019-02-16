@@ -13,7 +13,6 @@ class SampleSurveyFixture extends Fixture
     public function load(ObjectManager $manager)
     {
         $survey = new Survey();
-
         
         $firstOption = new SurveyOption();
         $secondOption = new SurveyOption();
