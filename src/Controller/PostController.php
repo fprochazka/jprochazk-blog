@@ -39,7 +39,7 @@ class PostController extends AbstractController
       * @Route("/post/{id<\d+>}", name="app_blog_post_show")
       */
     public function showPost($id) {
-        $_error;
+        $_error = "";
         if($post = $this->getDoctrine()->getRepository(Post::class)->find($id)->toArray()) {
 
         	$current_user_username = ($this->getUser()) ? $this->getUser()->getUsername() : "guest";
@@ -60,7 +60,7 @@ class PostController extends AbstractController
       * @Route("/post/new", name="app_blog_post_new")
       */
     public function createPost(Request $request) {
-        $_error;
+        $_error = "";
         if($current_user = $this->getUser()) {
             if($current_user->getRole() == 'ROLE_ADMIN') {
                 $post = new Post();
@@ -95,7 +95,7 @@ class PostController extends AbstractController
       * @Route("/post/edit/{id<\d+>}", name="app_blog_post_edit")
       */
     public function editPost($id, Request $request) {
-        $_error;
+        $_error = "";
         if($current_user = $this->getUser()) {
             if($current_user->getRole() == 'ROLE_ADMIN') {
                 if($post = $this->getDoctrine()->getRepository(Post::class)->find($id)) {
@@ -129,7 +129,7 @@ class PostController extends AbstractController
       * @Route("/post/delete/{id<\d+>}", name="app_blog_post_delete")
       */
     public function deletePost($id, Request $request) {
-        $_error;
+        $_error = "";
         if($current_user = $this->getUser()) {
             if($current_user->getRole() == 'ROLE_ADMIN') {
                 if($post = $this->getDoctrine()->getRepository(Post::class)->find($id)) {

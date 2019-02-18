@@ -19,9 +19,12 @@ class BlogController extends AbstractController
 {
     /**
      * @Route("/admin", name="app_blog_admin")
+     *
+     * @param Symfony\Component\HttpFoundation\Request $request
+     * @return Symfony\Component\HttpFoundation\Response
      */
     public function showAdmin(Request $request) {
-        $_error;
+        $_error = "";
         $tab = $request->query->get('p');
         if($current_user = $this->getUser()) {
             if($current_user->getRole() == 'ROLE_ADMIN') {
@@ -30,13 +33,10 @@ class BlogController extends AbstractController
                 } else {
                     //users + "survey: option" voted on by the user
                     if($tab == "users") {
-                        $users;
+                        $users = [];
                         foreach($this->getDoctrine()->getRepository(Person::class)->findAll() as $user) {
 
-                            //because of the way "votes" are stored in the Person entity,
-                            //it would require a change from the ground-up of how they are stored
-                            //in order to implement a toArray() function in the Person entity,
-                            //so this code is staying here
+                            // intentionally stupid code
                             $votes = [];
                             if($user->getVotes()) {
                                 foreach($user->getVotes() as $key => $value) {
@@ -63,7 +63,7 @@ class BlogController extends AbstractController
 
                     //posts standalone
                     elseif($tab == "posts") {
-                        $posts;
+                        $posts = [];
                         foreach($this->getDoctrine()->getRepository(Post::class)->findAll() as $post) {
                             $posts[] = $post->toArray();
                         }
@@ -98,6 +98,9 @@ class BlogController extends AbstractController
 
     /**
      * @Route("/error", name="app_blog_error")
+     *
+     * @param Symfony\Component\HttpFoundation\Request $request
+     * @return Symfony\Component\HttpFoundation\Response
      */
     public function showError(Request $request) {
         $msg = $request->query->get("msg");

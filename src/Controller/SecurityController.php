@@ -24,8 +24,8 @@ class SecurityController extends AbstractController
       */
     public function welcomeMessage(AuthenticationUtils $utils)
     {
-        $lastAuthenticationError = $this->utils->getLastAuthenticationError();
-        $lastUsername = $this->utils->getLastUsername();
+        $lastAuthenticationError = $utils->getLastAuthenticationError();
+        $lastUsername = $utils->getLastUsername();
 
         return $this->render('security/welcome.html.twig', [
             "last_username" => $lastUsername,

@@ -47,7 +47,7 @@ class Person implements UserInterface, \Serializable
             'id' => $this->id,
             'name' => $this->username,
             'role' => $this->role,
-            'votes' => $votes
+            'votes' => $this->votes
         ];
     }
 

@@ -12,8 +12,6 @@ use App\Entity\Comment;
 
 class CommentController extends AbstractController
 {
-	//TODO: implement editComment and deleteComment
-
     /**
       * @Route("/post/{post_id<\d+>}/comment", name="app_blog_post_comment")
       */

@@ -22,7 +22,7 @@ class SurveyController extends AbstractController
       * @Route("/survey/new", name="app_blog_survey_new")
       */
     public function createSurvey(Request $request) {
-        $_error;
+        $_error = "";
         if($current_user = $this->getUser()) {
             if($current_user->getRole() == 'ROLE_ADMIN') {
                 $survey = new Survey();
@@ -63,7 +63,7 @@ class SurveyController extends AbstractController
       * @Route("/survey/delete/{id<\d+>}", name="app_blog_survey_delete")
       */
     public function deleteSurvey($id, Request $request) {
-        $_error;
+        $_error = "";
         if($current_user = $this->getUser()) {
             if($current_user->getRole() == 'ROLE_ADMIN') {
                 if($survey = $this->getDoctrine()->getRepository(Survey::class)->find($id)) {
