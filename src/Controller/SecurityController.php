@@ -2,14 +2,10 @@
 
 namespace App\Controller;
 
-use phpDocumentor\Reflection\DocBlock\Tags\Factory\StaticMethod;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 use App\Form\RegistrationFormType;
@@ -24,7 +20,7 @@ class SecurityController extends AbstractController
     /**
       * @Route("/security/welcome", name="app_blog_security_welcome")
       */
-    public function welcomeMessage(AuthenticationUtils $utils)
+    public function welcomeMessage(AuthenticationUtils $utils): Response
     {
         $lastAuthenticationError = $utils->getLastAuthenticationError();
         $lastUsername = $utils->getLastUsername();
@@ -37,9 +33,6 @@ class SecurityController extends AbstractController
 
     /**
      * @Route("/login", name="app_login")
-     *
-     * @param AuthenticationUtils $authenticationUtils
-     * @return Response
      */
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
@@ -53,12 +46,6 @@ class SecurityController extends AbstractController
 
     /**
      * @Route("/register", name="app_register")
-     *
-     * @param UserPasswordEncoderInterface $passwordEncoder
-     * @param GuardAuthenticatorHandler $guardHandler
-     * @param LoginFormAuthenticator $authenticator
-     * @param Request $request
-     * @return Response|RedirectResponse
      */
     public function register(Request $request, UserPasswordEncoderInterface $passwordEncoder, GuardAuthenticatorHandler $guardHandler, LoginFormAuthenticator $authenticator): Response
     {
@@ -98,7 +85,6 @@ class SecurityController extends AbstractController
     /**
      * @Route("/logout", name="app_logout")
      *
-     * @return null
      * @throws \Exception
      */
     public function logout()
