@@ -19,12 +19,8 @@ class PostRepository extends ServiceEntityRepository
         parent::__construct($registry, Post::class);
     }
 
-    /**
-     * @param int $offset
-     * @param int $count
-     * @return Post[]
-     */
-    public function findAllByOffsetCount(int $offset, int $count = 0) {
+    public function findAllByOffsetCount(int $offset, int $count = 0): array
+    {
         return $this->createQueryBuilder('p')
             ->orderBy('p.subtime', 'DESC')
             ->getQuery()
@@ -33,13 +29,8 @@ class PostRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    /**
-     * @param string $content
-     * @param int $count
-     * @param int $offset
-     * @return Post[]
-     */
-    public function findByContent(string $content, int $count = 10, int $offset = 0) {
+    public function findByContent(string $content, int $count = 10, int $offset = 0): array
+    {
         return $this->createQueryBuilder('p')
             ->andWhere('p.content LIKE :str')
             ->setParameter('str', '%'.$content.'%')
@@ -50,13 +41,8 @@ class PostRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    /**
-     * @param string $title
-     * @param int $count
-     * @param int $offset
-     * @return Post[]
-     */
-    public function findByTitle(string $title, int $count = 10, int $offset = 0) {
+    public function findByTitle(string $title, int $count = 10, int $offset = 0): array
+    {
         return $this->createQueryBuilder('p')
             ->andWhere('p.title LIKE :str')
             ->setParameter('str', '%'.$title.'%')

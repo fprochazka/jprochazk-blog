@@ -13,10 +13,6 @@ use Symfony\Component\Validator\Constraints\Length;
 
 class RegistrationFormType extends AbstractType
 {
-    /**
-     * @param FormBuilderInterface $builder
-     * @param array $options
-     */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
@@ -42,9 +38,6 @@ class RegistrationFormType extends AbstractType
         ;
     }
 
-    /**
-     * @param OptionsResolver $resolver
-     */
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([

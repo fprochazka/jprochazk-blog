@@ -30,30 +30,11 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator
 {
     use TargetPathTrait;
 
-    /**
-     * @var EntityManagerInterface
-     */
     private $entityManager;
-    /**
-     * @var RouterInterface
-     */
     private $router;
-    /**
-     * @var CsrfTokenManagerInterface
-     */
     private $csrfTokenManager;
-    /**
-     * @var UserPasswordEncoderInterface
-     */
     private $passwordEncoder;
 
-    /**
-     * LoginFormAuthenticator constructor.
-     * @param EntityManagerInterface $entityManager
-     * @param RouterInterface $router
-     * @param CsrfTokenManagerInterface $csrfTokenManager
-     * @param UserPasswordEncoderInterface $passwordEncoder
-     */
     public function __construct(EntityManagerInterface $entityManager, RouterInterface $router, CsrfTokenManagerInterface $csrfTokenManager, UserPasswordEncoderInterface $passwordEncoder)
     {
         $this->entityManager = $entityManager;
@@ -62,43 +43,32 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator
         $this->passwordEncoder = $passwordEncoder;
     }
 
-    /**
-     * @param Request $request
-     * @return bool
-     */
-    public function supports(Request $request)
+    public function supports(Request $request): bool
     {
         return 'app_login' === $request->attributes->get('_route')
             && $request->isMethod('POST');
     }
 
-    /**
-     * @param Request $request
-     * @return array
-     */
-    public function getCredentials(Request $request)
+    public function getCredentials(Request $request): array
     {
         $credentials = [
             'username' => $request->request->get('username'),
             'password' => $request->request->get('password'),
             'csrf_token' => $request->request->get('_csrf_token'),
         ];
-        $request->getSession()->set(
-            Security::LAST_USERNAME,
-            $credentials['username']
-        );
+        if($session = $request->getSession()) {
+            $session->set(
+                Security::LAST_USERNAME,
+                $credentials['username']
+            );
+        } else {
+            throw new \LogicException("could not get session in LoginFormAuthenticator");
+        }
 
         return $credentials;
     }
 
-    /**
-     * @param array $credentials
-     * @param UserProviderInterface $userProvider
-     * @return Person
-     * @throws InvalidCsrfTokenException
-     * @throws CustomUserMessageAuthenticationException
-     */
-    public function getUser($credentials, UserProviderInterface $userProvider)
+    public function getUser($credentials, UserProviderInterface $userProvider): Person
     {
         $token = new CsrfToken('authenticate', $credentials['csrf_token']);
         if (!$this->csrfTokenManager->isTokenValid($token)) {
@@ -112,59 +82,50 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator
             throw new CustomUserMessageAuthenticationException('Username could not be found.');
         }
 
+        /** @var Person $user */
         return $user;
     }
 
-    /**
-     * @param array $credentials
-     * @param UserInterface $user
-     * @return bool
-     */
-    public function checkCredentials($credentials, UserInterface $user)
+    public function checkCredentials($credentials, UserInterface $user): bool
     {
         return $this->passwordEncoder->isPasswordValid($user, $credentials['password']);
     }
 
-    /**
-     * @param Request $request
-     * @param TokenInterface $token
-     * @param string $providerKey
-     * @return RedirectResponse
-     */
-    public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
+    public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey): RedirectResponse
     {
         $referer = $request->headers->get('referer');
-        $urlArray = explode("/", str_replace("http://", "", $referer));
-        if($urlArray[1] == "post") {
-            if($urlArray[2] != "new") {
-                return new RedirectResponse($referer);
+        if(!$referer) {
+            throw new \LogicException("could not get referer CONTROLLER: POST, deletePost()");
+        } else if($referer) {
+            $urlArray = explode("/", str_replace("http://", "", $referer));
+            if($urlArray[1] == "post") {
+                if($urlArray[2] != "new") {
+                    return new RedirectResponse($referer);
+                }
             }
         }
-        return new RedirectResponse($this->router->generate('app_blog_post_list'));
 
-    }
-
-    /**
-     * @param Request $request
-     * @param AuthenticationException $exception
-     * @return RedirectResponse
-     */
-    public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
-    {
-        $referer = $request->headers->get('referer');
-        $urlArray = explode("/", str_replace("http://", "", $referer));
-        if($urlArray[1] == "post") {
-            if($urlArray[2] != "new") {
-                return new RedirectResponse($referer);
-            }
-        }
         return new RedirectResponse($this->router->generate('app_blog_post_list'));
     }
 
-    /**
-     * @return string
-     */
-    protected function getLoginUrl()
+    public function onAuthenticationFailure(Request $request, AuthenticationException $exception): RedirectResponse
+    {
+        $referer = $request->headers->get('referer');
+        if(!$referer) {
+            throw new \LogicException("could not get referer CONTROLLER: POST, deletePost()");
+        } else if($referer) {
+            $urlArray = explode("/", str_replace("http://", "", $referer));
+            if($urlArray[1] == "post") {
+                if($urlArray[2] != "new") {
+                    return new RedirectResponse($referer);
+                }
+            }
+        }
+
+        return new RedirectResponse($this->router->generate('app_blog_post_list'));
+    }
+
+    protected function getLoginUrl(): string
     {
         return $this->router->generate('app_login');
     }

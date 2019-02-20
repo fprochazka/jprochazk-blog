@@ -37,12 +37,15 @@ class CommentController extends AbstractController
         if($request->isXmlHttpRequest() || $request->query->get('showJson') == 1) {
             $content = $request->request->get('content');
             if(is_string($content)) {
-                $date = date_create_from_format('H:i:s Y-m-d', date('H:i:s Y-m-d'));
+
                 $comment = new Comment();
                 $post = $this->postRepository->find($post_id);
 
+                $date = new \DateTimeImmutable();
                 $comment->setDate($date);
+
                 $comment->setAuthor($this->getUser()->getUsername());
+
                 /** @var string $content */
                 $comment->setContent($content);
 
@@ -73,13 +76,8 @@ class CommentController extends AbstractController
 
 	/**
      * @Route("/post/{post_id<\d+>}/comment/edit/{comment_id<\d+>}", name="app_blog_post_comment_edit")
-     *
-     * @param Request $request
-     * @param int $post_id
-     * @param int $comment_id
-     * @return JsonResponse
      */
-    public function editComment($post_id, $comment_id, Request $request) {
+    public function editComment(int $post_id, int $comment_id, Request $request): JsonResponse {
         if($request->isXmlHttpRequest() || $request->query->get('showJson') == 1) {
             $content = $request->request->get('content');
             $request_username = $request->request->get('current_user');

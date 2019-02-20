@@ -20,17 +20,16 @@ class SurveyRepository extends ServiceEntityRepository
         parent::__construct($registry, Survey::class);
     }
 
-    /**
-     * @return Survey|null
-     * @throws NonUniqueResultException
-     */
-    public function findOneByHighestId()
+    public function findOneByHighestId(): ?Survey
     {
-        return $this->createQueryBuilder('s')
-            ->orderBy('s.id', 'DESC')
-            ->setMaxResults(1)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
+        try {
+            return $this->createQueryBuilder('s')
+                ->orderBy('s.id', 'DESC')
+                ->setMaxResults(1)
+                ->getQuery()
+                ->getOneOrNullResult();
+        } catch (NonUniqueResultException $e) {
+            return null;
+        }
     }
 }

@@ -76,7 +76,7 @@
             "@phpstan-analyse"
         ],
         "phpstan-analyse": [
-            "vendor/bin/phpstan analyse -l 2 -c phpstan.neon src tests"
+            "php vendor/bin/phpstan analyze -c 'phpstan.neon' src --level 2"
         ]
     },
     "conflict": {

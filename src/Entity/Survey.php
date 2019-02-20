@@ -17,30 +17,22 @@ class Survey
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
-     *
-     * @var int
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=800)
-     *
-     * @var string
      */
     private $title;
 
     /**
      * @ORM\Column(type="boolean")
-     *
-     * @var bool
      */
     private $locked;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\SurveyOption", mappedBy="Survey")
      * @ORM\OrderBy=({"id" = "ASC"})
-     *
-     * @var SurveyOption[]
      */
     private $Options;
 
@@ -49,9 +41,6 @@ class Survey
         $this->Options = new ArrayCollection();
     }
 
-    /**
-     * @return array
-     */
     public function toArray(): array 
     {
         $options = [];
@@ -64,26 +53,16 @@ class Survey
         ];
     }
 
-    /**
-     * @return int|null
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @return string|null
-     */
     public function getTitle(): ?string
     {
         return $this->title;
     }
 
-    /**
-     * @param string $title
-     * @return Survey
-     */
     public function setTitle(string $title): self
     {
         $this->title = $title;
@@ -91,9 +70,6 @@ class Survey
         return $this;
     }
 
-    /**
-     * @return Survey
-     */
     public function resetOptions(): self
     {
         $this->Options = new ArrayCollection();
@@ -101,10 +77,6 @@ class Survey
         return $this;
     }
 
-    /**
-     * @param int $id
-     * @return SurveyOption
-     */
     public function getOptionById(int $id): SurveyOption
     {
         foreach($this->Options as $option) {
@@ -115,17 +87,11 @@ class Survey
         throw new \LogicException("could not find SurveyOption(id: ".$id.") in Survey(id: ".$this->getId().")");
     }
 
-    /**
-     * @return Collection|SurveyOption[]
-     */
     public function getOptions(): Collection
     {   
         return $this->Options;
     }
 
-    /**
-     * @return Collection
-     */
     public function getSortedOptions(): Collection
     {   
         $sorted_options = new ArrayCollection;
@@ -148,10 +114,6 @@ class Survey
         return $sorted_options;
     }
 
-    /**
-     * @param SurveyOption $option
-     * @return Survey
-     */
     public function addOption(SurveyOption $option): self
     {
         if (!$this->Options->contains($option)) {
@@ -162,13 +124,9 @@ class Survey
         return $this;
     }
 
-    /**
-     * @param SurveyOption $option
-     * @return Survey
-     */
     public function removeOption(SurveyOption $option): self
     {
-        if ($this->Options->contains($option)) {
+        if ($this->getOptions()->contains($option)) {
             $this->Options->removeElement($option);
             // set the owning side to null (unless already changed)
             if ($option->getSurvey() === $this) {
@@ -179,30 +137,20 @@ class Survey
         return $this;
     }
 
-    /**
-     * @param SurveyOption $option
-     * @return Survey
-     */
     public function incrementVote(SurveyOption $option): self
     {
-        if($this->Options->contains($option)) {
+        if($this->getOptions()->contains($option)) {
             $option->incrementVote();
         }
 
         return $this;
     }
 
-    /**
-     * @return bool
-     */
     public function isLocked(): bool
     {
         return $this->locked;
     }
 
-    /**
-     * @return Survey
-     */
     public function lock(): self
     {
         $this->locked = true;
@@ -210,9 +158,6 @@ class Survey
         return $this;
     }
 
-    /**
-     * @return Survey
-     */
     public function unlock(): self
     {
         $this->locked = false;

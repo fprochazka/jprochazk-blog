@@ -55,7 +55,7 @@ class PostController extends AbstractController
 
         	$current_user_username = ($this->getUser()) ? $this->getUser()->getUsername() : "guest";
             foreach($post["comments"] as $key => $value) {
-                $authorname = $post["comments"][$key]["canEdit"] = ($current_user_username == $post["comments"][$key]["author"]) ? true : false;
+                $post["comments"][$key]["canEdit"] = ($current_user_username == $post["comments"][$key]["author"]) ? true : false;
             }
 
             return $this->render('blog/post/show.html.twig', [
@@ -81,7 +81,7 @@ class PostController extends AbstractController
 
                 if ($form->isSubmitted() && $form->isValid()) {
                     $post = $form->getData();
-                    $date = date_create_from_format('Y-m-d', date('Y-m-d'));
+                    $date = new \DateTimeImmutable();
 
                     $post->setSubtime($date);
                     $post->setAuthor($current_user->getUsername());
@@ -116,14 +116,14 @@ class PostController extends AbstractController
 
                     if ($form->isSubmitted() && $form->isValid()) {
                         $post = $form->getData();
-                        $date = date_create_from_format('Y-m-d', date('Y-m-d'));
+                        $date = new \DateTimeImmutable();
                         $post->setSubtime($date);
 
                         $entityManager = $this->getDoctrine()->getManager();
                         $entityManager->persist($post);
                         $entityManager->flush();
 
-                        return $this->redirectToRoute('app_blog_post_show', ['num' => $post->getId()]);
+                        return $this->redirectToRoute('app_blog_post_show', ['id' => $post->getId()]);
                     }
 
                     return $this->render('blog/post/form.html.twig', [
@@ -154,7 +154,12 @@ class PostController extends AbstractController
                     $entityManager->remove($post);
                     $entityManager->flush();
 
-                	if((explode("/", str_replace("http://", "", $request->headers->get('referer'))))[1] == "post") {
+                    $referer = $request->headers->get('referer');
+                    if(!$referer) {
+                        throw new \LogicException("could not get referer CONTROLLER: POST, deletePost()");
+                    }
+
+                	if((explode("/", str_replace("http://", "", $referer)))[1] == "post") {
 	                   return $this->redirectToRoute('app_blog_post_list');
 	                } else {
 	                	return new RedirectResponse($request->headers->get('referer'));
