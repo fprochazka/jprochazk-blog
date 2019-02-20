@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Repository\PostRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,18 +15,25 @@ use App\Form\PostFormType;
 class PostController extends AbstractController
 {
 
-    /**
+	/** @var PostRepository */
+	private $postRepository;
+
+	public function __construct(
+		PostRepository $postRepository
+	)
+	{
+		$this->postRepository = $postRepository;
+	}
+
+	/**
       * @Route("/{page<\d+>?1}", name="app_blog_post_list")
-     *
-     * @param int $page
-     * @return Response
       */
-    public function postList($page)
+    public function postList(int $page): Response
     {
         $posts = [];
 
         $c = 0;
-        foreach($this->getDoctrine()->getRepository(Post::class)->findAllByOffsetCount($page, 10) as $post) {
+        foreach($this->postRepository->findAllByOffsetCount($page, 10) as $post) {
             $posts[$c] = $post->toArray();
             if(strlen($posts[$c]["content"]) > 100) {
                 $posts[$c]["content"] = substr($posts[$c]["content"], 0, 100).'...';
@@ -40,13 +48,10 @@ class PostController extends AbstractController
 
     /**
       * @Route("/post/{id<\d+>}", name="app_blog_post_show")
-     *
-     * @param int $id
-     * @return Response
       */
-    public function showPost($id) {
+    public function showPost(int $id): Response {
         $_error = "";
-        if($post = $this->getDoctrine()->getRepository(Post::class)->find($id)->toArray()) {
+        if($post = $this->postRepository->find($id)->toArray()) {
 
         	$current_user_username = ($this->getUser()) ? $this->getUser()->getUsername() : "guest";
             foreach($post["comments"] as $key => $value) {
@@ -64,11 +69,8 @@ class PostController extends AbstractController
 
     /**
       * @Route("/post/new", name="app_blog_post_new")
-     *
-     * @param Request $request
-     * @return Response
       */
-    public function createPost(Request $request) {
+    public function createPost(Request $request): Response {
         $_error = "";
         if($current_user = $this->getUser()) {
             if($current_user->getRole() == 'ROLE_ADMIN') {
@@ -102,16 +104,12 @@ class PostController extends AbstractController
 
     /**
       * @Route("/post/edit/{id<\d+>}", name="app_blog_post_edit")
-     *
-     * @param int $id
-     * @param Request $request
-     * @return Response
       */
-    public function editPost($id, Request $request) {
+    public function editPost(int $id, Request $request): Response {
         $_error = "";
         if($current_user = $this->getUser()) {
             if($current_user->getRole() == 'ROLE_ADMIN') {
-                if($post = $this->getDoctrine()->getRepository(Post::class)->find($id)) {
+                if($post = $this->postRepository->find($id)) {
                     $form = $this->createForm(PostFormType::class, $post);
 
                     $form->handleRequest($request);
@@ -140,16 +138,12 @@ class PostController extends AbstractController
 
     /**
       * @Route("/post/delete/{id<\d+>}", name="app_blog_post_delete")
-     *
-     * @param int $id
-     * @param Request $request
-     * @return Response
       */
-    public function deletePost($id, Request $request) {
+    public function deletePost(int $id, Request $request): Response {
         $_error = "";
         if($current_user = $this->getUser()) {
             if($current_user->getRole() == 'ROLE_ADMIN') {
-                if($post = $this->getDoctrine()->getRepository(Post::class)->find($id)) {
+                if($post = $this->postRepository->find($id)) {
                     $entityManager = $this->getDoctrine()->getManager();
 
                     foreach($post->getComments() as $comment) {

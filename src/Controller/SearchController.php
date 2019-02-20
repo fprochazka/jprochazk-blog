@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Repository\PostRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
@@ -12,7 +13,18 @@ use App\Form\SearchFormType;
 
 class SearchController extends AbstractController
 {
-    /**
+
+	/** @var PostRepository */
+	private $postRepository;
+
+	public function __construct(
+		PostRepository $postRepository
+	)
+	{
+		$this->postRepository = $postRepository;
+	}
+
+	/**
      * @Route("/search_form", name="app_blog_search_form")
      *
      * @param Request $request
@@ -47,8 +59,8 @@ class SearchController extends AbstractController
 
         $results = [];
 
-        $results_title = $this->getDoctrine()->getRepository(Post::class)->findByTitle($str);
-        $results_content = $this->getDoctrine()->getRepository(Post::class)->findByContent($str);
+        $results_title = $this->postRepository->findByTitle($str);
+        $results_content = $this->postRepository->findByContent($str);
 
         foreach($results_title as $result) {
             $id = $result->getId();
