@@ -69,6 +69,12 @@
         ],
         "post-update-cmd": [
             "@auto-scripts"
+        ],
+        "check": [
+            "@phpstan-analyse"
+        ],
+        "phpstan-analyse": [
+            "vendor/bin/phpstan analyse src tests"
         ]
     },
     "conflict": {
