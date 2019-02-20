@@ -14,6 +14,9 @@ class SearchController extends AbstractController
 {
     /**
      * @Route("/search_form", name="app_blog_search_form")
+     *
+     * @param Request $request
+     * @return Response
      */
     public function searchForm(Request $request) {
         $form = $this->createForm(SearchFormType::class);
@@ -34,6 +37,9 @@ class SearchController extends AbstractController
 
     /**
      * @Route("/search", name="app_blog_search_result")
+     *
+     * @param Request $request
+     * @return Response
      */
     public function searchResults(Request $request) {
 

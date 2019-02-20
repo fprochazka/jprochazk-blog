@@ -15,32 +15,44 @@ class Post
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     *
+     * @var int
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
+     *
+     * @var string
      */
     private $title;
 
     /**
      * @ORM\Column(type="string", length=8000)
+     *
+     * @var string
      */
     private $content;
 
     /**
      * @ORM\Column(type="datetime")
+     *
+     * @var \DateTime
      */
     private $subtime;
 
     /**
      * @ORM\Column(type="string", length=255)
+     *
+     * @var string
      */
     private $author;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Comment", mappedBy="post")
      * @ORM\OrderBy({"id" = "ASC"})
+     *
+     * @var Comment[]
      */
     private $comments;
 
@@ -49,6 +61,9 @@ class Post
         $this->comments = new ArrayCollection();
     }
 
+    /**
+     * @return array
+     */
     public function toArray(): array
     {
         $comments = [];
@@ -64,16 +79,26 @@ class Post
         ];
     }
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return string|null
+     */
     public function getTitle(): ?string
     {
         return $this->title;
     }
 
+    /**
+     * @param string $title
+     * @return Post
+     */
     public function setTitle(string $title): self
     {
         $this->title = $title;
@@ -81,11 +106,18 @@ class Post
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getContent(): ?string
     {
         return $this->content;
     }
 
+    /**
+     * @param string $content
+     * @return Post
+     */
     public function setContent(string $content): self
     {
         $this->content = $content;
@@ -93,11 +125,18 @@ class Post
         return $this;
     }
 
+    /**
+     * @return \DateTimeInterface|null
+     */
     public function getSubtime(): ?\DateTimeInterface
     {
         return $this->subtime;
     }
 
+    /**
+     * @param \DateTimeInterface $subtime
+     * @return Post
+     */
     public function setSubtime(\DateTimeInterface $subtime): self
     {
         $this->subtime = $subtime;
@@ -105,11 +144,18 @@ class Post
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getAuthor(): ?string
     {
         return $this->author;
     }
 
+    /**
+     * @param string $author
+     * @return Post
+     */
     public function setAuthor(string $author): self
     {
         $this->author = $author;
@@ -125,6 +171,10 @@ class Post
         return $this->comments;
     }
 
+    /**
+     * @param Comment $comment
+     * @return Post
+     */
     public function addComment(Comment $comment): self
     {
         if (!$this->comments->contains($comment)) {
@@ -135,6 +185,10 @@ class Post
         return $this;
     }
 
+    /**
+     * @param Comment $comment
+     * @return Post
+     */
     public function removeComment(Comment $comment): self
     {
         if ($this->comments->contains($comment)) {

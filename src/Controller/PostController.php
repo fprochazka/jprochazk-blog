@@ -16,6 +16,9 @@ class PostController extends AbstractController
 
     /**
       * @Route("/{page<\d+>?1}", name="app_blog_post_list")
+     *
+     * @param int $page
+     * @return Response
       */
     public function postList($page)
     {
@@ -37,6 +40,9 @@ class PostController extends AbstractController
 
     /**
       * @Route("/post/{id<\d+>}", name="app_blog_post_show")
+     *
+     * @param int $id
+     * @return Response
       */
     public function showPost($id) {
         $_error = "";
@@ -58,6 +64,9 @@ class PostController extends AbstractController
 
     /**
       * @Route("/post/new", name="app_blog_post_new")
+     *
+     * @param Request $request
+     * @return Response
       */
     public function createPost(Request $request) {
         $_error = "";
@@ -93,6 +102,10 @@ class PostController extends AbstractController
 
     /**
       * @Route("/post/edit/{id<\d+>}", name="app_blog_post_edit")
+     *
+     * @param int $id
+     * @param Request $request
+     * @return Response
       */
     public function editPost($id, Request $request) {
         $_error = "";
@@ -127,6 +140,10 @@ class PostController extends AbstractController
 
     /**
       * @Route("/post/delete/{id<\d+>}", name="app_blog_post_delete")
+     *
+     * @param int $id
+     * @param Request $request
+     * @return Response
       */
     public function deletePost($id, Request $request) {
         $_error = "";

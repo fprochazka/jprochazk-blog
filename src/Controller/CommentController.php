@@ -13,8 +13,12 @@ use App\Entity\Comment;
 class CommentController extends AbstractController
 {
     /**
-      * @Route("/post/{post_id<\d+>}/comment", name="app_blog_post_comment")
-      */
+     * @Route("/post/{post_id<\d+>}/comment", name="app_blog_post_comment")
+     *
+     * @param Request $request
+     * @param int $post_id
+     * @return JsonResponse
+     */
     public function createComment($post_id, Request $request) {
         if($request->isXmlHttpRequest() || $request->query->get('showJson') == 1) {
             $content = $request->request->get('content');
@@ -25,6 +29,7 @@ class CommentController extends AbstractController
 
                 $comment->setDate($date);
                 $comment->setAuthor($this->getUser()->getUsername());
+                /** @var string $content */
                 $comment->setContent($content);
 
                 $post->addComment($comment);
@@ -53,8 +58,13 @@ class CommentController extends AbstractController
     }
 
 	/**
-      * @Route("/post/{post_id<\d+>}/comment/edit/{comment_id<\d+>}", name="app_blog_post_comment_edit")
-      */
+     * @Route("/post/{post_id<\d+>}/comment/edit/{comment_id<\d+>}", name="app_blog_post_comment_edit")
+     *
+     * @param Request $request
+     * @param int $post_id
+     * @param int $comment_id
+     * @return JsonResponse
+     */
     public function editComment($post_id, $comment_id, Request $request) {
         if($request->isXmlHttpRequest() || $request->query->get('showJson') == 1) {
             $content = $request->request->get('content');
@@ -63,11 +73,15 @@ class CommentController extends AbstractController
 	            if(is_string($content)) {
 	                $entityManager = $this->getDoctrine()->getManager();
 
+	                $post = $this->getDoctrine()->getRepository(Post::class)->find($post_id);
 	                $comment = $this->getDoctrine()->getRepository(Comment::class)->find($comment_id);
-	                $comment->setContent($content);
 
-	                $entityManager->persist($comment);
-	                $entityManager->flush();
+	                if($post->getComments()->contains($comment)) {
+                        $comment->setContent($content);
+
+                        $entityManager->persist($comment);
+                        $entityManager->flush();
+                    }
 
 	                $responseData = [
 	                    'content' => $content
@@ -90,10 +104,19 @@ class CommentController extends AbstractController
 		        'message' => 'str'
 	    	], 200);
 	    }
+        return new JsonResponse([
+            'status' => 'Error',
+            'message' => 'str'
+        ], 200);
     }
 
 	/**
       * @Route("/post/{post_id<\d+>}/comment/delete/{comment_id<\d+>}", name="app_blog_post_comment_delete")
+     *
+     * @param int $post_id
+     * @param int $comment_id
+     * @param Request $request
+     * @return JsonResponse
       */
     public function deleteComment($post_id, $comment_id, Request $request) {
         if($request->isXmlHttpRequest() || $request->query->get('showJson') == 1) {

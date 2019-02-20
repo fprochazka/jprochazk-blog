@@ -20,6 +20,9 @@ class SurveyController extends AbstractController
 
     /**
       * @Route("/survey/new", name="app_blog_survey_new")
+     *
+     * @param Request $request
+     * @return Response|RedirectResponse
       */
     public function createSurvey(Request $request) {
         $_error = "";
@@ -61,6 +64,10 @@ class SurveyController extends AbstractController
 
     /**
       * @Route("/survey/delete/{id<\d+>}", name="app_blog_survey_delete")
+     *
+     * @param int $id
+     * @param Request $request
+     * @return Response|RedirectResponse
       */
     public function deleteSurvey($id, Request $request) {
         $_error = "";
@@ -92,6 +99,8 @@ class SurveyController extends AbstractController
 
     /**
       * @Route("/survey", name="app_blog_survey")
+     *
+     * @return Response
       */
     public function renderSurvey() {
         if($survey = $this->getDoctrine()->getRepository(Survey::class)->findOneByHighestId()) {
@@ -114,6 +123,9 @@ class SurveyController extends AbstractController
 
     /**
       * @Route("/survey/vote", name="app_blog_survey_vote")
+     *
+     * @param Request $request
+     * @return JsonResponse
       */
     public function surveyVote(Request $request) {
         if($request->isXmlHttpRequest() || $request->query->get('showJson') == 1) {

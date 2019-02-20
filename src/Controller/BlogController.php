@@ -1,27 +1,25 @@
 <?php
-// src/Controller/LuckyController.php
+
 namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 use App\Entity\Post;
 use App\Entity\Person;
 use App\Entity\Survey;
 use App\Entity\SurveyOption;
 
-use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
-
 class BlogController extends AbstractController
 {
     /**
      * @Route("/admin", name="app_blog_admin")
      *
-     * @param Symfony\Component\HttpFoundation\Request $request
-     * @return Symfony\Component\HttpFoundation\Response
+     * @param Request $request
+     * @return RedirectResponse|Response
      */
     public function showAdmin(Request $request) {
         $_error = "";
@@ -35,9 +33,8 @@ class BlogController extends AbstractController
                     if($tab == "users") {
                         $users = [];
                         foreach($this->getDoctrine()->getRepository(Person::class)->findAll() as $user) {
-
-                            // intentionally stupid code
                             $votes = [];
+                            // intentionally stupid code
                             if($user->getVotes()) {
                                 foreach($user->getVotes() as $key => $value) {
                                     $survey_name = $this->getDoctrine()->getRepository(Survey::class)->find($key)->getTitle();
@@ -99,8 +96,8 @@ class BlogController extends AbstractController
     /**
      * @Route("/error", name="app_blog_error")
      *
-     * @param Symfony\Component\HttpFoundation\Request $request
-     * @return Symfony\Component\HttpFoundation\Response
+     * @param Request $request
+     * @return RedirectResponse|Response
      */
     public function showError(Request $request) {
         $msg = $request->query->get("msg");

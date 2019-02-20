@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
@@ -17,30 +18,43 @@ class Person implements UserInterface, \Serializable
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     *
+     * @var int
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255, unique=true)
+     *
+     * @var string
      */
     private $username;
 
     /**
      * @ORM\Column(type="string", length=255)
+     *
+     * @var string
      */
     private $password;
 
     /**
      * @ORM\Column(type="string", length=125)
+     *
+     * @var string
      */
     private $role;
 
     /**
      * @ORM\Column(type="array", nullable=true)
+     *
+     * @var ArrayCollection|array
      */
     private $votes = [];
     //stores a set of survey ids that the user has voted on
 
+    /**
+     * @return array
+     */
     public function toArray(): array 
     {
         return [
@@ -51,16 +65,27 @@ class Person implements UserInterface, \Serializable
         ];
     }
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+
+    /**
+     * @return string|null
+     */
     public function getUsername(): ?string
     {
         return $this->username;
     }
 
+    /**
+     * @param string $username
+     * @return Person
+     */
     public function setUsername(string $username): self
     {
         $this->username = $username;
@@ -68,11 +93,18 @@ class Person implements UserInterface, \Serializable
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getPassword(): ?string
     {
         return $this->password;
     }
 
+    /**
+     * @param string $password
+     * @return Person
+     */
     public function setPassword(string $password): self
     {
         $this->password = $password;
@@ -80,11 +112,18 @@ class Person implements UserInterface, \Serializable
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getRole(): ?string
     {
         return $this->role;
     }
 
+    /**
+     * @param string $role
+     * @return Person
+     */
     public function setRole(string $role): self
     {
         $this->role = $role;
@@ -92,6 +131,9 @@ class Person implements UserInterface, \Serializable
         return $this;
     }
 
+    /**
+     * @return array
+     */
     public function getRoles()
     {
         return [
@@ -99,9 +141,23 @@ class Person implements UserInterface, \Serializable
         ];
     }
 
-    public function getSalt() {}
+    /**
+     * @return null
+     */
+    public function getSalt() {
+        return null;
+    }
 
-    public function eraseCredentials() {}
+    /**
+     * @return null
+     */
+    public function eraseCredentials() {
+        return null;
+    }
+
+    /**
+     * @return string
+     */
     public function serialize() {
         return serialize([
             $this->id,
@@ -110,6 +166,9 @@ class Person implements UserInterface, \Serializable
         ]);
     }
 
+    /**
+     * @param string $string
+     */
     public function unserialize($string) {
         list(
             $this->id,
@@ -118,20 +177,28 @@ class Person implements UserInterface, \Serializable
         ) = unserialize($string, ['allowed_classes' => false]);
     }
 
+    /**
+     * @return array|null
+     */
     public function getVotes(): ?array
     {
         return $this->votes;
     }
 
-    // do not use- requires an entire array of vote ids to be submitted
-    public function setVotes(?array $vote): self
+    /**
+     * @return Person|null
+     */
+    public function setVotes(): ?self
     {
-        $this->votes = $vote;
-
         return $this;
     }
 
-    public function addVote(?int $survey_id, ?int $vote_id): self
+    /**
+     * @param int $survey_id
+     * @param int $vote_id
+     * @return Person
+     */
+    public function addVote(int $survey_id, int $vote_id): self
     {
         if(!isset($this->votes[$survey_id]) || !array_key_exists($survey_id, $this->votes)) {
             $this->votes[$survey_id] = $vote_id;
@@ -142,14 +209,22 @@ class Person implements UserInterface, \Serializable
         return $this;
     }
 
-    public function removeVote(?int $survey_id): self
+    /**
+     * @param int $survey_id
+     * @return Person
+     */
+    public function removeVote(int $survey_id): self
     {
         unset($this->votes[$survey_id]);
 
         return $this;
     }
 
-    public function hasVoted(?int $survey_id): ?bool
+    /**
+     * @param int $survey_id
+     * @return bool|null
+     */
+    public function hasVoted(int $survey_id): ?bool
     {
         $votes = $this->votes;
         if($votes != null) {
