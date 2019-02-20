@@ -30,9 +30,15 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator
 {
     use TargetPathTrait;
 
+    /** @var EntityManagerInterface */
     private $entityManager;
+
+    /** @var RouterInterface */
     private $router;
+
+    /** @var CsrfTokenManagerInterface */
     private $csrfTokenManager;
+    /** @var UserPasswordEncoderInterface */
     private $passwordEncoder;
 
     public function __construct(EntityManagerInterface $entityManager, RouterInterface $router, CsrfTokenManagerInterface $csrfTokenManager, UserPasswordEncoderInterface $passwordEncoder)
@@ -56,7 +62,8 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator
             'password' => $request->request->get('password'),
             'csrf_token' => $request->request->get('_csrf_token'),
         ];
-        if($session = $request->getSession()) {
+        $session = $request->getSession();
+        if($session !== null) {
             $session->set(
                 Security::LAST_USERNAME,
                 $credentials['username']
@@ -77,7 +84,7 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator
 
         $user = $this->entityManager->getRepository(Person::class)->findOneBy(['username' => $credentials['username']]);
 
-        if (!$user) {
+        if ($user === null) {
             // fail authentication with a custom error
             throw new CustomUserMessageAuthenticationException('Username could not be found.');
         }
@@ -93,16 +100,11 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey): RedirectResponse
     {
-        $referer = $request->headers->get('referer');
-        if(!$referer) {
-            throw new \LogicException("could not get referer CONTROLLER: POST, deletePost()");
-        } else if($referer) {
-            $urlArray = explode("/", str_replace("http://", "", $referer));
-            if($urlArray[1] == "post") {
-                if($urlArray[2] != "new") {
-                    return new RedirectResponse($referer);
-                }
-            }
+        $referer = (is_string($request->headers->get('referer')) && $request->headers->get('referer') !== null) ? $request->headers->get('referer') : "";
+
+        $urlArray = explode("/", str_replace("http://", "", $referer));
+        if($urlArray[1] === "post" && $urlArray[2] !== "new") {
+            return new RedirectResponse($referer);
         }
 
         return new RedirectResponse($this->router->generate('app_blog_post_list'));
@@ -110,16 +112,11 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): RedirectResponse
     {
-        $referer = $request->headers->get('referer');
-        if(!$referer) {
-            throw new \LogicException("could not get referer CONTROLLER: POST, deletePost()");
-        } else if($referer) {
-            $urlArray = explode("/", str_replace("http://", "", $referer));
-            if($urlArray[1] == "post") {
-                if($urlArray[2] != "new") {
-                    return new RedirectResponse($referer);
-                }
-            }
+        $referer = (is_string($request->headers->get('referer')) && $request->headers->get('referer') !== null) ? $request->headers->get('referer') : "";
+
+        $urlArray = explode("/", str_replace("http://", "", $referer));
+        if($urlArray[1] === "post" && $urlArray[2] !== "new") {
+            return new RedirectResponse($referer);
         }
 
         return new RedirectResponse($this->router->generate('app_blog_post_list'));

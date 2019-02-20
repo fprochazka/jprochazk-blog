@@ -18,26 +18,36 @@ class Person implements UserInterface, \Serializable
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     *
+     * @var int
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255, unique=true)
+     *
+     * @var string
      */
     private $username;
 
     /**
      * @ORM\Column(type="string", length=255)
+     *
+     * @var string
      */
     private $password;
 
     /**
      * @ORM\Column(type="string", length=125)
+     *
+     * @var string
      */
     private $role;
 
     /**
      * @ORM\Column(type="array", nullable=true)
+     *
+     * @var int[]
      */
     private $votes = [];
 
@@ -51,12 +61,12 @@ class Person implements UserInterface, \Serializable
         ];
     }
 
-    public function getId(): ?int
+    public function getId(): int
     {
         return $this->id;
     }
 
-    public function getUsername(): ?string
+    public function getUsername(): string
     {
         return $this->username;
     }
@@ -68,7 +78,7 @@ class Person implements UserInterface, \Serializable
         return $this;
     }
 
-    public function getPassword(): ?string
+    public function getPassword(): string
     {
         return $this->password;
     }
@@ -80,7 +90,7 @@ class Person implements UserInterface, \Serializable
         return $this;
     }
 
-    public function getRole(): ?string
+    public function getRole(): string
     {
         return $this->role;
     }
@@ -92,10 +102,10 @@ class Person implements UserInterface, \Serializable
         return $this;
     }
 
-    public function getRoles()
+    public function getRoles(): array
     {
         $role = $this->getRole();
-        if(!$role) {
+        if($role == null) {
             throw new \LogicException("could not get role for user ".$this->getUsername());
         } else {
             return [
@@ -105,23 +115,28 @@ class Person implements UserInterface, \Serializable
 
     }
 
-    public function getSalt() {
+    public function getSalt()
+    {
         return null;
     }
 
-    public function eraseCredentials() {
-        return null;
+    public function eraseCredentials(): self
+    {
+        return $this;
     }
 
-    public function serialize() {
-        return serialize([
+    public function serialize(): string
+    {
+        $serial = serialize([
             $this->id,
             $this->username,
             $this->password
         ]);
+        return $serial;
     }
 
-    public function unserialize($string) {
+    public function unserialize($string): array
+    {
         list(
             $this->id,
             $this->username,
@@ -129,7 +144,7 @@ class Person implements UserInterface, \Serializable
         ) = unserialize($string, ['allowed_classes' => false]);
     }
 
-    public function getVotes(): ?array
+    public function getVotes(): array
     {
         return $this->votes;
     }
@@ -152,7 +167,7 @@ class Person implements UserInterface, \Serializable
         return $this;
     }
 
-    public function hasVoted(int $survey_id): ?bool
+    public function hasVoted(int $survey_id): bool
     {
         $votes = $this->votes;
         if($votes != null) {

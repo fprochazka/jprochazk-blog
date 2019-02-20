@@ -17,22 +17,30 @@ class Survey
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     *
+     * @var int
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=800)
+     *
+     * @var string
      */
     private $title;
 
     /**
      * @ORM\Column(type="boolean")
+     *
+     * @var bool
      */
     private $locked;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\SurveyOption", mappedBy="Survey")
      * @ORM\OrderBy=({"id" = "ASC"})
+     *
+     * @var Collection
      */
     private $Options;
 
@@ -53,12 +61,12 @@ class Survey
         ];
     }
 
-    public function getId(): ?int
+    public function getId(): int
     {
         return $this->id;
     }
 
-    public function getTitle(): ?string
+    public function getTitle(): string
     {
         return $this->title;
     }
@@ -128,10 +136,6 @@ class Survey
     {
         if ($this->getOptions()->contains($option)) {
             $this->Options->removeElement($option);
-            // set the owning side to null (unless already changed)
-            if ($option->getSurvey() === $this) {
-                $option->setSurvey(null);
-            }
         }
 
         return $this;

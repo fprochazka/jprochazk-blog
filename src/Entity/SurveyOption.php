@@ -13,21 +13,29 @@ class SurveyOption
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     *
+     * @var int
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=500)
+     *
+     * @var string
      */
     private $title;
 
     /**
      * @ORM\Column(type="integer")
+     *
+     * @var int
      */
     private $votes;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Survey", inversedBy="Options", cascade={"persist"})
+     *
+     * @var Survey
      */
     private $Survey;
 
@@ -40,7 +48,7 @@ class SurveyOption
         ];
     }
 
-    public function getId(): ?int
+    public function getId(): int
     {
         return $this->id;
     }
@@ -57,12 +65,12 @@ class SurveyOption
         return $this;
     }
 
-    public function getVotes(): ?int
+    public function getVotes(): int
     {
         return $this->votes;
     }
 
-    public function setVotes(?int $votes): self
+    public function setVotes(int $votes): self
     {
         $this->votes = $votes;
 
@@ -76,12 +84,12 @@ class SurveyOption
         return $this;
     }
 
-    public function getSurvey(): ?Survey
+    public function getSurvey(): Survey
     {
         return $this->Survey;
     }
 
-    public function setSurvey(?Survey $Survey): self
+    public function setSurvey(Survey $Survey): self
     {
         $this->Survey = $Survey;
 

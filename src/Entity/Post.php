@@ -15,32 +15,44 @@ class Post
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     *
+     * @var int
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
+     *
+     * @var string
      */
     private $title;
 
     /**
      * @ORM\Column(type="string", length=8000)
+     *
+     * @var string
      */
     private $content;
 
     /**
      * @ORM\Column(type="datetime")
+     *
+     * @var \DateTimeInterface
      */
     private $subtime;
 
     /**
      * @ORM\Column(type="string", length=255)
+     *
+     * @var string
      */
     private $author;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Comment", mappedBy="post")
      * @ORM\OrderBy({"id" = "ASC"})
+     *
+     * @var Collection
      */
     private $comments;
 
@@ -64,12 +76,12 @@ class Post
         ];
     }
 
-    public function getId(): ?int
+    public function getId(): int
     {
         return $this->id;
     }
 
-    public function getTitle(): ?string
+    public function getTitle(): string
     {
         return $this->title;
     }
@@ -81,7 +93,7 @@ class Post
         return $this;
     }
 
-    public function getContent(): ?string
+    public function getContent(): string
     {
         return $this->content;
     }
@@ -93,19 +105,19 @@ class Post
         return $this;
     }
 
-    public function getSubtime(): ?\DateTimeInterface
+    public function getSubtime(): \DateTimeInterface
     {
         return $this->subtime;
     }
 
-    public function setSubtime(?\DateTimeInterface $subtime): self
+    public function setSubtime(\DateTimeInterface $subtime): self
     {
         $this->subtime = $subtime;
 
         return $this;
     }
 
-    public function getAuthor(): ?string
+    public function getAuthor(): string
     {
         return $this->author;
     }
@@ -136,10 +148,6 @@ class Post
     {
         if ($this->getComments()->contains($comment)) {
             $this->comments->removeElement($comment);
-            // set the owning side to null (unless already changed)
-            if ($comment->getPost() === $this) {
-                $comment->setPost(null);
-            }
         }
 
         return $this;

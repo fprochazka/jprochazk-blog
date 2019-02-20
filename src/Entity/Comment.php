@@ -13,26 +13,36 @@ class Comment
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     *
+     * @var int
      */
     private $id;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Post", inversedBy="comments")
+     *
+     * @var Post
      */
     private $post;
 
     /**
      * @ORM\Column(type="string", length=1000)
+     *
+     * @var string
      */
     private $content;
 
     /**
      * @ORM\Column(type="string", length=255)
+     *
+     * @var string
      */
     private $author;
 
     /**
      * @ORM\Column(type="datetime")
+     *
+     * @var \DateTimeInterface
      */
     private $date;
 
@@ -47,24 +57,24 @@ class Comment
         ];
     }
 
-    public function getId(): ?int
+    public function getId(): int
     {
         return $this->id;
     }
 
-    public function getPost(): ?Post
+    public function getPost(): Post
     {
         return $this->post;
     }
 
-    public function setPost(?Post $post): self
+    public function setPost(Post $post): self
     {
         $this->post = $post;
 
         return $this;
     }
 
-    public function getContent(): ?string
+    public function getContent(): string
     {
         return $this->content;
     }
@@ -76,7 +86,7 @@ class Comment
         return $this;
     }
 
-    public function getAuthor(): ?string
+    public function getAuthor(): string
     {
         return $this->author;
     }
@@ -88,12 +98,12 @@ class Comment
         return $this;
     }
 
-    public function getDate(): ?\DateTimeInterface
+    public function getDate(): \DateTimeInterface
     {
         return $this->date;
     }
 
-    public function setDate(?\DateTimeInterface $date): self
+    public function setDate(\DateTimeInterface $date): self
     {
         $this->date = $date;
 

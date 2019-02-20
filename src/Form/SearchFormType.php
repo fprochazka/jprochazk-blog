@@ -10,7 +10,7 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 
 class SearchFormType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): self
     {
         $builder
             ->add('query', SearchType::class, ['attr' => ['placeholder' => 'Search']])
@@ -19,9 +19,12 @@ class SearchFormType extends AbstractType
                 'attr' => ['class' => 'search-submit']
             ])
         ;
+
+        return $this;
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): self
     {
+        return $this;
     }
 }

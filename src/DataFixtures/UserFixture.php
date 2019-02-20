@@ -9,6 +9,7 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 class UserFixture extends Fixture
 {
+    /** @var UserPasswordEncoderInterface */
 	private $encoder;
 
 	public function __construct(UserPasswordEncoderInterface $encoder)
@@ -17,7 +18,7 @@ class UserFixture extends Fixture
 	}
 
 
-    public function load(ObjectManager $manager)
+    public function load(ObjectManager $manager): self
     {
         $user = new Person();
         $user->setUsername('admin');
@@ -28,5 +29,7 @@ class UserFixture extends Fixture
 
         $manager->persist($user);
         $manager->flush();
+
+        return $this;
     }
 }

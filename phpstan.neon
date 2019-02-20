@@ -2,8 +2,11 @@ includes:
 	- vendor/phpstan/phpstan-doctrine/extension.neon
 	- vendor/phpstan/phpstan-doctrine/rules.neon
 	- vendor/phpstan/phpstan-symfony/extension.neon
+	- vendor/phpstan/phpstan-strict-rules/rules.neon
 
 parameters:
+	ignoreErrors:
+		- '#[a-zA-Z0-9\\_]+::unserialize\(\)#'
 	symfony:
 		container_xml_path: '%rootDir%/../../../var/cache/dev/srcApp_KernelDevDebugContainer.xml'
 	doctrine:

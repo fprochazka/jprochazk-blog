@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -84,11 +85,9 @@ class SecurityController extends AbstractController
     
     /**
      * @Route("/logout", name="app_logout")
-     *
-     * @throws \Exception
      */
-    public function logout()
+    public function logout(): RedirectResponse
     {
-    	throw new \Exception('Logout failed');
+        return $this->redirectToRoute('app_blog_post_list');
     }
 }

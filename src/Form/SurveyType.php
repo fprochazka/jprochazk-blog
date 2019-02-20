@@ -13,7 +13,7 @@ use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 
 class SurveyType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): self
     {
         $builder
             ->add('title', TextareaType::class)
@@ -25,12 +25,16 @@ class SurveyType extends AbstractType
             ])
             ->add('save', SubmitType::class, ['label' => 'Submit'])
         ;
+
+        return $this;
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): self
     {
         $resolver->setDefaults([
             'data_class' => Survey::class,
         ]);
+
+        return $this;
     }
 }

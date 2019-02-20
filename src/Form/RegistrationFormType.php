@@ -13,7 +13,7 @@ use Symfony\Component\Validator\Constraints\Length;
 
 class RegistrationFormType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): self
     {
         $builder
             ->add('username')
@@ -36,12 +36,16 @@ class RegistrationFormType extends AbstractType
                 ],
             ])
         ;
+
+        return $this;
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): self
     {
         $resolver->setDefaults([
             'data_class' => Person::class,
         ]);
+
+        return $this;
     }
 }

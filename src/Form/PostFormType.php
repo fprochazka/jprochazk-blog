@@ -12,19 +12,23 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 
 class PostFormType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): self
     {
         $builder
             ->add('title', TextType::class)
             ->add('content', TextareaType::class)
             ->add('save', SubmitType::class, ['label' => 'Submit post'])
         ;
+
+        return $this;
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): self
     {
         $resolver->setDefaults([
             'data_class' => Post::class,
         ]);
+
+        return $this;
     }
 }

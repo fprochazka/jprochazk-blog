@@ -11,15 +11,19 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 class SurveyOptionType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): self
     {
         $builder->add('title', TextType::class);
+
+        return $this;
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): self
     {
         $resolver->setDefaults([
             'data_class' => SurveyOption::class,
         ]);
+
+        return $this;
     }
 }

@@ -42,13 +42,11 @@ class SurveyController extends AbstractController
 
     /**
       * @Route("/survey/new", name="app_blog_survey_new")
-     *
-     * @param Request $request
-     * @return Response|RedirectResponse
       */
-    public function createSurvey(Request $request) {
+    public function createSurvey(Request $request): Response
+    {
         $_error = "";
-        if($current_user = $this->getUser()) {
+        if(($current_user = $this->getUser()) != null) {
             if($current_user->getRole() == 'ROLE_ADMIN') {
                 $survey = new Survey();
                 $form = $this->createForm(SurveyType::class, $survey);
@@ -86,14 +84,11 @@ class SurveyController extends AbstractController
 
     /**
       * @Route("/survey/delete/{id<\d+>}", name="app_blog_survey_delete")
-     *
-     * @param int $id
-     * @param Request $request
-     * @return Response|RedirectResponse
       */
-    public function deleteSurvey($id, Request $request) {
+    public function deleteSurvey(int $id, Request $request): Response
+    {
         $_error = "";
-        if($current_user = $this->getUser()) {
+        if(($current_user = $this->getUser()) != null) {
             if($current_user->getRole() == 'ROLE_ADMIN') {
                 if($survey = $this->surveyRepository->find($id)) {
                     $entityManager = $this->getDoctrine()->getManager();
@@ -121,13 +116,12 @@ class SurveyController extends AbstractController
 
     /**
       * @Route("/survey", name="app_blog_survey")
-     *
-     * @return Response
       */
-    public function renderSurvey() {
+    public function renderSurvey(): Response
+    {
         if($survey = $this->surveyRepository->findOneByHighestId()) {
             $survey = $survey->toArray();
-            if($current_user = $this->getUser()) {
+            if(($current_user = $this->getUser()) != null) {
                 $survey["voted"] = $current_user->hasVoted($survey["id"]);
             } else {
                 $survey["voted"] = true;
@@ -145,11 +139,9 @@ class SurveyController extends AbstractController
 
     /**
       * @Route("/survey/vote", name="app_blog_survey_vote")
-     *
-     * @param Request $request
-     * @return JsonResponse
       */
-    public function surveyVote(Request $request) {
+    public function surveyVote(Request $request): JsonResponse
+    {
         if($request->isXmlHttpRequest() || $request->query->get('showJson') == 1) {
 
             $survey_id = (int)$request->request->get('survey_id');

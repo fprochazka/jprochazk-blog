@@ -45,9 +45,9 @@ class BlogController extends AbstractController
     public function showAdmin(Request $request): Response {
         $_error = "";
         $tab = $request->query->get('p');
-        if($current_user = $this->getUser()) {
+        if(($current_user = $this->getUser()) != null) {
             if($current_user->getRole() == 'ROLE_ADMIN') {
-                if(!$tab) {
+                if($tab == null) {
                     return $this->redirectToRoute("app_blog_admin", ['p' => "users"]);
                 } else {
                     //users + "survey: option" voted on by the user

@@ -10,7 +10,7 @@ use App\Entity\SurveyOption;
 
 class SampleSurveyFixture extends Fixture
 {
-    public function load(ObjectManager $manager)
+    public function load(ObjectManager $manager): self
     {
         $survey = new Survey();
         
@@ -40,5 +40,7 @@ class SampleSurveyFixture extends Fixture
         $manager->persist($thirdOption);
         $manager->persist($survey);
         $manager->flush();
+
+        return $this;
     }
 }
