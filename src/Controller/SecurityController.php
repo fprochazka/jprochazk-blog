@@ -23,9 +23,6 @@ class SecurityController extends AbstractController
 {
     /**
       * @Route("/security/welcome", name="app_blog_security_welcome")
-     *
-     * @param AuthenticationUtils $utils
-     * @return Response
       */
     public function welcomeMessage(AuthenticationUtils $utils)
     {
