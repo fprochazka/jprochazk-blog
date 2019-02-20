@@ -2,6 +2,9 @@
 
 namespace App\Controller;
 
+use App\Repository\PersonRepository;
+use App\Repository\SurveyOptionRepository;
+use App\Repository\SurveyRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,7 +19,26 @@ use App\Form\SurveyType;
 
 class SurveyController extends AbstractController
 {
-    
+
+	/** @var PersonRepository */
+	private $personRepository;
+
+	/** @var SurveyRepository */
+	private $surveyRepository;
+
+	/** @var SurveyOptionRepository */
+	private $surveyOptionRepository;
+
+	public function __construct(
+		PersonRepository $personRepository,
+		SurveyRepository $surveyRepository,
+		SurveyOptionRepository $surveyOptionRepository
+	)
+	{
+		$this->personRepository = $personRepository;
+		$this->surveyRepository = $surveyRepository;
+		$this->surveyOptionRepository = $surveyOptionRepository;
+	}
 
     /**
       * @Route("/survey/new", name="app_blog_survey_new")
@@ -73,10 +95,10 @@ class SurveyController extends AbstractController
         $_error = "";
         if($current_user = $this->getUser()) {
             if($current_user->getRole() == 'ROLE_ADMIN') {
-                if($survey = $this->getDoctrine()->getRepository(Survey::class)->find($id)) {
+                if($survey = $this->surveyRepository->find($id)) {
                     $entityManager = $this->getDoctrine()->getManager();
 
-                    $users = $this->getDoctrine()->getRepository(Person::class)->findAll();
+                    $users = $this->personRepository->findAll();
                     foreach($users as $user) {
                         $user->removeVote($id);
                     }
@@ -103,7 +125,7 @@ class SurveyController extends AbstractController
      * @return Response
       */
     public function renderSurvey() {
-        if($survey = $this->getDoctrine()->getRepository(Survey::class)->findOneByHighestId()) {
+        if($survey = $this->surveyRepository->findOneByHighestId()) {
             $survey = $survey->toArray();
             if($current_user = $this->getUser()) {
                 $survey["voted"] = $current_user->hasVoted($survey["id"]);
@@ -133,14 +155,14 @@ class SurveyController extends AbstractController
             $survey_id = (int)$request->request->get('survey_id');
             $vote_id = (int)$request->request->get('vote_id');
 
-            $survey = $this->getDoctrine()->getRepository(Survey::class)->find($survey_id);
+            $survey = $this->surveyRepository->find($survey_id);
             $current_user = $this->getUser();
             if(!$survey->isLocked()) {
                 if(!$current_user->hasVoted($survey_id)){
 
                     //this is clunky, but because of the way votes are stored in the Person entity,
                     //it has to be like this
-                    $this->getDoctrine()->getRepository(SurveyOption::class)->find($vote_id)->incrementVote();
+                    $this->surveyOptionRepository->find($vote_id)->incrementVote();
                     $current_user->addVote($survey_id, $vote_id);
 
                     $entityManager = $this->getDoctrine()->getManager();

@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Repository\CommentRepository;
+use App\Repository\PostRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
@@ -12,20 +14,32 @@ use App\Entity\Comment;
 
 class CommentController extends AbstractController
 {
-    /**
+
+	/** @var PostRepository */
+	private $postRepository;
+
+	/** @var CommentRepository */
+	private $commentRepository;
+
+	public function __construct(
+		PostRepository $postRepository,
+		CommentRepository $commentRepository
+	)
+	{
+		$this->postRepository = $postRepository;
+		$this->commentRepository = $commentRepository;
+	}
+
+	/**
      * @Route("/post/{post_id<\d+>}/comment", name="app_blog_post_comment")
-     *
-     * @param Request $request
-     * @param int $post_id
-     * @return JsonResponse
      */
-    public function createComment($post_id, Request $request) {
+    public function createComment(int $post_id, Request $request): JsonResponse {
         if($request->isXmlHttpRequest() || $request->query->get('showJson') == 1) {
             $content = $request->request->get('content');
             if(is_string($content)) {
                 $date = date_create_from_format('H:i:s Y-m-d', date('H:i:s Y-m-d'));
                 $comment = new Comment();
-                $post = $this->getDoctrine()->getRepository(Post::class)->find($post_id);
+                $post = $this->postRepository->find($post_id);
 
                 $comment->setDate($date);
                 $comment->setAuthor($this->getUser()->getUsername());
@@ -73,8 +87,8 @@ class CommentController extends AbstractController
 	            if(is_string($content)) {
 	                $entityManager = $this->getDoctrine()->getManager();
 
-	                $post = $this->getDoctrine()->getRepository(Post::class)->find($post_id);
-	                $comment = $this->getDoctrine()->getRepository(Comment::class)->find($comment_id);
+	                $post = $this->postRepository->find($post_id);
+	                $comment = $this->commentRepository->find($comment_id);
 
 	                if($post->getComments()->contains($comment)) {
                         $comment->setContent($content);
@@ -112,20 +126,15 @@ class CommentController extends AbstractController
 
 	/**
       * @Route("/post/{post_id<\d+>}/comment/delete/{comment_id<\d+>}", name="app_blog_post_comment_delete")
-     *
-     * @param int $post_id
-     * @param int $comment_id
-     * @param Request $request
-     * @return JsonResponse
       */
-    public function deleteComment($post_id, $comment_id, Request $request) {
+    public function deleteComment(int $post_id, int $comment_id, Request $request): JsonResponse {
         if($request->isXmlHttpRequest() || $request->query->get('showJson') == 1) {
             $request_username = $request->request->get('current_user');
             if($this->getUser()->getUsername() == $request_username) {
                 $entityManager = $this->getDoctrine()->getManager();
 
-                $comment = $this->getDoctrine()->getRepository(Comment::class)->find($comment_id);
-                $post = $this->getDoctrine()->getRepository(Post::class)->find($post_id);
+                $comment = $this->commentRepository->find($comment_id);
+                $post = $this->postRepository->find($post_id);
 
                 $post->removeComment($comment);
 

@@ -2,26 +2,47 @@
 
 namespace App\Controller;
 
+use App\Repository\PersonRepository;
+use App\Repository\PostRepository;
+use App\Repository\SurveyOptionRepository;
+use App\Repository\SurveyRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-
-use App\Entity\Post;
-use App\Entity\Person;
-use App\Entity\Survey;
-use App\Entity\SurveyOption;
 
 class BlogController extends AbstractController
 {
-    /**
+
+	/** @var PersonRepository */
+	private $personRepository;
+
+	/** @var SurveyRepository */
+	private $surveyRepository;
+
+	/** @var SurveyOptionRepository */
+	private $surveyOptionRepository;
+
+	/** @var PostRepository */
+	private $postRepository;
+
+	public function __construct(
+		PostRepository $postRepository,
+		PersonRepository $personRepository,
+		SurveyRepository $surveyRepository,
+		SurveyOptionRepository $surveyOptionRepository
+	)
+	{
+		$this->personRepository = $personRepository;
+		$this->surveyRepository = $surveyRepository;
+		$this->surveyOptionRepository = $surveyOptionRepository;
+		$this->postRepository = $postRepository;
+	}
+
+	/**
      * @Route("/admin", name="app_blog_admin")
-     *
-     * @param Request $request
-     * @return RedirectResponse|Response
      */
-    public function showAdmin(Request $request) {
+    public function showAdmin(Request $request): Response {
         $_error = "";
         $tab = $request->query->get('p');
         if($current_user = $this->getUser()) {
@@ -32,13 +53,13 @@ class BlogController extends AbstractController
                     //users + "survey: option" voted on by the user
                     if($tab == "users") {
                         $users = [];
-                        foreach($this->getDoctrine()->getRepository(Person::class)->findAll() as $user) {
+                        foreach($this->personRepository->findAll() as $user) {
                             $votes = [];
                             // intentionally stupid code
                             if($user->getVotes()) {
                                 foreach($user->getVotes() as $key => $value) {
-                                    $survey_name = $this->getDoctrine()->getRepository(Survey::class)->find($key)->getTitle();
-                                    $option_name = $this->getDoctrine()->getRepository(SurveyOption::class)->find($value)->getTitle();
+                                    $survey_name = $this->surveyRepository->find($key)->getTitle();
+                                    $option_name = $this->surveyOptionRepository->find($value)->getTitle();
                                     $votes[$survey_name] = $option_name;
                                 }
                             }
@@ -56,24 +77,24 @@ class BlogController extends AbstractController
                             'tab' => $tab,
                             'users' => $users,
                         ]);
-                    } 
+                    }
 
                     //posts standalone
                     elseif($tab == "posts") {
                         $posts = [];
-                        foreach($this->getDoctrine()->getRepository(Post::class)->findAll() as $post) {
+                        foreach($this->postRepository->findAll() as $post) {
                             $posts[] = $post->toArray();
                         }
                         return $this->render("blog/admin.html.twig", [
                             'tab' => $tab,
                             'posts' => $posts,
                         ]);
-                    } 
+                    }
 
                     //surveys+options
                     elseif($tab == "surveys") {
                         $surveys = [];
-                        foreach($this->getDoctrine()->getRepository(Survey::class)->findAll() as $survey) {
+                        foreach($this->surveyRepository->findAll() as $survey) {
                             $surveys[] = $survey->toArray();
                         }
                         return $this->render("blog/admin.html.twig", [
@@ -95,17 +116,14 @@ class BlogController extends AbstractController
 
     /**
      * @Route("/error", name="app_blog_error")
-     *
-     * @param Request $request
-     * @return RedirectResponse|Response
      */
-    public function showError(Request $request) {
+    public function showError(Request $request): Response {
         $msg = $request->query->get("msg");
         if($msg == "perm") {
             return $this->render('blog/error.html.twig', [
                 'msg' => 'Insufficient permissions',
             ]);
-        } 
+        }
         elseif($msg == "auth") {
             return $this->render('blog/error.html.twig', [
                 'msg' => 'Login to access this page',
@@ -123,3 +141,4 @@ class BlogController extends AbstractController
         }
     }
 }
+
