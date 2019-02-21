@@ -9,7 +9,6 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
-use App\Entity\Post;
 use App\Entity\Comment;
 
 class CommentController extends AbstractController
@@ -34,7 +33,7 @@ class CommentController extends AbstractController
      * @Route("/post/{post_id<\d+>}/comment", name="app_blog_post_comment")
      */
     public function createComment(int $post_id, Request $request): JsonResponse {
-        if($request->isXmlHttpRequest() || $request->query->get('showJson') == 1) {
+        if($request->isXmlHttpRequest() || $request->query->get('showJson') === 1) {
             $content = $request->request->get('content');
             if(is_string($content)) {
 
@@ -69,19 +68,19 @@ class CommentController extends AbstractController
             }
         }
         return new JsonResponse([
-        'status' => 'Error',
-        'message' => 'Content is not of type string'],
-        400);
+            'status' => 'Error',
+            'message' => 'xml'
+        ], 200);
     }
 
 	/**
      * @Route("/post/{post_id<\d+>}/comment/edit/{comment_id<\d+>}", name="app_blog_post_comment_edit")
      */
     public function editComment(int $post_id, int $comment_id, Request $request): JsonResponse {
-        if($request->isXmlHttpRequest() || $request->query->get('showJson') == 1) {
+        if($request->isXmlHttpRequest() || $request->query->get('showJson') === 1) {
             $content = $request->request->get('content');
             $request_username = $request->request->get('current_user');
-            if($this->getUser()->getUsername() == $request_username) {
+            if($this->getUser()->getUsername() === $request_username) {
 	            if(is_string($content)) {
 	                $entityManager = $this->getDoctrine()->getManager();
 
@@ -110,15 +109,10 @@ class CommentController extends AbstractController
 		        	'message' => 'perm',
 		        ], 200);
 		    }
-        } else {
-	        return new JsonResponse([
-		        'status' => 'Error',
-		        'message' => 'str'
-	    	], 200);
-	    }
+        }
         return new JsonResponse([
             'status' => 'Error',
-            'message' => 'str'
+            'message' => 'xml'
         ], 200);
     }
 
@@ -149,11 +143,10 @@ class CommentController extends AbstractController
 		        	'message' => 'perm',
 		        ], 200);
 		    }
-        } else {
-	        return new JsonResponse([
-		        'status' => 'Error',
-		        'message' => 'xml'
-	    	], 200);
-	    }
+        }
+        return new JsonResponse([
+            'status' => 'Error',
+            'message' => 'xml'
+        ], 200);
     }
 }

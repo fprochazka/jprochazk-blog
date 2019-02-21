@@ -135,7 +135,7 @@ class Person implements UserInterface, \Serializable
         return $serial;
     }
 
-    public function unserialize($string): array
+    public function unserialize($string)
     {
         list(
             $this->id,

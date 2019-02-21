@@ -38,6 +38,7 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator
 
     /** @var CsrfTokenManagerInterface */
     private $csrfTokenManager;
+
     /** @var UserPasswordEncoderInterface */
     private $passwordEncoder;
 
@@ -113,7 +114,9 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): RedirectResponse
     {
         $referer = (is_string($request->headers->get('referer')) && $request->headers->get('referer') !== null) ? $request->headers->get('referer') : "";
-
+        if($referer === "") {
+            throw new \Exception("could not get referer in onAuthenticationFailure");
+        }
         $urlArray = explode("/", str_replace("http://", "", $referer));
         if($urlArray[1] === "post" && $urlArray[2] !== "new") {
             return new RedirectResponse($referer);

@@ -72,8 +72,8 @@ class PostController extends AbstractController
       */
     public function createPost(Request $request): Response {
         $_error = "";
-        if(($current_user = $this->getUser()) != null) {
-            if($current_user->getRole() == 'ROLE_ADMIN') {
+        if(($current_user = $this->getUser()) !== null) {
+            if($current_user->getRole() === 'ROLE_ADMIN') {
                 $post = new Post();
                 $form = $this->createForm(PostFormType::class, $post);
 
@@ -107,9 +107,9 @@ class PostController extends AbstractController
       */
     public function editPost(int $id, Request $request): Response {
         $_error = "";
-        if(($current_user = $this->getUser()) != null) {
-            if($current_user->getRole() == 'ROLE_ADMIN') {
-                if($post = $this->postRepository->find($id)) {
+        if(($current_user = $this->getUser()) !== null) {
+            if($current_user->getRole() === 'ROLE_ADMIN') {
+                if(($post = $this->postRepository->find($id)) !== null) {
                     $form = $this->createForm(PostFormType::class, $post);
 
                     $form->handleRequest($request);
@@ -129,7 +129,7 @@ class PostController extends AbstractController
                     return $this->render('blog/post/form.html.twig', [
                         'form' => $form->createView(),
                     ]);
-                }
+                } else { $_error = "404"; }
             } else { $_error = "perm"; }
         } else { $_error = "auth"; }
 
@@ -141,8 +141,8 @@ class PostController extends AbstractController
       */
     public function deletePost(int $id, Request $request): Response {
         $_error = "";
-        if(($current_user = $this->getUser()) != null) {
-            if($current_user->getRole() == 'ROLE_ADMIN') {
+        if(($current_user = $this->getUser()) !== null) {
+            if($current_user->getRole() === 'ROLE_ADMIN') {
                 if($post = $this->postRepository->find($id)) {
                     $entityManager = $this->getDoctrine()->getManager();
 

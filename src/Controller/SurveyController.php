@@ -46,8 +46,8 @@ class SurveyController extends AbstractController
     public function createSurvey(Request $request): Response
     {
         $_error = "";
-        if(($current_user = $this->getUser()) != null) {
-            if($current_user->getRole() == 'ROLE_ADMIN') {
+        if(($current_user = $this->getUser()) !== null) {
+            if($current_user->getRole() === 'ROLE_ADMIN') {
                 $survey = new Survey();
                 $form = $this->createForm(SurveyType::class, $survey);
 
@@ -88,8 +88,8 @@ class SurveyController extends AbstractController
     public function deleteSurvey(int $id, Request $request): Response
     {
         $_error = "";
-        if(($current_user = $this->getUser()) != null) {
-            if($current_user->getRole() == 'ROLE_ADMIN') {
+        if(($current_user = $this->getUser()) !== null) {
+            if($current_user->getRole() === 'ROLE_ADMIN') {
                 if($survey = $this->surveyRepository->find($id)) {
                     $entityManager = $this->getDoctrine()->getManager();
 
@@ -142,7 +142,7 @@ class SurveyController extends AbstractController
       */
     public function surveyVote(Request $request): JsonResponse
     {
-        if($request->isXmlHttpRequest() || $request->query->get('showJson') == 1) {
+        if($request->isXmlHttpRequest() || $request->query->get('showJson') === 1) {
 
             $survey_id = (int)$request->request->get('survey_id');
             $vote_id = (int)$request->request->get('vote_id');
