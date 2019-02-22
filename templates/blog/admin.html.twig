@@ -46,7 +46,7 @@
 <div class="list">
 {% if tab != "error" %}
 	{% if tab == "users" and users != null %}
-		{% for user in users|reverse %}
+		{% for user in users %}
 			<div class="list-item user">
 				ID: {{ user['id'] }} | Username: {{ user['name'] }} | Role: {{ user['role'] }}<br>
 				Voted on: <button class="show-hide small" id="{{ user['id'] }}" name="voted">+</button><br>

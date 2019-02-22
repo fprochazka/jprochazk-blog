@@ -15,6 +15,10 @@ class SamplePostFixture extends Fixture
         $post->setAuthor("admin");
         $post->setTitle("Sample post");
         $post->setContent("This is a sample post. You can edit or delete it! 
+        <"."br".">The admin account is:
+        <"."br".">Username: admin
+        <"."br".">Password: admin
+        <"."br".">
         <"."br".">Lorem ipsum dolor sit amet, consectetuer adipiscing elit. 
         <"."br".">Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, 
         <"."br".">sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Morbi scelerisque luctus velit. 

@@ -26,7 +26,7 @@
 {% endblock %}
 
 {% block content %}
-	{% for item in posts|reverse %}
+	{% for item in posts %}
 	<div class="post">
 		<a class="post title">{{ item["title"] }}</a> <a class="post link" href="{{ path('app_blog_post_show', {'id' : item['id']}) }}">Read</a><br>
 		<span class="post content">{{ item["content"] }}<br></span>
