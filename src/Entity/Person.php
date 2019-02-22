@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
@@ -51,15 +52,21 @@ class Person implements UserInterface, \Serializable
      */
     private $votes = [];
 
-    public function toArray(): array 
-    {
-        return [
-            'id' => $this->id,
-            'name' => $this->username,
-            'role' => $this->role,
-            'votes' => $this->votes
-        ];
-    }
+    /**
+     * @ORM\Column(type="array", nullable=true)
+     *
+     * @var array
+     */
+    private $surveys;
+
+    /**
+     * @ORM\Column(type="array", nullable=true)
+     *
+     * @var array
+     */
+    private $surveyoptions;
+
+    public function __construct(){}
 
     public function getId(): int
     {
@@ -149,10 +156,28 @@ class Person implements UserInterface, \Serializable
         return $this->votes;
     }
 
-    public function addVote(int $survey_id, int $vote_id): self
+    public function getSurveys(): array
     {
+        return $this->surveys;
+    }
+
+    public function getSurveyoptions(): array
+    {
+        return $this->surveyoptions;
+    }
+
+    public function addVote(Survey $survey, SurveyOption $surveyOption): self
+    {
+        $survey_id = $survey->getId();
+        $survey_title = $survey->getTitle();
+
+        $vote_id = $surveyOption->getId();
+        $vote_title = $surveyOption->getTitle();
+
         if(!isset($this->votes[$survey_id]) || !array_key_exists($survey_id, $this->votes)) {
             $this->votes[$survey_id] = $vote_id;
+            $this->surveys[$survey_id] = $survey_title;
+            $this->surveyoptions[$vote_id] = $vote_title;
         } else {
             throw new \LogicException("User has already voted on survey (id: ".$survey_id.")");
         }
@@ -162,7 +187,10 @@ class Person implements UserInterface, \Serializable
 
     public function removeVote(int $survey_id): self
     {
+        $vote_id = $this->votes[$survey_id];
         unset($this->votes[$survey_id]);
+        unset($this->surveys[$survey_id]);
+        unset($this->surveyoptions[$vote_id]);
 
         return $this;
     }
@@ -180,5 +208,26 @@ class Person implements UserInterface, \Serializable
         } else {
             return false;
         }
+    }
+
+    public function toArray(): array
+    {
+        if($this->getVotes() != null) {
+            $votes = [];
+
+            foreach($this->getVotes() as $survey_id => $vote_id) {
+                $survey_name = $this->surveys[$survey_id];
+                $option_name = $this->surveyoptions[$vote_id];
+                $votes[$survey_name] = $option_name;
+            }
+        } else {
+            $votes = null;
+        }
+        return [
+            'id' => $this->id,
+            'name' => $this->username,
+            'role' => $this->role,
+            'votes' => $votes
+        ];
     }
 }

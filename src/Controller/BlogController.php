@@ -43,75 +43,45 @@ class BlogController extends AbstractController
      * @Route("/admin", name="app_blog_admin")
      */
     public function showAdmin(Request $request): Response {
-        $_error = "";
+        if($this->getUser() === null) return $this->redirectToRoute('app_blog_error', ['msg' => 'auth']);
+        if($this->getUser()->getRole() !== 'ROLE_ADMIN') return $this->redirectToRoute('app_blog_error', ['msg' => '403']);
+
         $tab = $request->query->get('p');
-        if(($current_user = $this->getUser()) != null) {
-            if($current_user->getRole() === 'ROLE_ADMIN') {
-                if($tab === null) {
-                    return $this->redirectToRoute("app_blog_admin", ['p' => "users"]);
-                } else {
-                    //users + "survey: option" voted on by the user
-                    if($tab === "users") {
-                        $users = [];
-                        foreach($this->personRepository->findAll() as $user) {
-                            $votes = [];
-                            // intentionally stupid code
-                            if($user->getVotes()) {
-                                foreach($user->getVotes() as $key => $value) {
-                                    $survey_name = $this->surveyRepository->find($key)->getTitle();
-                                    $option_name = $this->surveyOptionRepository->find($value)->getTitle();
-                                    $votes[$survey_name] = $option_name;
-                                }
-                            }
-
-                            $users[] = [
-                                'id' => $user->getId(),
-                                'name' => $user->getUsername(),
-                                'role' => $user->getRole(),
-                                'votes' => $votes
-                            ];
-
-                            $votes = [];
-                        }
-                        return $this->render("blog/admin.html.twig", [
-                            'tab' => $tab,
-                            'users' => $users,
-                        ]);
-                    }
-
-                    //posts standalone
-                    elseif($tab === "posts") {
-                        $posts = [];
-                        foreach($this->postRepository->findAll() as $post) {
-                            $posts[] = $post->toArray();
-                        }
-                        return $this->render("blog/admin.html.twig", [
-                            'tab' => $tab,
-                            'posts' => $posts,
-                        ]);
-                    }
-
-                    //surveys+options
-                    elseif($tab === "surveys") {
-                        $surveys = [];
-                        foreach($this->surveyRepository->findAll() as $survey) {
-                            $surveys[] = $survey->toArray();
-                        }
-                        return $this->render("blog/admin.html.twig", [
-                            'tab' => $tab,
-                            'surveys' => $surveys,
-                        ]);
-                    }
-
-                    else {
-                        return $this->render("blog/admin.html.twig", [
-                            'tab' => "error"
-                        ]);
-                    }
+        switch($tab) {
+            case null:
+                return $this->redirectToRoute("app_blog_admin", ['p' => "users"]);
+            case "users":
+                $users = [];
+                foreach($this->personRepository->findAll() as $user) {
+                    $users[] = $user->toArray();
                 }
-            } else { $_error = "perm"; }
-        } else { $_error = "auth"; }
-        return $this->redirectToRoute("app_blog_error", ['msg' => $_error]);
+                return $this->render("blog/admin.html.twig", [
+                    'tab' => $tab,
+                    'users' => $users,
+                ]);
+            case "posts":
+                $posts = [];
+                foreach($this->postRepository->findAll() as $post) {
+                    $posts[] = $post->toArray();
+                }
+                return $this->render("blog/admin.html.twig", [
+                    'tab' => $tab,
+                    'posts' => $posts,
+                ]);
+            case "surveys":
+                $surveys = [];
+                foreach($this->surveyRepository->findAll() as $survey) {
+                    $surveys[] = $survey->toArray();
+                }
+                return $this->render("blog/admin.html.twig", [
+                    'tab' => $tab,
+                    'surveys' => $surveys,
+                ]);
+            default:
+                return $this->render("blog/admin.html.twig", [
+                    'tab' => "error"
+                ]);
+        }
     }
 
     /**
@@ -119,25 +89,24 @@ class BlogController extends AbstractController
      */
     public function showError(Request $request): Response {
         $msg = $request->query->get("msg");
-        if($msg === "perm") {
-            return $this->render('blog/error.html.twig', [
-                'msg' => 'Insufficient permissions',
-            ]);
-        }
-        elseif($msg === "auth") {
-            return $this->render('blog/error.html.twig', [
-                'msg' => 'Login to access this page',
-            ]);
-        }
-        elseif($msg === "404") {
-            return $this->render('blog/error.html.twig', [
-                'msg' => 'Page not found.',
-            ]);
-        }
-        else {
-            return $this->render('blog/error.html.twig', [
-                'msg' => 'Unknown error',
-            ]);
+
+        switch($msg) {
+            case "auth":
+                return $this->render('blog/error.html.twig', [
+                    'msg' => 'Login to access this page',
+                ]);
+            case "403":
+                return $this->render('blog/error.html.twig', [
+                    'msg' => 'Insufficient permissions',
+                ]);
+            case "404":
+                return $this->render('blog/error.html.twig', [
+                    'msg' => 'Page not found.',
+                ]);
+            default:
+                return $this->render('blog/error.html.twig', [
+                    'msg' => 'Unknown error',
+                ]);
         }
     }
 }

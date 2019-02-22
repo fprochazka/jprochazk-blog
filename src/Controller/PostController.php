@@ -50,10 +50,9 @@ class PostController extends AbstractController
       * @Route("/post/{id<\d+>}", name="app_blog_post_show")
       */
     public function showPost(int $id): Response {
-        $_error = "";
         if($post = $this->postRepository->find($id)->toArray()) {
 
-        	$current_user_username = ($this->getUser() != null) ? $this->getUser()->getUsername() : "guest";
+            $current_user_username = ($this->getUser() != null) ? $this->getUser()->getUsername() : "guest";
             foreach($post["comments"] as $key => $value) {
                 $post["comments"][$key]["canEdit"] = ($current_user_username == $post["comments"][$key]["author"]) ? true : false;
             }
@@ -62,108 +61,106 @@ class PostController extends AbstractController
                 "post" => $post
             ]);
 
-        } else { $_error = "404"; }
-
-        return $this->redirectToRoute("app_blog_error", ['msg' => $_error]);
+        } else {
+            $this->redirectToRoute('app_blog_error', ['msg' => '404']);
+        }
     }
 
     /**
       * @Route("/post/new", name="app_blog_post_new")
       */
     public function createPost(Request $request): Response {
-        $_error = "";
-        if(($current_user = $this->getUser()) !== null) {
-            if($current_user->getRole() === 'ROLE_ADMIN') {
-                $post = new Post();
-                $form = $this->createForm(PostFormType::class, $post);
+        //authentication check
+        if($this->getUser() === null) return $this->redirectToRoute('app_blog_error', ['msg' => 'auth']);
+        //role check
+        if($this->getUser()->getRole() !== 'ROLE_ADMIN') return $this->redirectToRoute('app_blog_error', ['msg' => '403']);
 
-                $form->handleRequest($request);
+        $post = new Post();
+        $form = $this->createForm(PostFormType::class, $post);
 
-                if ($form->isSubmitted() && $form->isValid()) {
-                    $post = $form->getData();
-                    $date = new \DateTimeImmutable();
+        $form->handleRequest($request);
 
-                    $post->setSubtime($date);
-                    $post->setAuthor($current_user->getUsername());
+        if ($form->isSubmitted() && $form->isValid()) {
+            $post = $form->getData();
+            $date = new \DateTimeImmutable();
 
-                    $entityManager = $this->getDoctrine()->getManager();
-                    $entityManager->persist($post);
-                    $entityManager->flush();
+            $post->setSubtime($date);
+            $post->setAuthor($this->getUser()->getUsername());
 
-                    return $this->redirectToRoute('app_blog_post_show', ['id' => $post->getId()]);
-                }
+            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager->persist($post);
+            $entityManager->flush();
 
-                return $this->render('blog/post/form.html.twig', [
-                    'form' => $form->createView(),
-                ]);
-            } else { $_error = "perm"; }
-        } else { $_error = "auth"; }
+            return $this->redirectToRoute('app_blog_post_show', ['id' => $post->getId()]);
+        }
 
-        return $this->redirectToRoute("app_blog_error", ['msg' => $_error]);
+        return $this->render('blog/post/form.html.twig', [
+            'form' => $form->createView(),
+        ]);
     }
 
     /**
       * @Route("/post/edit/{id<\d+>}", name="app_blog_post_edit")
       */
     public function editPost(int $id, Request $request): Response {
-        $_error = "";
-        if(($current_user = $this->getUser()) !== null) {
-            if($current_user->getRole() === 'ROLE_ADMIN') {
-                if(($post = $this->postRepository->find($id)) !== null) {
-                    $form = $this->createForm(PostFormType::class, $post);
+        //authentication check
+        if($this->getUser() === null) return $this->redirectToRoute('app_blog_error', ['msg' => 'auth']);
+        //role check
+        if($this->getUser()->getRole() !== 'ROLE_ADMIN') return $this->redirectToRoute('app_blog_error', ['msg' => '403']);
 
-                    $form->handleRequest($request);
+        if(($post = $this->postRepository->find($id)) !== null) {
+            $form = $this->createForm(PostFormType::class, $post);
 
-                    if ($form->isSubmitted() && $form->isValid()) {
-                        $post = $form->getData();
-                        $date = new \DateTimeImmutable();
-                        $post->setSubtime($date);
+            $form->handleRequest($request);
 
-                        $entityManager = $this->getDoctrine()->getManager();
-                        $entityManager->persist($post);
-                        $entityManager->flush();
+            if ($form->isSubmitted() && $form->isValid()) {
+                $post = $form->getData();
+                $date = new \DateTimeImmutable();
+                $post->setSubtime($date);
 
-                        return $this->redirectToRoute('app_blog_post_show', ['id' => $post->getId()]);
-                    }
+                $entityManager = $this->getDoctrine()->getManager();
+                $entityManager->persist($post);
+                $entityManager->flush();
 
-                    return $this->render('blog/post/form.html.twig', [
-                        'form' => $form->createView(),
-                    ]);
-                } else { $_error = "404"; }
-            } else { $_error = "perm"; }
-        } else { $_error = "auth"; }
+                return $this->redirectToRoute('app_blog_post_show', ['id' => $post->getId()]);
+            }
 
-        return $this->redirectToRoute("app_blog_error", ['msg' => $_error]);
+            return $this->render('blog/post/form.html.twig', [
+                'form' => $form->createView(),
+            ]);
+        } else {
+            $this->redirectToRoute('app_blog_error', ['msg' => '404']);
+        }
     }
 
     /**
       * @Route("/post/delete/{id<\d+>}", name="app_blog_post_delete")
       */
     public function deletePost(int $id, Request $request): Response {
-        $_error = "";
-        if(($current_user = $this->getUser()) !== null) {
-            if($current_user->getRole() === 'ROLE_ADMIN') {
-                if($post = $this->postRepository->find($id)) {
-                    $entityManager = $this->getDoctrine()->getManager();
+        //authentication check
+        if($this->getUser() === null) return $this->redirectToRoute('app_blog_error', ['msg' => 'auth']);
+        //role check
+        if($this->getUser()->getRole() !== 'ROLE_ADMIN') return $this->redirectToRoute('app_blog_error', ['msg' => '403']);
 
-                    foreach($post->getComments() as $comment) {
-                       $post->removeComment($comment);
-                       $entityManager->remove($comment);
-                    }
+        if($post = $this->postRepository->find($id)) {
+            $entityManager = $this->getDoctrine()->getManager();
 
-                    $entityManager->remove($post);
-                    $entityManager->flush();
+            foreach($post->getComments() as $comment) {
+               $post->removeComment($comment);
+               $entityManager->remove($comment);
+            }
 
-                    $referer = (is_string($request->headers->get('referer')) && $request->headers->get('referer') !== null) ? $request->headers->get('referer') : "";
-                    if ((explode("/", str_replace("http://", "", $referer)))[1] == "post") {
-                        return $this->redirectToRoute('app_blog_post_list');
-                    } else {
-                        return new RedirectResponse($request->headers->get('referer'));
-                    }
-                } else { $_error = "404"; }
-            } else { $_error = "perm"; }
-        } else { $_error = "auth"; }
+            $entityManager->remove($post);
+            $entityManager->flush();
 
-        return $this->redirectToRoute("app_blog_error", ['msg' => $_error]);
+            $referer = (is_string($request->headers->get('referer')) && $request->headers->get('referer') !== null) ? $request->headers->get('referer') : "";
+            if ((explode("/", str_replace("http://", "", $referer)))[1] == "post") {
+                return $this->redirectToRoute('app_blog_post_list');
+            } else {
+                return new RedirectResponse($request->headers->get('referer'));
+            }
+        } else {
+            $this->redirectToRoute('app_blog_error', ['msg' => '404']);
+        }
     }
 }

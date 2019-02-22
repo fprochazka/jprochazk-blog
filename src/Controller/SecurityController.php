@@ -37,9 +37,7 @@ class SecurityController extends AbstractController
      */
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
-        // get the login error if there is one
         $error = $authenticationUtils->getLastAuthenticationError();
-        // last username entered by the user
         $lastUsername = $authenticationUtils->getLastUsername();
 
         return $this->render('security/login.html.twig', ['last_username' => $lastUsername, 'error' => $error]);
@@ -50,37 +48,36 @@ class SecurityController extends AbstractController
      */
     public function register(Request $request, UserPasswordEncoderInterface $passwordEncoder, GuardAuthenticatorHandler $guardHandler, LoginFormAuthenticator $authenticator): ?Response
     {
-        if(is_null($current_user = $this->getUser())) {
-            $user = new Person();
-            $form = $this->createForm(RegistrationFormType::class, $user);
-            $form->handleRequest($request);
+        $user = new Person();
+        $user->setUsername("");
+        $user->setPassword("");
 
-            if ($form->isSubmitted() && $form->isValid()) {
-                $user->setPassword(
-                    $passwordEncoder->encodePassword(
-                        $user, $form->get('plainPassword')->getData()
-                    )
-                );
-                $user->setRole('ROLE_USER');
+        $form = $this->createForm(RegistrationFormType::class, $user);
+        $form->handleRequest($request);
 
-                $entityManager = $this->getDoctrine()->getManager();
-                $entityManager->persist($user);
-                $entityManager->flush();
+        if ($form->isSubmitted() && $form->isValid()) {
+            $user->setPassword(
+                $passwordEncoder->encodePassword(
+                    $user, $form->get('plainPassword')->getData()
+                )
+            );
+            $user->setRole('ROLE_USER');
 
-                return $guardHandler->authenticateUserAndHandleSuccess(
-                    $user,
-                    $request,
-                    $authenticator,
-                    'main'
-                );
-            }
+            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager->persist($user);
+            $entityManager->flush();
 
-            return $this->render('registration/register.html.twig', [
-                'registrationForm' => $form->createView(),
-            ]);
-        } else {
-            return $this->redirectToRoute('app_blog_post_list');
+            return $guardHandler->authenticateUserAndHandleSuccess(
+                $user,
+                $request,
+                $authenticator,
+                'main'
+            );
         }
+
+        return $this->render('registration/register.html.twig', [
+            'registrationForm' => $form->createView(),
+        ]);
     }
     
     /**

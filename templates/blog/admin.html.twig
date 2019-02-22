@@ -45,7 +45,7 @@
 </div>
 <div class="list">
 {% if tab != "error" %}
-	{% if tab == "users" %}
+	{% if tab == "users" and users != null %}
 		{% for user in users|reverse %}
 			<div class="list-item user">
 				ID: {{ user['id'] }} | Username: {{ user['name'] }} | Role: {{ user['role'] }}<br>
@@ -60,7 +60,7 @@
 				</span>
 			</div>
 		{% endfor %}
-	{% elseif tab == "posts" %}
+	{% elseif tab == "posts" and posts != null %}
 		{% for post in posts|reverse %}
 			<div class="list-item post">
 				ID: {{ post['id'] }} | Title: {{ post['title'] }} | Date: {{ post['date'] }} | Author: {{ post['author'] }}
@@ -85,7 +85,7 @@
 				<br>
 			</div>
 		{% endfor %}
-	{% elseif tab == "surveys" %}
+	{% elseif tab == "surveys" and surveys != null %}
 		{% for survey in surveys|reverse %}
 		<div class="list-item survey" id="{{ survey['id'] }}">
 			<span class="list-item title">{{ survey["title"] }}</span><button class="show-hide small" id="{{ survey['id'] }}" name="option">+</button>

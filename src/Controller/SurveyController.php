@@ -45,41 +45,39 @@ class SurveyController extends AbstractController
       */
     public function createSurvey(Request $request): Response
     {
-        $_error = "";
-        if(($current_user = $this->getUser()) !== null) {
-            if($current_user->getRole() === 'ROLE_ADMIN') {
-                $survey = new Survey();
-                $form = $this->createForm(SurveyType::class, $survey);
+        //authentication check
+        if($this->getUser() === null) return $this->redirectToRoute('app_blog_error', ['msg' => 'auth']);
+        //role check
+        if($this->getUser()->getRole() !== 'ROLE_ADMIN') return $this->redirectToRoute('app_blog_error', ['msg' => '403']);
 
-                $form->handleRequest($request);
+        $survey = new Survey();
+        $form = $this->createForm(SurveyType::class, $survey);
 
-                if ($form->isSubmitted() && $form->isValid()) {
-                    $entityManager = $this->getDoctrine()->getManager();
+        $form->handleRequest($request);
 
-                    $data = $form->getData();
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager = $this->getDoctrine()->getManager();
 
-                    $survey->setTitle($data->getTitle());
-                    $survey->unlock();
+            $data = $form->getData();
 
-                    foreach($data->getOptions() as $option) {
-                        $survey->addOption($option);
-                        $option->setVotes(0);
-                        $entityManager->persist($option);
-                    }
+            $survey->setTitle($data->getTitle());
+            $survey->unlock();
 
-                    $entityManager->persist($survey);
-                    $entityManager->flush();
+            foreach($data->getOptions() as $option) {
+                $survey->addOption($option);
+                $option->setVotes(0);
+                $entityManager->persist($option);
+            }
 
-                    return $this->redirectToRoute("app_blog_post_list");
-                }
+            $entityManager->persist($survey);
+            $entityManager->flush();
 
-                return $this->render('blog/survey/new.html.twig', [
-                    'form' => $form->createView(),
-                ]);
-            } else { $_error = "perm"; }
-        } else { $_error = "auth"; }
+            return $this->redirectToRoute("app_blog_post_list");
+        }
 
-        return $this->redirectToRoute("app_blog_error", ['msg' => $_error]);
+        return $this->render('blog/survey/new.html.twig', [
+            'form' => $form->createView(),
+        ]);
     }
 
     /**
@@ -87,31 +85,29 @@ class SurveyController extends AbstractController
       */
     public function deleteSurvey(int $id, Request $request): Response
     {
-        $_error = "";
-        if(($current_user = $this->getUser()) !== null) {
-            if($current_user->getRole() === 'ROLE_ADMIN') {
-                if($survey = $this->surveyRepository->find($id)) {
-                    $entityManager = $this->getDoctrine()->getManager();
+        //authentication check
+        if($this->getUser() === null) return $this->redirectToRoute('app_blog_error', ['msg' => 'auth']);
+        //role check
+        if($this->getUser()->getRole() !== 'ROLE_ADMIN') return $this->redirectToRoute('app_blog_error', ['msg' => '403']);
 
-                    $users = $this->personRepository->findAll();
-                    foreach($users as $user) {
-                        $user->removeVote($id);
-                    }
+        if($survey = $this->surveyRepository->find($id)) {
+            $entityManager = $this->getDoctrine()->getManager();
 
-                    foreach($survey->getOptions() as $option) {
-                        $survey->removeOption($option);
-                        $entityManager->remove($option);
-                    }
+            $users = $this->personRepository->findAll();
+            foreach($users as $user) {
+                $user->removeVote($id);
+            }
 
-                    $entityManager->remove($survey);
-                    $entityManager->flush();
+            foreach($survey->getOptions() as $option) {
+                $survey->removeOption($option);
+                $entityManager->remove($option);
+            }
 
-                    return new RedirectResponse($request->headers->get('referer'));
-                } else { $_error = "404"; }
-            } else { $_error = "perm"; }
-        } else { $_error = "auth"; }
+            $entityManager->remove($survey);
+            $entityManager->flush();
 
-        return $this->redirectToRoute("app_blog_error", ['msg' => $_error]);
+            return new RedirectResponse($request->headers->get('referer'));
+        }
     }
 
     /**
@@ -148,14 +144,13 @@ class SurveyController extends AbstractController
             $vote_id = (int)$request->request->get('vote_id');
 
             $survey = $this->surveyRepository->find($survey_id);
+            $option = $this->surveyOptionRepository->find($vote_id);
             $current_user = $this->getUser();
             if(!$survey->isLocked()) {
                 if(!$current_user->hasVoted($survey_id)){
 
-                    //this is clunky, but because of the way votes are stored in the Person entity,
-                    //it has to be like this
-                    $this->surveyOptionRepository->find($vote_id)->incrementVote();
-                    $current_user->addVote($survey_id, $vote_id);
+                    $option->incrementVote();
+                    $current_user->addVote($survey, $option);
 
                     $entityManager = $this->getDoctrine()->getManager();
                     $entityManager->flush();

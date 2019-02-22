@@ -15,36 +15,27 @@ security:
         main:
             anonymous: true
 
+            access_denied_handler: App\Security\AccessDeniedHandler
+
             logout:
                 path: app_logout
                 success_handler: App\Security\LogoutSuccessHandler
 
             form_login:
-                login_path: app_login
                 check_path: app_login
+                login_path: app_login
                 provider: app_provider
+
             guard:
                 authenticators:
                     - App\Security\LoginFormAuthenticator
                 provider: app_provider
 
-            # activate different ways to authenticate
-
-            # http_basic: true
-            # https://symfony.com/doc/current/security.html#a-configuring-how-your-users-will-authenticate
-
-            # form_login: true
-            # https://symfony.com/doc/current/security/form_login_setup.html
-
-    # Easy way to control access for large sections of your site
-    # Note: Only the *first* access control that matches will be used
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/post/new, roles: ROLE_ADMIN }
-        # - { path: ^/post/edit, roles: ROLE_ADMIN }
-        # - { path: ^/survey/new, roles: ROLE_ADMIN }
+      - { path: ^/register, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+      - { path: ^/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
 
-        # - { path: ^/post/(<\d+>)/comment, roles: [ROLE_ADMIN, ROLE_USER] }
-        # - { path: ^/post/(<\d+>)/comment/edit/(<\d+>), roles: [ROLE_ADMIN, ROLE_USER] }
-        # - { path: ^/survey/vote, roles: [ROLE_ADMIN, ROLE_USER] }
-        # - { path: ^/profile, roles: ROLE_USER }
+      - { path: ^/post/(<\d+>)/comment, roles: [ROLE_ADMIN, ROLE_USER] }
+      - { path: ^/post/(<\d+>)/comment/edit/(<\d+>), roles: [ROLE_ADMIN, ROLE_USER] }
+      - { path: ^/survey/vote, roles: [ROLE_ADMIN, ROLE_USER] }
+
