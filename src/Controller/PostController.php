@@ -2,7 +2,9 @@
 
 namespace App\Controller;
 
+use App\Facade\PostFacade;
 use App\Repository\PostRepository;
+use App\Facade\AuthenticationFacade;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,15 +16,22 @@ use App\Form\PostFormType;
 
 class PostController extends AbstractController
 {
+	/** @var PostFacade */
+	private $postFacade;
 
-	/** @var PostRepository */
+	/** @var AuthenticationFacade */
+    private $authFacade;
+
+    /** @var PostRepository */
 	private $postRepository;
 
 	public function __construct(
-		PostRepository $postRepository
+	    AuthenticationFacade $authFacade,
+		PostFacade $postFacade
 	)
 	{
-		$this->postRepository = $postRepository;
+	    $this->authFacade = $authFacade;
+		$this->postFacade = $postFacade;
 	}
 
 	/**
@@ -30,19 +39,8 @@ class PostController extends AbstractController
       */
     public function postList(int $page): Response
     {
-        $posts = [];
-
-        $c = 0;
-        foreach($this->postRepository->findAllByOffsetCount($page, 10) as $post) {
-            $posts[$c] = $post->toArray();
-            if(strlen($posts[$c]["content"]) > 100) {
-                $posts[$c]["content"] = substr($posts[$c]["content"], 0, 100).'...';
-            }
-            ++$c;
-        }
-
         return $this->render('blog/post/list.html.twig', [
-            "posts" => $posts,
+            "posts" => $this->postFacade->getFrontPagePosts($page),
         ]);
     }
 
@@ -50,17 +48,11 @@ class PostController extends AbstractController
       * @Route("/post/{id<\d+>}", name="app_blog_post_show")
       */
     public function showPost(int $id): Response {
-        if($post = $this->postRepository->find($id)->toArray()) {
-
-            $current_user_username = ($this->getUser() != null) ? $this->getUser()->getUsername() : "guest";
-            foreach($post["comments"] as $key => $value) {
-                $post["comments"][$key]["canEdit"] = ($current_user_username == $post["comments"][$key]["author"]) ? true : false;
-            }
-
+        $post = $this->postFacade->getSinglePost($id);
+        if($post !== null) {
             return $this->render('blog/post/show.html.twig', [
                 "post" => $post
             ]);
-
         } else {
             $this->redirectToRoute('app_blog_error', ['msg' => '404']);
         }
@@ -70,32 +62,16 @@ class PostController extends AbstractController
       * @Route("/post/new", name="app_blog_post_new")
       */
     public function createPost(Request $request): Response {
-        //authentication check
-        if($this->getUser() === null) return $this->redirectToRoute('app_blog_error', ['msg' => 'auth']);
-        //role check
-        if($this->getUser()->getRole() !== 'ROLE_ADMIN') return $this->redirectToRoute('app_blog_error', ['msg' => '403']);
+        $this->authFacade->checkAuthentication();
 
-        $post = new Post();
-        $form = $this->createForm(PostFormType::class, $post);
-
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $post = $form->getData();
-            $date = new \DateTimeImmutable();
-
-            $post->setSubtime($date);
-            $post->setAuthor($this->getUser()->getUsername());
-
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->persist($post);
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_blog_post_show', ['id' => $post->getId()]);
+        $returnObject = $this->postFacade->createPost($request);
+        if($returnObject['status'] === 200) {
+            return $this->redirectToRoute('app_blog_post_show', ['id' => $returnObject['post_id']]);
         }
 
         return $this->render('blog/post/form.html.twig', [
-            'form' => $form->createView(),
+            'form' => $this->postFacade->getPostFormView(),
+            'error' => $returnObject['error']
         ]);
     }
 
@@ -103,64 +79,32 @@ class PostController extends AbstractController
       * @Route("/post/edit/{id<\d+>}", name="app_blog_post_edit")
       */
     public function editPost(int $id, Request $request): Response {
-        //authentication check
-        if($this->getUser() === null) return $this->redirectToRoute('app_blog_error', ['msg' => 'auth']);
-        //role check
-        if($this->getUser()->getRole() !== 'ROLE_ADMIN') return $this->redirectToRoute('app_blog_error', ['msg' => '403']);
+        $this->authFacade->checkAuthentication();
 
-        if(($post = $this->postRepository->find($id)) !== null) {
-            $form = $this->createForm(PostFormType::class, $post);
-
-            $form->handleRequest($request);
-
-            if ($form->isSubmitted() && $form->isValid()) {
-                $post = $form->getData();
-                $date = new \DateTimeImmutable();
-                $post->setSubtime($date);
-
-                $entityManager = $this->getDoctrine()->getManager();
-                $entityManager->persist($post);
-                $entityManager->flush();
-
-                return $this->redirectToRoute('app_blog_post_show', ['id' => $post->getId()]);
-            }
-
-            return $this->render('blog/post/form.html.twig', [
-                'form' => $form->createView(),
-            ]);
-        } else {
-            $this->redirectToRoute('app_blog_error', ['msg' => '404']);
+        $returnObject = $this->postFacade->editPost($id, $request);
+        if($returnObject['status'] === 200) {
+            return $this->redirectToRoute('app_blog_post_show', ['id' => $returnObject['post_id']]);
+        } else if($returnObject['status'] === 404) {
+            return $this->redirectToRoute('app_blog_error', ['msg' => '404']);
         }
+
+        return $this->render('blog/post/form.html.twig', [
+            'form' => $this->postFacade->getPostFormView($returnObject['post_data']),
+            'error' => $returnObject['error']
+        ]);
     }
 
     /**
       * @Route("/post/delete/{id<\d+>}", name="app_blog_post_delete")
       */
     public function deletePost(int $id, Request $request): Response {
-        //authentication check
-        if($this->getUser() === null) return $this->redirectToRoute('app_blog_error', ['msg' => 'auth']);
-        //role check
-        if($this->getUser()->getRole() !== 'ROLE_ADMIN') return $this->redirectToRoute('app_blog_error', ['msg' => '403']);
+        $this->authFacade->checkAuthentication();
 
-        if($post = $this->postRepository->find($id)) {
-            $entityManager = $this->getDoctrine()->getManager();
-
-            foreach($post->getComments() as $comment) {
-               $post->removeComment($comment);
-               $entityManager->remove($comment);
-            }
-
-            $entityManager->remove($post);
-            $entityManager->flush();
-
-            $referer = (is_string($request->headers->get('referer')) && $request->headers->get('referer') !== null) ? $request->headers->get('referer') : "";
-            if ((explode("/", str_replace("http://", "", $referer)))[1] == "post") {
-                return $this->redirectToRoute('app_blog_post_list');
-            } else {
-                return new RedirectResponse($request->headers->get('referer'));
-            }
-        } else {
-            $this->redirectToRoute('app_blog_error', ['msg' => '404']);
+        $returnArray = $this->postFacade->deletePost($id);
+        if($returnArray['status'] === 404) {
+            return $this->redirectToRoute('app_blog_error', ['msg' => '404']);
         }
+
+        return $this->redirectToRoute('app_blog_post_list');
     }
 }

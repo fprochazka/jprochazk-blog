@@ -81,7 +81,7 @@ class Post
         return $this->id;
     }
 
-    public function getTitle(): string
+    public function getTitle(): ?string
     {
         return $this->title;
     }
@@ -93,7 +93,7 @@ class Post
         return $this;
     }
 
-    public function getContent(): string
+    public function getContent(): ?string
     {
         return $this->content;
     }
@@ -105,7 +105,7 @@ class Post
         return $this;
     }
 
-    public function getSubtime(): \DateTimeInterface
+    public function getSubtime(): ?\DateTimeInterface
     {
         return $this->subtime;
     }
@@ -117,7 +117,7 @@ class Post
         return $this;
     }
 
-    public function getAuthor(): string
+    public function getAuthor(): ?string
     {
         return $this->author;
     }
