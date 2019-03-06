@@ -96,11 +96,11 @@ class PostFacade
         try {
             $this->entityManager->persist($post);
             $this->entityManager->flush();
+            return true;
         } catch (ORMException $e) {
             return false;
         }
 
-        return true;
     }
 
     public function createPost(Request $request): array

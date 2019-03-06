@@ -18,13 +18,16 @@ class AuthenticationFacade
         $this->security = $security;
     }
 
-    public function checkAuthentication(): ?RedirectResponse
+    public function getAuthenticationError(): ?string
     {
         /** @var Person $user */
         $user = $this->security->getUser();
-        if($this->security->getUser() == null) return new RedirectResponse('app_blog_error', 302, ['msg' => 'auth']);
-        if($user->getRole() !== 'ROLE_ADMIN') return new RedirectResponse('app_blog_error', 302, ['msg' => '403']);
-        else return null;
+        $authenticationError = null;
+
+        if($this->security->getUser() == null) $authenticationError = 'auth';
+        else if($user->getRole() !== 'ROLE_ADMIN') $authenticationError = '403';
+
+        return $authenticationError;
     }
 
 }

@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Facade\AuthenticationFacade;
 use App\Repository\PersonRepository;
 use App\Repository\PostRepository;
 use App\Repository\SurveyOptionRepository;
@@ -26,13 +27,18 @@ class BlogController extends AbstractController
 	/** @var PostRepository */
 	private $postRepository;
 
+	/** @var AuthenticationFacade */
+	private $authFacade;
+
 	public function __construct(
+	    AuthenticationFacade $authFacade,
 		PostRepository $postRepository,
 		PersonRepository $personRepository,
 		SurveyRepository $surveyRepository,
 		SurveyOptionRepository $surveyOptionRepository
 	)
 	{
+	    $this->authFacade = $authFacade;
 		$this->personRepository = $personRepository;
 		$this->surveyRepository = $surveyRepository;
 		$this->surveyOptionRepository = $surveyOptionRepository;
@@ -43,8 +49,9 @@ class BlogController extends AbstractController
      * @Route("/admin", name="app_blog_admin")
      */
     public function showAdmin(Request $request): Response {
-        if($this->getUser() === null) return $this->redirectToRoute('app_blog_error', ['msg' => 'auth']);
-        if($this->getUser()->getRole() !== 'ROLE_ADMIN') return $this->redirectToRoute('app_blog_error', ['msg' => '403']);
+        if(($authenticationError = $this->authFacade->getAuthenticationError()) !== null) {
+            return $this->redirectToRoute('app_blog_error', ['msg' => $authenticationError]);
+        }
 
         $tab = $request->query->get('p');
         switch($tab) {
