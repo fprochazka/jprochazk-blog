@@ -38,7 +38,7 @@ class PostController extends AbstractController
     public function postList(int $page): Response
     {
         return $this->render('blog/post/list.html.twig', [
-            "posts" => $this->postFacade->getFrontPagePosts($page),
+            'posts' => $this->postFacade->getFrontPagePosts($page),
         ]);
     }
 
@@ -49,7 +49,7 @@ class PostController extends AbstractController
         $post = $this->postFacade->getSinglePost($id);
         if($post !== null) {
             return $this->render('blog/post/show.html.twig', [
-                "post" => $post
+                'post' => $post
             ]);
         } else {
             return $this->redirectToRoute('app_blog_error', ['msg' => '404']);

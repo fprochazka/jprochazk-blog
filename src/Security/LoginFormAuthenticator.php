@@ -70,7 +70,7 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator
                 $credentials['username']
             );
         } else {
-            throw new \LogicException("could not get session in LoginFormAuthenticator");
+            throw new \LogicException('could not get session in LoginFormAuthenticator');
         }
 
         return $credentials;
@@ -101,10 +101,10 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey): RedirectResponse
     {
-        $referer = (is_string($request->headers->get('referer')) && $request->headers->get('referer') !== null) ? $request->headers->get('referer') : "";
+        $referer = (is_string($request->headers->get('referer')) && $request->headers->get('referer') !== null) ? $request->headers->get('referer') : '';
 
-        $urlArray = explode("/", str_replace("http://", "", $referer));
-        if($urlArray[1] === "post" && $urlArray[2] !== "new") {
+        $urlArray = explode('/', str_replace('http://', '', $referer));
+        if($urlArray[1] === 'post' && $urlArray[2] !== 'new') {
             return new RedirectResponse($referer);
         }
 
@@ -113,12 +113,12 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): RedirectResponse
     {
-        $referer = (is_string($request->headers->get('referer')) && $request->headers->get('referer') !== null) ? $request->headers->get('referer') : "";
-        if($referer === "") {
-            throw new \Exception("could not get referer in onAuthenticationFailure");
+        $referer = (is_string($request->headers->get('referer')) && $request->headers->get('referer') !== null) ? $request->headers->get('referer') : '';
+        if($referer === '') {
+            throw new \Exception('could not get referer in onAuthenticationFailure');
         }
-        $urlArray = explode("/", str_replace("http://", "", $referer));
-        if($urlArray[1] === "post" && $urlArray[2] !== "new") {
+        $urlArray = explode('/', str_replace('http://', '', $referer));
+        if($urlArray[1] === 'post' && $urlArray[2] !== 'new') {
             return new RedirectResponse($referer);
         }
 

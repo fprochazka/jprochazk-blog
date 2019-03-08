@@ -25,6 +25,6 @@ class AccessDeniedHandler implements AccessDeniedHandlerInterface
      */
     public function handle(Request $request, AccessDeniedException $accessDeniedException): Response
     {
-        return new RedirectResponse($this->router->generate('app_blog_error', ["msg" => "403"]));
+        return new RedirectResponse($this->router->generate('app_blog_error', ['msg' => '403']));
     }
 }

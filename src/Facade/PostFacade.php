@@ -6,7 +6,6 @@ namespace App\Facade;
 use App\Entity\Post;
 use App\Form\PostFormType;
 use App\Repository\PostRepository;
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\ORMException;
 use Symfony\Component\Form\FormFactoryInterface;
@@ -18,7 +17,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class PostFacade
 {
-    /** @var UserInterface|null */
+    /** @var UserInterface|null  */
     private $user;
 
     /** @var PostRepository */
@@ -30,14 +29,10 @@ class PostFacade
     /** @var EntityManagerInterface  */
     private $entityManager;
 
-    /** @var RouterInterface  */
-    private $router;
-
     public function __construct(
         Security $security,
         PostRepository $postRepository,
         FormFactoryInterface $formFactory,
-        RouterInterface $router,
         EntityManagerInterface $entityManager
     )
     {
@@ -45,7 +40,6 @@ class PostFacade
         $this->user = $security->getUser();
         $this->formFactory = $formFactory;
         $this->entityManager = $entityManager;
-        $this->router = $router;
     }
 
     public function getFrontPagePosts(int $start = 0): ?array
@@ -59,8 +53,8 @@ class PostFacade
             foreach ($unformatted_posts as $post) {
                 /** @var Post $post */
                 $posts[$c] = $post->toArray();
-                if (strlen($posts[$c]["content"]) > 100) {
-                    $posts[$c]["content"] = substr($posts[$c]["content"], 0, 100) . '...';
+                if (strlen($posts[$c]['content']) > 100) {
+                    $posts[$c]['content'] = substr($posts[$c]['content'], 0, 100) . '...';
                 }
                 ++$c;
             }
@@ -74,9 +68,9 @@ class PostFacade
     public function getSinglePost(int $id): ?array
     {
         if($post = $this->postRepository->find($id)->toArray()) {
-            $current_user_username = ($this->user !== null) ? $this->user->getUsername() : "guest";
-            foreach($post["comments"] as $key => $value) {
-                $post["comments"][$key]["canEdit"] = ($current_user_username == $post["comments"][$key]["author"]) ? true : false;
+            $current_user_username = ($this->user !== null) ? $this->user->getUsername() : 'guest';
+            foreach($post['comments'] as $key => $value) {
+                $post['comments'][$key]['canEdit'] = ($current_user_username == $post['comments'][$key]['author']) ? true : false;
             }
 
             return $post;

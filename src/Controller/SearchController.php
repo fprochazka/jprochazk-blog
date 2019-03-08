@@ -2,80 +2,52 @@
 
 namespace App\Controller;
 
-use App\Repository\PostRepository;
+use App\Facade\SearchFacade;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-use App\Entity\Post;
-use App\Form\SearchFormType;
-
 class SearchController extends AbstractController
 {
-
-	/** @var PostRepository */
-	private $postRepository;
+    /** @var SearchFacade */
+    private $searchFacade;
 
 	public function __construct(
-		PostRepository $postRepository
+	    SearchFacade $searchFacade
 	)
 	{
-		$this->postRepository = $postRepository;
+	    $this->searchFacade = $searchFacade;
 	}
 
 	/**
      * @Route("/search_form", name="app_blog_search_form")
      */
-    public function searchForm(Request $request): Response {
-        $form = $this->createForm(SearchFormType::class);
-
-        $form->handleRequest($request);
-
-        if($form->isSubmitted() && $form->isValid()){
-            $data = $form->getData();
+    public function sendSearch(Request $request): Response
+    {
+        $query = $this->searchFacade->getQuery($request);
+        if($query !== null) {
             return $this->redirectToRoute('app_blog_search_result', [
-                's' => $data['query'],
-            ]);
-        } else {
-            return $this->render('blog/search/form.twig', [
-                'search_form' => $form->createView()
+                's' => $query,
             ]);
         }
+
+        return $this->render('blog/search/form.twig', [
+            'search_form' => $this->searchFacade->getSearchFormView()
+        ]);
     }
 
     /**
      * @Route("/search", name="app_blog_search_result")
      */
-    public function searchResults(Request $request): Response {
+    public function searchResults(Request $request): Response
+    {
+        $query = $request->query->get('s');
 
-        $str = $request->query->get('s');
-
-        $results = [];
-
-        $results_title = $this->postRepository->findByTitle($str);
-        $results_content = $this->postRepository->findByContent($str);
-
-        foreach($results_title as $result) {
-            $id = $result->getId();
-            if(!isset($results[$id]) || !array_key_exists($id, $results)) {
-                $results[$id] = $result->toArray();
-                $results[$id]["title"] = str_replace($str, '<span class="highlight">'.$str.'</span>', $result->getTitle());
-                $results[$id]["content"] = str_replace($str, '<span class="highlight">'.$str.'</span>', $result->getContent());
-            }
-        }
-
-        foreach($results_content as $result) {
-            $id = $result->getId();
-            if(!isset($results[$id]) || !array_key_exists($id, $results)) {
-                $results[$id] = $result->toArray();
-                $results[$id]["title"] = str_replace($str, '<span class="highlight">'.$str.'</span>', $result->getTitle());
-                $results[$id]["content"] = str_replace($str, '<span class="highlight">'.$str.'</span>', $result->getContent());
-            }
-        }
+        $results = $this->searchFacade->findPosts($query);
 
         return $this->render('blog/search/results.html.twig', [
-            'search_string' => $str,
+            'search_string' => $query,
             'results' => $results,
         ]);
     }

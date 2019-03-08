@@ -113,7 +113,7 @@ class Person implements UserInterface, \Serializable
     {
         $role = $this->getRole();
         if($role == null) {
-            throw new \LogicException("could not get role for user ".$this->getUsername());
+            throw new \LogicException('could not get role for user '.$this->getUsername());
         } else {
             return [
                 $role,
@@ -179,7 +179,7 @@ class Person implements UserInterface, \Serializable
             $this->surveys[$survey_id] = $survey_title;
             $this->surveyoptions[$vote_id] = $vote_title;
         } else {
-            throw new \LogicException("User has already voted on survey (id: ".$survey_id.")");
+            throw new \LogicException('User has already voted on survey (id: '.$survey_id.')');
         }
 
         return $this;

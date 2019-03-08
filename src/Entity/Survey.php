@@ -6,8 +6,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-use Symfony\Component\Form\Exception\LogicException;
-
 /**
  * @ORM\Entity(repositoryClass="App\Repository\SurveyRepository")
  */
@@ -55,9 +53,9 @@ class Survey
         foreach($this->getSortedOptions() as $option) $options[] = $option->toArray();
 
         return [
-            "id" => $this->id,
-            "title" => $this->title, 
-            "options" => $options
+            'id' => $this->id,
+            'title' => $this->title,
+            'options' => $options
         ];
     }
 
@@ -66,7 +64,7 @@ class Survey
         return $this->id;
     }
 
-    public function getTitle(): string
+    public function getTitle(): ?string
     {
         return $this->title;
     }
@@ -92,10 +90,10 @@ class Survey
                 return $option;
             }
         } 
-        throw new \LogicException("could not find SurveyOption(id: ".$id.") in Survey(id: ".$this->getId().")");
+        throw new \LogicException('could not find SurveyOption(id: '.$id.') in Survey(id: '.$this->getId().')');
     }
 
-    public function getOptions(): Collection
+    public function getOptions(): ?Collection
     {   
         return $this->Options;
     }
@@ -134,7 +132,7 @@ class Survey
 
     public function removeOption(SurveyOption $option): self
     {
-        if ($this->getOptions()->contains($option)) {
+        if ($this->Options->contains($option)) {
             $this->Options->removeElement($option);
         }
 
@@ -143,7 +141,7 @@ class Survey
 
     public function incrementVote(SurveyOption $option): self
     {
-        if($this->getOptions()->contains($option)) {
+        if($this->Options->contains($option)) {
             $option->incrementVote();
         }
 

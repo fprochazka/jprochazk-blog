@@ -3,8 +3,8 @@
 namespace App\Facade;
 
 use App\Entity\Person;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 class AuthenticationFacade
 {

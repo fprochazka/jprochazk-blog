@@ -18,17 +18,17 @@ class SampleSurveyFixture extends Fixture
         $secondOption = new SurveyOption();
         $thirdOption = new SurveyOption();
 
-        $firstOption->setTitle("Yes");
+        $firstOption->setTitle('Yes');
         $firstOption->setVotes(10);
 
-        $secondOption->setTitle("No");
+        $secondOption->setTitle('No');
         $secondOption->setVotes(5);
 
-        $thirdOption->setTitle("Maybe");
+        $thirdOption->setTitle('Maybe');
         $thirdOption->setVotes(3);
 
         $survey
-            ->setTitle("To be, or not to be?")
+            ->setTitle('To be, or not to be?')
             ->addOption($firstOption)
             ->addOption($secondOption)
             ->addOption($thirdOption)

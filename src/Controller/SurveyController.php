@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Facade\AuthenticationFacade;
+use App\Facade\SurveyFacade;
 use App\Repository\PersonRepository;
 use App\Repository\SurveyOptionRepository;
 use App\Repository\SurveyRepository;
@@ -12,13 +14,16 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
-use App\Entity\Person;
 use App\Entity\Survey;
-use App\Entity\SurveyOption;
 use App\Form\SurveyType;
 
 class SurveyController extends AbstractController
 {
+    /** @var AuthenticationFacade */
+    private $authFacade;
+
+    /** @var SurveyFacade */
+    private $surveyFacade;
 
 	/** @var PersonRepository */
 	private $personRepository;
@@ -30,54 +35,54 @@ class SurveyController extends AbstractController
 	private $surveyOptionRepository;
 
 	public function __construct(
+	    AuthenticationFacade $authFacade,
+        SurveyFacade $surveyFacade,
 		PersonRepository $personRepository,
 		SurveyRepository $surveyRepository,
 		SurveyOptionRepository $surveyOptionRepository
 	)
 	{
+	    $this->authFacade = $authFacade;
+        $this->surveyFacade = $surveyFacade;
 		$this->personRepository = $personRepository;
 		$this->surveyRepository = $surveyRepository;
 		$this->surveyOptionRepository = $surveyOptionRepository;
 	}
 
     /**
+     * @Route("/survey", name="app_blog_survey")
+     */
+    public function renderSurvey(): Response
+    {
+        return $this->render(
+            'blog/survey/render.html.twig', [
+            'survey' => $this->surveyFacade->getLatestSurvey()
+        ]);
+    }
+
+    /**
       * @Route("/survey/new", name="app_blog_survey_new")
       */
     public function createSurvey(Request $request): Response
     {
-        //authentication check
-        if($this->getUser() === null) return $this->redirectToRoute('app_blog_error', ['msg' => 'auth']);
-        //role check
-        if($this->getUser()->getRole() !== 'ROLE_ADMIN') return $this->redirectToRoute('app_blog_error', ['msg' => '403']);
-
-        $survey = new Survey();
-        $form = $this->createForm(SurveyType::class, $survey);
-
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager = $this->getDoctrine()->getManager();
-
-            $data = $form->getData();
-
-            $survey->setTitle($data->getTitle());
-            $survey->unlock();
-
-            foreach($data->getOptions() as $option) {
-                $survey->addOption($option);
-                $option->setVotes(0);
-                $entityManager->persist($option);
-            }
-
-            $entityManager->persist($survey);
-            $entityManager->flush();
-
-            return $this->redirectToRoute("app_blog_post_list");
+        if(($authenticationError = $this->authFacade->getAuthenticationError()) !== null) {
+            return $this->redirectToRoute('app_blog_error', ['msg' => $authenticationError]);
         }
 
-        return $this->render('blog/survey/new.html.twig', [
-            'form' => $form->createView(),
-        ]);
+        $response = $this->surveyFacade->createSurvey($request);
+
+        if($response['status'] === 200) {
+            return $this->redirectToRoute('app_blog_post_list');
+        } else if($response['status'] === 500) {
+            return $this->render('blog/survey/new.html.twig', [
+                'form' => $this->surveyFacade->getSurveyFormView($response['data']),
+                'error' => $response['message']
+            ]);
+        } else {
+            return $this->render('blog/survey/new.html.twig', [
+                'form' => $this->surveyFacade->getSurveyFormView(),
+            ]);
+        }
     }
 
     /**
@@ -85,52 +90,17 @@ class SurveyController extends AbstractController
       */
     public function deleteSurvey(int $id, Request $request): Response
     {
-        //authentication check
-        if($this->getUser() === null) return $this->redirectToRoute('app_blog_error', ['msg' => 'auth']);
-        //role check
-        if($this->getUser()->getRole() !== 'ROLE_ADMIN') return $this->redirectToRoute('app_blog_error', ['msg' => '403']);
+        if(($authenticationError = $this->authFacade->getAuthenticationError()) !== null) {
+            return $this->redirectToRoute('app_blog_error', ['msg' => $authenticationError]);
+        }
 
-        if($survey = $this->surveyRepository->find($id)) {
-            $entityManager = $this->getDoctrine()->getManager();
-
-            $users = $this->personRepository->findAll();
-            foreach($users as $user) {
-                $user->removeVote($id);
-            }
-
-            foreach($survey->getOptions() as $option) {
-                $survey->removeOption($option);
-                $entityManager->remove($option);
-            }
-
-            $entityManager->remove($survey);
-            $entityManager->flush();
-
+        $response = $this->surveyFacade->deleteSurvey($id);
+        if($response['status'] === 200) {
             return new RedirectResponse($request->headers->get('referer'));
-        }
-    }
-
-    /**
-      * @Route("/survey", name="app_blog_survey")
-      */
-    public function renderSurvey(): Response
-    {
-        if($survey = $this->surveyRepository->findOneByHighestId()) {
-            $survey = $survey->toArray();
-            if(($current_user = $this->getUser()) != null) {
-                $survey["voted"] = $current_user->hasVoted($survey["id"]);
-            } else {
-                $survey["voted"] = true;
-            }
-
-            return $this->render(
-            'blog/survey/render.html.twig', [
-                "survey" => $survey
-            ]);
-
         } else {
-            return new Response("");
+            return $this->redirectToRoute('app_blog_error', ['msg' => '500']);
         }
+
     }
 
     /**

@@ -11,6 +11,7 @@ use App\Facade\CommentFacade;
 
 class CommentController extends AbstractController
 {
+    /** @var CommentFacade */
 	private $commentFacade;
 
 	public function __construct(

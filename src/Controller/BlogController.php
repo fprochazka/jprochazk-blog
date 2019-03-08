@@ -56,37 +56,37 @@ class BlogController extends AbstractController
         $tab = $request->query->get('p');
         switch($tab) {
             case null:
-                return $this->redirectToRoute("app_blog_admin", ['p' => "users"]);
-            case "users":
+                return $this->redirectToRoute('app_blog_admin', ['p' => 'users']);
+            case 'users':
                 $users = [];
                 foreach($this->personRepository->findAll() as $user) {
                     $users[] = $user->toArray();
                 }
-                return $this->render("blog/admin.html.twig", [
+                return $this->render('blog/admin.html.twig', [
                     'tab' => $tab,
                     'users' => $users,
                 ]);
-            case "posts":
+            case 'posts':
                 $posts = [];
                 foreach($this->postRepository->findAll() as $post) {
                     $posts[] = $post->toArray();
                 }
-                return $this->render("blog/admin.html.twig", [
+                return $this->render('blog/admin.html.twig', [
                     'tab' => $tab,
                     'posts' => $posts,
                 ]);
-            case "surveys":
+            case 'surveys':
                 $surveys = [];
                 foreach($this->surveyRepository->findAll() as $survey) {
                     $surveys[] = $survey->toArray();
                 }
-                return $this->render("blog/admin.html.twig", [
+                return $this->render('blog/admin.html.twig', [
                     'tab' => $tab,
                     'surveys' => $surveys,
                 ]);
             default:
-                return $this->render("blog/admin.html.twig", [
-                    'tab' => "error"
+                return $this->render('blog/admin.html.twig', [
+                    'tab' => 'error'
                 ]);
         }
     }
@@ -95,18 +95,18 @@ class BlogController extends AbstractController
      * @Route("/error", name="app_blog_error")
      */
     public function showError(Request $request): Response {
-        $msg = $request->query->get("msg");
+        $msg = $request->query->get('msg');
 
         switch($msg) {
-            case "auth":
+            case 'auth':
                 return $this->render('blog/error.html.twig', [
                     'msg' => 'Login to access this page',
                 ]);
-            case "403":
+            case '403':
                 return $this->render('blog/error.html.twig', [
                     'msg' => 'Insufficient permissions',
                 ]);
-            case "404":
+            case '404':
                 return $this->render('blog/error.html.twig', [
                     'msg' => 'Page not found.',
                 ]);

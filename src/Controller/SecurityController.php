@@ -27,20 +27,17 @@ class SecurityController extends AbstractController
         $lastUsername = $utils->getLastUsername();
 
         return $this->render('security/welcome.html.twig', [
-            "last_username" => $lastUsername,
-            "autherror" => $lastAuthenticationError,
+            'last_username' => $lastUsername,
+            'autherror' => $lastAuthenticationError,
         ]);
     }
 
     /**
      * @Route("/login", name="app_login")
      */
-    public function login(AuthenticationUtils $authenticationUtils): Response
+    public function login(): Response
     {
-        $error = $authenticationUtils->getLastAuthenticationError();
-        $lastUsername = $authenticationUtils->getLastUsername();
-
-        return $this->render('security/login.html.twig', ['last_username' => $lastUsername, 'error' => $error]);
+        return $this->redirectToRoute('app_blog_post_list');
     }
 
     /**
@@ -49,8 +46,8 @@ class SecurityController extends AbstractController
     public function register(Request $request, UserPasswordEncoderInterface $passwordEncoder, GuardAuthenticatorHandler $guardHandler, LoginFormAuthenticator $authenticator): ?Response
     {
         $user = new Person();
-        $user->setUsername("");
-        $user->setPassword("");
+        $user->setUsername('');
+        $user->setPassword('');
 
         $form = $this->createForm(RegistrationFormType::class, $user);
         $form->handleRequest($request);

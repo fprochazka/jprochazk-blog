@@ -49,11 +49,11 @@ class Comment
     public function toArray(): array
     {
         return [
-            "id" => $this->id,
-            "content" => $this->content,
-            "author" => $this->author,
-            "date" => $this->date->format('Y-m-d, H:i:s'),
-            "canEdit" => false,
+            'id' => $this->id,
+            'content' => $this->content,
+            'author' => $this->author,
+            'date' => $this->date->format('Y-m-d, H:i:s'),
+            'canEdit' => false,
         ];
     }
 

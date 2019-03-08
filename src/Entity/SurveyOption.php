@@ -42,9 +42,9 @@ class SurveyOption
     public function toArray(): array
     {
         return [
-            "id" => $this->id,
-            "name" => $this->title,
-            "votes" => $this->votes,
+            'id' => $this->id,
+            'name' => $this->title,
+            'votes' => $this->votes,
         ];
     }
 

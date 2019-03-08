@@ -2,6 +2,7 @@
 
 {% block javascripts %}
 <script src="/js/admin/showHideButton.js"></script>
+<script src="/js/searchResultsHighlight.js"></script>
 {% endblock %}
 {% block stylesheets %}
 <style>
@@ -22,11 +23,11 @@
 
 {% block content %}
 
-Search results for "{{ search_string }}":
+Search results for "<span id="query">{{ search_string }}</span>":
 
 {% for key,value in results %}
 <div class="list-item post">
-	ID: {{ key }} | <span class="list-item title">Title: {{ value['title'] }}</span> | Date: {{ value['date'] }} | Author: {{ value['author'] }}<br>
+	ID: {{ key }} | Title:<span class="list-item title">{{ value['title'] }}</span> | Date: {{ value['date'] }} | Author: {{ value['author'] }}<br>
 	Content: <button class="show-hide small" id="{{ key }}" name="content">+</button>
 	<span id="{{ key }}" name="content" hidden>
 		<div class="list-item content">

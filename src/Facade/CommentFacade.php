@@ -3,7 +3,7 @@
 
 namespace App\Facade;
 
-
+use App\Entity\Person;
 use App\Repository\CommentRepository;
 use App\Repository\PostRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -12,14 +12,20 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Security;
 
 use App\Entity\Comment;
-use App\Entity\Post;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 class CommentFacade
 {
-
+    /** @var UserInterface|null  */
     private $user;
+
+    /** @var PostRepository  */
     private $postRepository;
+
+    /** @var CommentRepository  */
     private $commentRepository;
+
+    /** @var EntityManagerInterface  */
     private $entityManager;
 
     public function __construct(
@@ -35,7 +41,7 @@ class CommentFacade
         $this->entityManager = $entityManager;
     }
 
-    private function saveComment(Comment $comment)
+    private function saveComment(Comment $comment): bool
     {
         try {
             $this->entityManager->persist($comment);
@@ -46,7 +52,7 @@ class CommentFacade
         }
     }
 
-    private function removeComment(Comment $comment)
+    private function removeComment(Comment $comment): bool
     {
         try {
             $this->entityManager->remove($comment);
@@ -67,28 +73,27 @@ class CommentFacade
         if($request->isXmlHttpRequest() || $request->query->get('showJson') === 1) {
             /** @var string $content */
             $content = $request->request->get('content');
-            if(is_string($content)) {
-                $post = $this->postRepository->find($post_id);
-                $comment = new Comment();
+            /** @var Person $user */
+            $user = $this->user;
 
-                $date = new \DateTimeImmutable();
-                $comment->setDate($date);
-                $comment->setAuthor($this->user->getUsername());
-                $comment->setContent($content);
+            $post = $this->postRepository->find($post_id);
+            $comment = new Comment();
 
-                $post->addComment($comment);
-                $this->saveComment($comment);
+            $date = new \DateTimeImmutable();
+            $comment->setDate($date);
+            $comment->setAuthor($user->getUsername());
+            $comment->setContent($content);
 
-                $responseData['status'] = 'OK';
-                $responseData['message'] = [
-                    'id' => $comment->getId(),
-                    'author' => $this->user->getUsername(),
-                    'date' => $date->format('Y-m-d, H:i:s'),
-                    'content' => $content,
-                ];
-            } else {
-                $responseData['message'] = 'invalid_form';
-            }
+            $post->addComment($comment);
+            $this->saveComment($comment);
+
+            $responseData['status'] = 'OK';
+            $responseData['message'] = [
+                'id' => $comment->getId(),
+                'author' => $user->getUsername(),
+                'date' => $date->format('Y-m-d, H:i:s'),
+                'content' => $content,
+            ];
         }
 
         return $responseData;
@@ -105,24 +110,22 @@ class CommentFacade
             /** @var string $content */
             $content = $request->request->get('content');
             $request_username = $request->request->get('current_user');
-            if($this->user->getUsername() === $request_username) {
-                if(is_string($content)) {
 
-                    $post = $this->postRepository->find($post_id);
-                    $comment = $this->commentRepository->find($comment_id);
+            /** @var Person $user */
+            $user = $this->user;
+            if($user->getUsername() === $request_username) {
+                $post = $this->postRepository->find($post_id);
+                $comment = $this->commentRepository->find($comment_id);
 
-                    if($post->getComments()->contains($comment)) {
-                        $comment->setContent($content);
-                        $this->saveComment($comment);
-                    }
-
-                    $responseData['status'] = 'OK';
-                    $responseData['message'] = [
-                        'content' => $content
-                    ];
-                } else {
-                    $responseData['message'] = 'invalid_form';
+                if($post->getComments()->contains($comment)) {
+                    $comment->setContent($content);
+                    $this->saveComment($comment);
                 }
+
+                $responseData['status'] = 'OK';
+                $responseData['message'] = [
+                    'content' => $content
+                ];
             } else {
                 $responseData['message'] = 'perm';
             }
@@ -138,8 +141,10 @@ class CommentFacade
         ];
 
         if($request->isXmlHttpRequest() || $request->query->get('showJson') == 1) {
+            /** @var Person $user */
+            $user = $this->user;
             $request_username = $request->request->get('current_user');
-            if($this->user->getUsername() == $request_username) {
+            if($user->getUsername() == $request_username) {
 
                 $comment = $this->commentRepository->find($comment_id);
                 $post = $this->postRepository->find($post_id);

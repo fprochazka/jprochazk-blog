@@ -19,10 +19,10 @@ class LogoutSuccessHandler implements LogoutSuccessHandlerInterface
 
     public function onLogoutSuccess(Request $request): RedirectResponse
     {
-        $referer = (is_string($request->headers->get('referer')) && $request->headers->get('referer') !== null) ? $request->headers->get('referer') : "";
+        $referer = (is_string($request->headers->get('referer')) && $request->headers->get('referer') !== null) ? $request->headers->get('referer') : '';
 
-        $urlArray = explode("/", str_replace("http://", "", $referer));
-        if($urlArray[1] === "post" && $urlArray[2] !== "new") {
+        $urlArray = explode('/', str_replace('http://', '', $referer));
+        if($urlArray[1] === 'post' && $urlArray[2] !== 'new') {
             return new RedirectResponse($referer);
         }
 
