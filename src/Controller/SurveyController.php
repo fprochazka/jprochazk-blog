@@ -73,11 +73,6 @@ class SurveyController extends AbstractController
 
         if($response['status'] === 200) {
             return $this->redirectToRoute('app_blog_post_list');
-        } else if($response['status'] === 500) {
-            return $this->render('blog/survey/new.html.twig', [
-                'form' => $this->surveyFacade->getSurveyFormView($response['data']),
-                'error' => $response['message']
-            ]);
         } else {
             return $this->render('blog/survey/new.html.twig', [
                 'form' => $this->surveyFacade->getSurveyFormView(),
@@ -108,38 +103,11 @@ class SurveyController extends AbstractController
       */
     public function surveyVote(Request $request): JsonResponse
     {
-        if($request->isXmlHttpRequest() || $request->query->get('showJson') === 1) {
+        $response = $this->surveyFacade->surveyVote($request);
 
-            $survey_id = (int)$request->request->get('survey_id');
-            $vote_id = (int)$request->request->get('vote_id');
-
-            $survey = $this->surveyRepository->find($survey_id);
-            $option = $this->surveyOptionRepository->find($vote_id);
-            $current_user = $this->getUser();
-            if(!$survey->isLocked()) {
-                if(!$current_user->hasVoted($survey_id)){
-
-                    $option->incrementVote();
-                    $current_user->addVote($survey, $option);
-
-                    $entityManager = $this->getDoctrine()->getManager();
-                    $entityManager->flush();
-
-                    $responseData = [
-                        'vote_id' => $vote_id
-                    ];
-
-                    return new JsonResponse([
-                    'status' => 'OK',
-                    'message' => $responseData],
-                    200);
-                }
-            }
-        }
         return new JsonResponse([
-        	'status' => 'Error',
-        	'message' => 'Error'],
-	        400
-	    );
+        	'status' => $response['status'],
+        	'message' => $response['message'],
+	        200]);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Facade\AuthenticationFacade;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Routing\Annotation\Route;
@@ -18,6 +19,37 @@ use App\Entity\Person;
 
 class SecurityController extends AbstractController
 {
+    /** @var AuthenticationFacade */
+    private $authFacade;
+
+    public function __construct(
+        AuthenticationFacade $authFacade
+    )
+    {
+        $this->authFacade = $authFacade;
+    }
+
+    /**
+     * @Route("/register", name="app_register")
+     */
+    public function register(Request $request, GuardAuthenticatorHandler $guardHandler): ?Response
+    {
+        $response = $this->authFacade->register($request);
+
+        if($response['status'] === 200) {
+            return $guardHandler->authenticateUserAndHandleSuccess(
+                $response['data']['user'],
+                $request,
+                $response['data']['authenticator'],
+                $response['data']['providerKey']
+            );
+        }
+
+        return $this->render('registration/register.html.twig', [
+            'registrationForm' => $this->authFacade->getRegistrationFormView()
+        ]);
+    }
+
     /**
       * @Route("/security/welcome", name="app_blog_security_welcome")
       */
@@ -38,43 +70,6 @@ class SecurityController extends AbstractController
     public function login(): Response
     {
         return $this->redirectToRoute('app_blog_post_list');
-    }
-
-    /**
-     * @Route("/register", name="app_register")
-     */
-    public function register(Request $request, UserPasswordEncoderInterface $passwordEncoder, GuardAuthenticatorHandler $guardHandler, LoginFormAuthenticator $authenticator): ?Response
-    {
-        $user = new Person();
-        $user->setUsername('');
-        $user->setPassword('');
-
-        $form = $this->createForm(RegistrationFormType::class, $user);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $user->setPassword(
-                $passwordEncoder->encodePassword(
-                    $user, $form->get('plainPassword')->getData()
-                )
-            );
-            $user->setRole('ROLE_USER');
-
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->persist($user);
-            $entityManager->flush();
-
-            return $guardHandler->authenticateUserAndHandleSuccess(
-                $user,
-                $request,
-                $authenticator,
-                'main'
-            );
-        }
-
-        return $this->render('registration/register.html.twig', [
-            'registrationForm' => $form->createView(),
-        ]);
     }
     
     /**

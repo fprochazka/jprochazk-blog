@@ -39,14 +39,14 @@
 <h1>Administration</h1>
 <hr>
 <div class="navbar">
-	<a href="{{ path("app_blog_admin", {'p': 'users'}) }}"><button class="{% if tab == 'users' %}highlight{% endif %}">Users</button> </a>
-	<a href="{{ path("app_blog_admin", {'p': 'posts'}) }}"><button class="{% if tab == 'posts' %}highlight{% endif %}">Posts</button> </a>
-	<a href="{{ path("app_blog_admin", {'p': 'surveys'}) }}"><button class="{% if tab == 'surveys' %}highlight{% endif %}">Surveys</button></a>
+	<a href="{{ path("app_blog_admin", {'p': 'users'}) }}"><button {% if tab == 'users' %}class="highlight"{% endif %}>Users</button> </a>
+	<a href="{{ path("app_blog_admin", {'p': 'posts'}) }}"><button {% if tab == 'users' %}class="highlight"{% endif %}>Posts</button> </a>
+	<a href="{{ path("app_blog_admin", {'p': 'surveys'}) }}"><button {% if tab == 'users' %}class="highlight"{% endif %}>Surveys</button></a>
 </div>
 <div class="list">
 {% if tab != "error" %}
-	{% if tab == "users" and users != null %}
-		{% for user in users %}
+	{% if tab == "users" and data != null %}
+		{% for user in data %}
 			<div class="list-item user">
 				ID: {{ user['id'] }} | Username: {{ user['name'] }} | Role: {{ user['role'] }}<br>
 				Voted on: <button class="show-hide small" id="{{ user['id'] }}" name="voted">+</button><br>
@@ -60,8 +60,8 @@
 				</span>
 			</div>
 		{% endfor %}
-	{% elseif tab == "posts" and posts != null %}
-		{% for post in posts|reverse %}
+	{% elseif tab == "posts" and data != null %}
+		{% for post in data|reverse %}
 			<div class="list-item post">
 				ID: {{ post['id'] }} | Title: {{ post['title'] }} | Date: {{ post['date'] }} | Author: {{ post['author'] }}
 					<span id="post-edit" for="{{ post["id"] }}"> - <a href="{{ path("app_blog_post_edit", {"id": post["id"]}) }}" id="post-edit">EDIT</a></span>
@@ -85,8 +85,8 @@
 				<br>
 			</div>
 		{% endfor %}
-	{% elseif tab == "surveys" and surveys != null %}
-		{% for survey in surveys|reverse %}
+	{% elseif tab == "surveys" and data != null %}
+		{% for survey in data|reverse %}
 		<div class="list-item survey" id="{{ survey['id'] }}">
 			<span class="list-item title">{{ survey["title"] }}</span><button class="show-hide small" id="{{ survey['id'] }}" name="option">+</button>
 			<span id="survey-delete" for="{{ survey["id"] }}"> - <a href="{{ path("app_blog_survey_delete", {"id": survey["id"]}) }}" id="survey-delete">DELETE</a></span>

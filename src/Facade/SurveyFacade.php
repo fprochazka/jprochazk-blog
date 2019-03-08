@@ -182,4 +182,51 @@ class SurveyFacade
 
         return $response;
     }
+
+    public function surveyVote(Request $request): array
+    {
+        $response = [
+            'status' => 400,
+            'message' => 'Error'
+        ];
+
+        if($request->isXmlHttpRequest() || $request->query->get('showJson') === 1) {
+
+            $survey_id = (int)$request->request->get('survey_id');
+            $vote_id = (int)$request->request->get('vote_id');
+
+            $survey = $this->surveyRepository->find($survey_id);
+            $option = $this->surveyOptionRepository->find($vote_id);
+
+            /** @var Person $current_user */
+            $current_user = $this->user;
+            if(!$survey->isLocked()) {
+                if(!$current_user->hasVoted($survey_id)){
+
+                    $option->incrementVote();
+                    $current_user->addVote($survey, $option);
+                    $this->entityManager->flush();
+
+                    $response = [
+                        'status' => 200,
+                        'message' => [
+                            'vote_id' => $vote_id
+                        ]
+                    ];
+                } else {
+                    $response = [
+                        'status' => 400,
+                        'message' => 'User has already voted'
+                    ];
+                }
+            } else {
+                $response = [
+                    'status' => 400,
+                    'message' => 'Survey is locked'
+                ];
+            }
+        }
+
+        return $response;
+    }
 }

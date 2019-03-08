@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Facade\AdminFacade;
 use App\Facade\AuthenticationFacade;
 use App\Repository\PersonRepository;
 use App\Repository\PostRepository;
@@ -14,35 +15,19 @@ use Symfony\Component\HttpFoundation\Response;
 
 class BlogController extends AbstractController
 {
-
-	/** @var PersonRepository */
-	private $personRepository;
-
-	/** @var SurveyRepository */
-	private $surveyRepository;
-
-	/** @var SurveyOptionRepository */
-	private $surveyOptionRepository;
-
-	/** @var PostRepository */
-	private $postRepository;
-
-	/** @var AuthenticationFacade */
+    /** @var AuthenticationFacade */
 	private $authFacade;
+
+	/** @var AdminFacade  */
+	private $adminFacade;
 
 	public function __construct(
 	    AuthenticationFacade $authFacade,
-		PostRepository $postRepository,
-		PersonRepository $personRepository,
-		SurveyRepository $surveyRepository,
-		SurveyOptionRepository $surveyOptionRepository
+        AdminFacade $adminFacade
 	)
 	{
 	    $this->authFacade = $authFacade;
-		$this->personRepository = $personRepository;
-		$this->surveyRepository = $surveyRepository;
-		$this->surveyOptionRepository = $surveyOptionRepository;
-		$this->postRepository = $postRepository;
+	    $this->adminFacade = $adminFacade;
 	}
 
 	/**
@@ -53,42 +38,15 @@ class BlogController extends AbstractController
             return $this->redirectToRoute('app_blog_error', ['msg' => $authenticationError]);
         }
 
-        $tab = $request->query->get('p');
-        switch($tab) {
-            case null:
-                return $this->redirectToRoute('app_blog_admin', ['p' => 'users']);
-            case 'users':
-                $users = [];
-                foreach($this->personRepository->findAll() as $user) {
-                    $users[] = $user->toArray();
-                }
-                return $this->render('blog/admin.html.twig', [
-                    'tab' => $tab,
-                    'users' => $users,
-                ]);
-            case 'posts':
-                $posts = [];
-                foreach($this->postRepository->findAll() as $post) {
-                    $posts[] = $post->toArray();
-                }
-                return $this->render('blog/admin.html.twig', [
-                    'tab' => $tab,
-                    'posts' => $posts,
-                ]);
-            case 'surveys':
-                $surveys = [];
-                foreach($this->surveyRepository->findAll() as $survey) {
-                    $surveys[] = $survey->toArray();
-                }
-                return $this->render('blog/admin.html.twig', [
-                    'tab' => $tab,
-                    'surveys' => $surveys,
-                ]);
-            default:
-                return $this->render('blog/admin.html.twig', [
-                    'tab' => 'error'
-                ]);
+        $response = $this->adminFacade->adminDataList($request);
+        if($response['tab'] === null) {
+            return $this->redirectToRoute('app_blog_admin', ['p' => 'users']);
         }
+
+        return $this->render('blog/admin.html.twig', [
+            'tab' => $response['tab'],
+            'data' => $response['data'],
+        ]);
     }
 
     /**
