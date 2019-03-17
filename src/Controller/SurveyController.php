@@ -25,28 +25,13 @@ class SurveyController extends AbstractController
     /** @var SurveyFacade */
     private $surveyFacade;
 
-	/** @var PersonRepository */
-	private $personRepository;
-
-	/** @var SurveyRepository */
-	private $surveyRepository;
-
-	/** @var SurveyOptionRepository */
-	private $surveyOptionRepository;
-
 	public function __construct(
 	    AuthenticationFacade $authFacade,
-        SurveyFacade $surveyFacade,
-		PersonRepository $personRepository,
-		SurveyRepository $surveyRepository,
-		SurveyOptionRepository $surveyOptionRepository
+        SurveyFacade $surveyFacade
 	)
 	{
 	    $this->authFacade = $authFacade;
         $this->surveyFacade = $surveyFacade;
-		$this->personRepository = $personRepository;
-		$this->surveyRepository = $surveyRepository;
-		$this->surveyOptionRepository = $surveyOptionRepository;
 	}
 
     /**

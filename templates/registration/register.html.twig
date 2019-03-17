@@ -7,6 +7,14 @@
 {% endblock %}
 {% block content %}
     <h1>Register</h1>
+    {% if error_container is not null %}
+    <div class="error">
+        {% for error in error_container %}
+            <span>{{ error }}</span></br>
+        {% endfor %}
+    </div>
+    <br>
+    {% endif %}
     {{ form_start(registrationForm) }}
         {{ form_widget(registrationForm.username, {'attr' : {'class' : 'form-control', 'placeholder' : 'Username'}}) }}<br>
         {{ form_widget(registrationForm.plainPassword.first, {'attr' : {'class' : 'form-control', 'placeholder' : 'Password'}}) }}<br>
@@ -15,3 +23,4 @@
         <button>Register</button>
     {{ form_end(registrationForm) }}
 {% endblock %}
+		

@@ -122,7 +122,10 @@ class AuthenticationFacade
                 }
             } else {
                 $response['status'] = 500;
-                $response['message'] = 'Invalid form';
+                $errors = $form->getErrors(true);
+                foreach($errors as $error) {
+                    $response['message'][] = $error->getMessage();
+                }
             }
         }
 

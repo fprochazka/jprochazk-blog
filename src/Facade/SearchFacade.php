@@ -90,4 +90,4 @@ class SearchFacade
 
         return $response;
     }
-}
+}	

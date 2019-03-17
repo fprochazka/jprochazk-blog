@@ -43,10 +43,16 @@ class SecurityController extends AbstractController
                 $response['data']['authenticator'],
                 $response['data']['providerKey']
             );
+        } elseif($response['status'] === 500) {
+            return $this->render('registration/register.html.twig', [
+                'registrationForm' => $this->authFacade->getRegistrationFormView(),
+                'error_container' => $response['message']
+            ]);
         }
 
         return $this->render('registration/register.html.twig', [
-            'registrationForm' => $this->authFacade->getRegistrationFormView()
+            'registrationForm' => $this->authFacade->getRegistrationFormView(),
+            'error_container' => null
         ]);
     }
 
