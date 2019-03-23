@@ -89,6 +89,12 @@
         "symfony": {
             "allow-contrib": false,
             "require": "4.2.*"
+        },
+        "cleaner-ignore": {
+            "phpstan/phpstan": true,
+            "phpstan/phpstan-doctrine": true,
+            "phpstan/phpstan-strict-rules": true,
+            "phpstan/phpstan-symfony": true
         }
     }
 }
