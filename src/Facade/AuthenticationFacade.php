@@ -7,6 +7,7 @@ use App\Form\RegistrationFormType;
 use App\Security\LoginFormAuthenticator;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\ORMException;
+use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormView;
@@ -123,6 +124,7 @@ class AuthenticationFacade
             } else {
                 $response['status'] = 500;
                 $errors = $form->getErrors(true);
+                /** @var FormError $error */
                 foreach($errors as $error) {
                     $response['message'][] = $error->getMessage();
                 }
