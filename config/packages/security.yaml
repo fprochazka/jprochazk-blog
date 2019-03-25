@@ -1,35 +1,35 @@
 security:
     encoders:
-        App\Entity\Person:
+        App\Security\SecurityUser:
+            algorithm: bcrypt
+        App\Security\User:
             algorithm: bcrypt
     providers:
-        app_provider:
-            entity:
-                class: App\Entity\Person
-                property: username
-        in_memory: { memory: ~ }
+        db_provider:
+            id: App\Security\SecurityUserProvider
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         main:
-            anonymous: true
+            pattern: ^/
+            anonymous: ~
 
             access_denied_handler: App\Security\AccessDeniedHandler
 
             logout:
                 path: app_logout
                 success_handler: App\Security\LogoutSuccessHandler
+                invalidate_session: true
 
             form_login:
                 check_path: app_login
                 login_path: app_login
-                provider: app_provider
 
             guard:
                 authenticators:
                     - App\Security\LoginFormAuthenticator
-                provider: app_provider
+                provider: db_provider
 
     access_control:
       - { path: ^/register, roles: IS_AUTHENTICATED_ANONYMOUSLY }

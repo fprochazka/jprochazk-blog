@@ -15,7 +15,7 @@ use App\Security\LoginFormAuthenticator;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Security\Guard\GuardAuthenticatorHandler;
 
-use App\Entity\Person;
+use App\Entity\User;
 
 class SecurityController extends AbstractController
 {

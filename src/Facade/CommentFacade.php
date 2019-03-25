@@ -3,7 +3,7 @@
 
 namespace App\Facade;
 
-use App\Entity\Person;
+use App\Entity\User;
 use App\Repository\CommentRepository;
 use App\Repository\PostRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -73,7 +73,7 @@ class CommentFacade
         if($request->isXmlHttpRequest() || $request->query->get('showJson') === 1) {
             /** @var string $content */
             $content = $request->request->get('content');
-            /** @var Person $user */
+            /** @var User $user */
             $user = $this->user;
 
             $post = $this->postRepository->find($post_id);
@@ -111,7 +111,7 @@ class CommentFacade
             $content = $request->request->get('content');
             $request_username = $request->request->get('current_user');
 
-            /** @var Person $user */
+            /** @var User $user */
             $user = $this->user;
             if($user->getUsername() === $request_username) {
                 $post = $this->postRepository->find($post_id);
@@ -141,7 +141,7 @@ class CommentFacade
         ];
 
         if($request->isXmlHttpRequest() || $request->query->get('showJson') == 1) {
-            /** @var Person $user */
+            /** @var User $user */
             $user = $this->user;
             $request_username = $request->request->get('current_user');
             if($user->getUsername() == $request_username) {

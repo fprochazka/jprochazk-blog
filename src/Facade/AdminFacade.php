@@ -4,27 +4,27 @@
 namespace App\Facade;
 
 
-use App\Repository\PersonRepository;
 use App\Repository\PostRepository;
 use App\Repository\SurveyRepository;
+use App\Repository\UserRepository;
 use Symfony\Component\HttpFoundation\Request;
 
 class AdminFacade
 {
-    /** @var PersonRepository  */
-    private $personRepository;
+    /** @var $userRepository  */
+    private $userRepository;
     /** @var PostRepository  */
     private $postRepository;
     /** @var SurveyRepository  */
     private $surveyRepository;
 
     public function __construct(
-        PersonRepository $personRepository,
+        UserRepository $userRepository,
         PostRepository $postRepository,
         SurveyRepository $surveyRepository
     )
     {
-        $this->personRepository = $personRepository;
+        $this->userRepository = $userRepository;
         $this->postRepository = $postRepository;
         $this->surveyRepository = $surveyRepository;
     }
@@ -34,7 +34,7 @@ class AdminFacade
         $data = null;
         switch($tab) {
             case 'users':
-                foreach($this->personRepository->findAll() as $user) {
+                foreach($this->userRepository->findAll() as $user) {
                     $data[] = $user->toArray();
                 }
                 break;

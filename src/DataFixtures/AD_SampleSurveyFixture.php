@@ -8,7 +8,7 @@ use Doctrine\Common\Persistence\ObjectManager;
 use App\Entity\Survey;
 use App\Entity\SurveyOption;
 
-class SampleSurveyFixture extends Fixture
+class AD_SampleSurveyFixture extends Fixture
 {
     public function load(ObjectManager $manager): self
     {

@@ -3,12 +3,13 @@
 
 namespace App\Facade;
 
-use App\Entity\Person;
+use App\Entity\User;
 use App\Entity\Survey;
 use App\Form\SurveyType;
-use App\Repository\PersonRepository;
 use App\Repository\SurveyOptionRepository;
 use App\Repository\SurveyRepository;
+use App\Repository\UserRepository;
+use App\Security\CurrentUserProvider;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\ORMException;
 use Symfony\Component\Form\FormFactoryInterface;
@@ -29,8 +30,8 @@ class SurveyFacade
     /** @var FormFactoryInterface */
     private $formFactory;
 
-    /** @var PersonRepository */
-    private $personRepository;
+    /** @var UserRepository */
+    private $userRepository;
 
     /** @var SurveyRepository */
     private $surveyRepository;
@@ -39,8 +40,8 @@ class SurveyFacade
     private $surveyOptionRepository;
 
     public function __construct(
-        Security $security,
-        PersonRepository $personRepository,
+        CurrentUserProvider $security,
+        UserRepository $userRepository,
         SurveyRepository $surveyRepository,
         SurveyOptionRepository $surveyOptionRepository,
         EntityManagerInterface $entityManager,
@@ -48,7 +49,7 @@ class SurveyFacade
     )
     {
         $this->user = $security->getUser();
-        $this->personRepository = $personRepository;
+        $this->userRepository = $userRepository;
         $this->surveyRepository = $surveyRepository;
         $this->surveyOptionRepository = $surveyOptionRepository;
         $this->entityManager = $entityManager;
@@ -60,7 +61,7 @@ class SurveyFacade
         $survey = $this->surveyRepository->findOneByHighestId();
         if($survey !== null) {
             $survey = $survey->toArray();
-            /** @var Person $user */
+            /** @var User $user */
             $user = $this->user;
             if($user != null) {
                 $survey['voted'] = $user->hasVoted($survey['id']);
@@ -157,7 +158,7 @@ class SurveyFacade
         ];
 
         if($survey = $this->surveyRepository->find($id)) {
-            $users = $this->personRepository->findAll();
+            $users = $this->userRepository->findAll();
             foreach($users as $user) {
                 $user->removeVote($id);
             }
@@ -198,7 +199,7 @@ class SurveyFacade
             $survey = $this->surveyRepository->find($survey_id);
             $option = $this->surveyOptionRepository->find($vote_id);
 
-            /** @var Person $current_user */
+            /** @var User $current_user */
             $current_user = $this->user;
             if(!$survey->isLocked()) {
                 if(!$current_user->hasVoted($survey_id)){

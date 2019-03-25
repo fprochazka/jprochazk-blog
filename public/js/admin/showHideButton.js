@@ -1,7 +1,7 @@
 var init = function() {
 	$(document).on('click','.show-hide.small',function(){
-		id = $(this).attr('id');
-		name = $(this).attr('name');
+		var id = $(this).attr('id');
+		var name = $(this).attr('name');
 
 		if($(this).html() == "+") {
 			$(this).html("-");

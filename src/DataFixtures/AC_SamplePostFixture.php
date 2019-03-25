@@ -7,7 +7,7 @@ use Doctrine\Common\Persistence\ObjectManager;
 use App\Entity\Post;
 use App\Entity\Comment;
 
-class SamplePostFixture extends Fixture
+class AC_SamplePostFixture extends Fixture
 {
     public function load(ObjectManager $manager): self
     {

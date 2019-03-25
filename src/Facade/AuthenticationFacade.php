@@ -2,9 +2,11 @@
 
 namespace App\Facade;
 
-use App\Entity\Person;
+use App\Entity\User;
 use App\Form\RegistrationFormType;
+use App\Security\CurrentUserProvider;
 use App\Security\LoginFormAuthenticator;
+use App\Security\SecurityUser;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\ORMException;
 use Symfony\Component\Form\FormError;
@@ -13,11 +15,10 @@ use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormView;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Symfony\Component\Security\Core\Security;
 
 class AuthenticationFacade
 {
-    /** @var Security */
+    /** @var CurrentUserProvider */
     private $security;
 
     /** @var EntityManagerInterface  */
@@ -35,7 +36,7 @@ class AuthenticationFacade
     public function __construct(
         UserPasswordEncoderInterface $passwordEncoder,
         LoginFormAuthenticator $authenticator,
-        Security $security,
+        CurrentUserProvider $security,
         EntityManagerInterface $entityManager,
         FormFactoryInterface $formFactory
     )
@@ -49,20 +50,20 @@ class AuthenticationFacade
 
     public function getAuthenticationError(): ?string
     {
-        /** @var Person $user */
+        /** @var User $user */
         $user = $this->security->getUser();
         $authenticationError = null;
 
         if($this->security->getUser() == null) $authenticationError = 'auth';
-        else if($user->getRole() !== 'ROLE_ADMIN') $authenticationError = '403';
+        else if($user->getRoles() !== 'ROLE_ADMIN') $authenticationError = '403';
 
         return $authenticationError;
     }
 
-    private function getRegistrationForm(?Person $options = null): FormInterface
+    private function getRegistrationForm(?User $options = null): FormInterface
     {
         if($options === null) {
-            $user = new Person();
+            $user = new User();
             $user->setUsername('');
             $user->setPassword('');
         } else {
@@ -71,12 +72,12 @@ class AuthenticationFacade
         return $this->formFactory->create(RegistrationFormType::class, $user);
     }
 
-    public function getRegistrationFormView(?Person $options = null): FormView
+    public function getRegistrationFormView(?User $options = null): FormView
     {
         return $this->getRegistrationForm($options)->createView();
     }
 
-    private function saveUser(Person $user): bool
+    private function saveUser(User $user): bool
     {
         try {
             $this->entityManager->persist($user);
@@ -85,7 +86,6 @@ class AuthenticationFacade
         } catch(ORMException $e) {
             return false;
         }
-
     }
 
     public function register(Request $request): array
@@ -94,7 +94,7 @@ class AuthenticationFacade
             'status' => 0
         ];
 
-        $user = new Person();
+        $user = new User();
         $user->setUsername('');
         $user->setPassword('');
 
@@ -103,12 +103,16 @@ class AuthenticationFacade
 
         if ($form->isSubmitted()) {
             if ($form->isValid()) {
+                $username = $form->get('username')->getData();
+                $plainPassword = $form->get('plainPassword')->getData();
+
+                $securityUser = new SecurityUser($user);
                 $user->setPassword(
                     $this->passwordEncoder->encodePassword(
-                        $user, $form->get('plainPassword')->getData()
+                        new SecurityUser(new User()), $form->get('plainPassword')->getData()
                     )
                 );
-                $user->setRole('ROLE_USER');
+                //$user->addRole('ROLE_USER');
 
                 if($this->saveUser($user)) {
                     $response['status'] = 200;

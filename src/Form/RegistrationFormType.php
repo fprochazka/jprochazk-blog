@@ -2,7 +2,7 @@
 
 namespace App\Form;
 
-use App\Entity\Person;
+use App\Entity\User;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
@@ -43,7 +43,7 @@ class RegistrationFormType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): self
     {
         $resolver->setDefaults([
-            'data_class' => Person::class,
+            'data_class' => User::class,
         ]);
 
         return $this;
