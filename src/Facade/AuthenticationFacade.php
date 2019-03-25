@@ -4,6 +4,7 @@ namespace App\Facade;
 
 use App\Entity\User;
 use App\Form\RegistrationFormType;
+use App\Repository\RoleRepository;
 use App\Security\CurrentUserProvider;
 use App\Security\LoginFormAuthenticator;
 use App\Security\SecurityUser;
@@ -33,12 +34,15 @@ class AuthenticationFacade
     /** @var LoginFormAuthenticator */
     private $authenticator;
 
+    private $roleRepo;
+
     public function __construct(
         UserPasswordEncoderInterface $passwordEncoder,
         LoginFormAuthenticator $authenticator,
         CurrentUserProvider $security,
         EntityManagerInterface $entityManager,
-        FormFactoryInterface $formFactory
+        FormFactoryInterface $formFactory,
+        RoleRepository $roleRepo
     )
     {
         $this->passwordEncoder = $passwordEncoder;
@@ -46,6 +50,7 @@ class AuthenticationFacade
         $this->security = $security;
         $this->entityManager = $entityManager;
         $this->formFactory = $formFactory;
+        $this->roleRepo = $roleRepo;
     }
 
     public function getAuthenticationError(): ?string
@@ -55,7 +60,7 @@ class AuthenticationFacade
         $authenticationError = null;
 
         if($this->security->getUser() == null) $authenticationError = 'auth';
-        else if($user->getRoles() !== 'ROLE_ADMIN') $authenticationError = '403';
+        else if(array_search('ROLE_ADMIN', $user->getRoles(), true)) $authenticationError = '403';
 
         return $authenticationError;
     }
@@ -112,12 +117,14 @@ class AuthenticationFacade
                         new SecurityUser(new User()), $form->get('plainPassword')->getData()
                     )
                 );
-                //$user->addRole('ROLE_USER');
+
+                $user_role = $this->roleRepo->getUserRole();
+                $user->addRole($user_role);
 
                 if($this->saveUser($user)) {
                     $response['status'] = 200;
                     $response['data'] = [
-                        'user' => $user,
+                        'user' => new SecurityUser($user),
                         'authenticator' => $this->authenticator,
                         'providerKey' => 'main'
                     ];
