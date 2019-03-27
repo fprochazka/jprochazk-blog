@@ -19,7 +19,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class CommentFacade
 {
-    /** @var UserInterface|null */
+    /** @var CurrentUserProvider */
     private $userProvider;
 
     /** @var PostRepository */

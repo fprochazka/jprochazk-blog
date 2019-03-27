@@ -43,10 +43,8 @@ class AC_SamplePostFixture extends Fixture
 
 
 
-        $comment = new Comment();
-        $comment->setAuthor($admin);
+        $comment = new Comment($post, $admin);
         $comment->setContent('This is a sample comment. You can edit or delete it!');
-        $comment->setDate(new \DateTimeImmutable());
 
         $post->addComment($comment);
 

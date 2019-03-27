@@ -40,21 +40,29 @@ class User
 
     /**
      * @ORM\ManyToMany(targetEntity="App\Entity\Role", inversedBy="Users")
+     *
+     * @var Collection
      */
     private $Roles;
 
     /**
      * @ORM\ManyToMany(targetEntity="App\Entity\SurveyOption", inversedBy="users")
+     *
+     * @var Collection
      */
     private $votes;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Comment", mappedBy="author")
+     *
+     * @var Collection
      */
     private $comments;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Post", mappedBy="author")
+     *
+     * @var Collection
      */
     private $posts;
 
@@ -127,16 +135,6 @@ class User
         }
 
         return $this;
-    }
-
-    public function getSalt()
-    {
-        return null;
-    }
-
-    public function eraseCredentials()
-    {
-        return null;
     }
 
     /**

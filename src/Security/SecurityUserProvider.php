@@ -13,6 +13,7 @@ use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 
 class SecurityUserProvider implements UserProviderInterface
 {
+    /** @var UserRepository */
     private $userRepository;
 
     public function __construct(UserRepository $userRepository)
@@ -45,7 +46,7 @@ class SecurityUserProvider implements UserProviderInterface
         return SecurityUser::class === $class;
     }
 
-    private function fetchUser($username)
+    private function fetchUser(string $username): SecurityUser
     {
         if (null === ($user = $this->userRepository->findOneBy(['username' => $username]))) {
             throw new UsernameNotFoundException(

@@ -29,6 +29,8 @@ class Role
 
     /**
      * @ORM\ManyToMany(targetEntity="App\Entity\User", mappedBy="Roles")
+     *
+     * @var Collection
      */
     private $Users;
 

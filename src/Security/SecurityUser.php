@@ -8,8 +8,13 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class SecurityUser implements UserInterface, \Serializable
 {
+    /** @var string $username */
     private $username;
+
+    /** @var string $password */
     private $password;
+
+    /** @var array $roles */
     private $roles;
 
     public function __construct(User $user)
@@ -19,12 +24,12 @@ class SecurityUser implements UserInterface, \Serializable
         $this->roles = $user->getRoles();
     }
 
-    public function getUsername(): ?string
+    public function getUsername(): string
     {
         return $this->username;
     }
 
-    public function getPassword(): ?string
+    public function getPassword(): string
     {
         return $this->password;
     }
@@ -35,7 +40,7 @@ class SecurityUser implements UserInterface, \Serializable
     }
 
     /** @see \Serializable::serialize() */
-    public function serialize()
+    public function serialize(): array
     {
         return serialize(array(
             $this->username,
@@ -52,12 +57,12 @@ class SecurityUser implements UserInterface, \Serializable
             ) = unserialize($serialized, array('allowed_classes' => false));
     }
 
-    public function getRoles()
+    public function getRoles(): array
     {
         return $this->roles;
     }
 
-    public function eraseCredentials()
+    public function eraseCredentials(): void
     {
     }
 }

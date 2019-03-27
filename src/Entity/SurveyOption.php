@@ -43,6 +43,8 @@ class SurveyOption
 
     /**
      * @ORM\ManyToMany(targetEntity="App\Entity\User", mappedBy="votes")
+     *
+     * @var Collection
      */
     private $users;
 

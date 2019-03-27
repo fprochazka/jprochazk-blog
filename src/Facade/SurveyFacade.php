@@ -56,11 +56,10 @@ class SurveyFacade
         $this->formFactory = $formFactory;
     }
 
-    public function getLatestSurvey(): ?array
+    public function getLatestSurvey(): ?Survey
     {
         $survey = $this->surveyRepository->findOneByHighestId();
         if($survey !== null) {
-            $survey = $survey->toArray();
             /** @var User $user */
             $user = $this->userProvider->getUser();
             if($user != null) {

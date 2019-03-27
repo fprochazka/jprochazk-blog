@@ -5,7 +5,10 @@ namespace App\DTO;
 
 class CreateCommentDto
 {
+    /** @var int $post_id */
     private $post_id;
+
+    /** @var string $content */
     private $content;
 
     public function __construct

@@ -6,8 +6,13 @@ namespace App\DTO;
 
 class DeleteCommentDto
 {
+    /** @var int $comment_id */
     private $comment_id;
+
+    /** @var int $post_id */
     private $post_id;
+
+    /** @var string $author_username */
     private $author_username;
 
     public function __construct

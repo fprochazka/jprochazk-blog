@@ -6,8 +6,13 @@ namespace App\DTO;
 
 class EditCommentDto
 {
+    /** @var string $content */
     private $content;
+
+    /** @var int $comment_id */
     private $comment_id;
+
+    /** @var string $author_username */
     private $author_username;
 
     public function __construct

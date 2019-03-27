@@ -11,11 +11,13 @@ use Symfony\Component\HttpFoundation\Request;
 
 class AdminFacade
 {
-    /** @var $userRepository  */
+    /** @var UserRepository */
     private $userRepository;
-    /** @var PostRepository  */
+
+    /** @var PostRepository */
     private $postRepository;
-    /** @var SurveyRepository  */
+
+    /** @var SurveyRepository */
     private $surveyRepository;
 
     public function __construct(
