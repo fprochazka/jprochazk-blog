@@ -20,7 +20,7 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 class AuthenticationFacade
 {
     /** @var CurrentUserProvider */
-    private $security;
+    private $userProvider;
 
     /** @var EntityManagerInterface  */
     private $entityManager;
@@ -39,7 +39,7 @@ class AuthenticationFacade
     public function __construct(
         UserPasswordEncoderInterface $passwordEncoder,
         LoginFormAuthenticator $authenticator,
-        CurrentUserProvider $security,
+        CurrentUserProvider $userProvider,
         EntityManagerInterface $entityManager,
         FormFactoryInterface $formFactory,
         RoleRepository $roleRepo
@@ -47,7 +47,7 @@ class AuthenticationFacade
     {
         $this->passwordEncoder = $passwordEncoder;
         $this->authenticator = $authenticator;
-        $this->security = $security;
+        $this->userProvider = $userProvider;
         $this->entityManager = $entityManager;
         $this->formFactory = $formFactory;
         $this->roleRepo = $roleRepo;
@@ -56,11 +56,11 @@ class AuthenticationFacade
     public function getAuthenticationError(): ?string
     {
         /** @var User $user */
-        $user = $this->security->getUser();
+        $user = $this->userProvider->getUser();
         $authenticationError = null;
 
-        if($this->security->getUser() == null) $authenticationError = 'auth';
-        else if(array_search('ROLE_ADMIN', $user->getRoles(), true)) $authenticationError = '403';
+        if($user === null) $authenticationError = 'auth';
+        else if($user->hasRole($this->roleRepo->getAdminRole())) $authenticationError = '403';
 
         return $authenticationError;
     }

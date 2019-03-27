@@ -1,21 +1,32 @@
 $(document).ready(function(){
 	$("button#comment-send").click(function(){
 		var data = {
-			content: $('#comment-content').val()
+			content: $('textarea#comment-content').val()
 		};
-		$.ajax({
-			url: path.post_comment,
-			type: 'POST',
-			data: data,
+		if(data.content !== null && data.content !== "") {
+			$.ajax({
+				url: path.post_comment,
+				type: 'POST',
+				data: data,
 
-			success: function(data, status) {
-				console.log("success");
-				console.log(data);
-				$('div.comments').prepend(
-					'<div class="comment" id="'+ data.message["id"] +'"><span id="author">'+ data.message["author"] + '</span>: <br><span id="date">('+ data.message["date"] +')</span><span id="comment-edit" for="'+ data.message["id"] +'"> - <a href="" id="comment-edit">EDIT</a></span><br><span id="content" for="'+ data.message["id"] +'">'+ data.message["content"] + '</span></div>'
-				);
-			}
-		});
+				success: function (data, status) {
+					console.log("success");
+					console.log(data);
+					$('div.comments').prepend('<div class="comment" id="' + data["id"] + '"></div>');
+					$('div.comment#' + data["id"]).append('<span id="author">' + data["author"] + '</span><br>');
+					$('div.comment#' + data["id"]).append('<span id="date">(' + data["date"] + ')</span>');
+					$('div.comment#' + data["id"]).append('<span id="comment-edit" for="' + data["id"] + '"> - <a href="" id="comment-edit">EDIT</a></span>');
+					$('div.comment#' + data["id"]).append('<span id="comment-delete" for="' + data["id"] + '"> - <a href="" id="comment-delete">DELETE</a></span><br>');
+					$('div.comment#' + data["id"]).append('<span id="content" for="' + data["id"] + '">' + data["content"] + '</span>');
+				},
+				error: function (xhr, status, errorThrown) {
+					console.log("error");
+					console.log(xhr);
+				}
+			});
+		} else {
+			$('textarea#comment-content').attr("placeholder", "Text area is empty!");
+		}
 	});
 
 	$(document).on('click', 'a#comment-edit', function(e) {
@@ -38,7 +49,7 @@ $(document).ready(function(){
 
 		var data = {
 			current_user: path.current_user
-		}
+		};
 
 		var temp_url = path.post_comment_delete;
 		temp_url = temp_url.replace(/__post-id__/g, post_id);
@@ -50,20 +61,18 @@ $(document).ready(function(){
 			data: data,
 
 			success: function(data, status) {
-				if (data.message == "xml") {
-					console.log("request is not XML");
-				} else if(data.message == "perm") {
-					console.log("user is unauthorized to delete this comment");
-				} else {
-					console.log("success, " + status);
-					parentDiv.remove();
-				}
+				console.log("success");
+				parentDiv.remove();
+			},
+			error: function(xhr, status, errorThrown) {
+				console.log(status);
+				console.log(xhr.responseText);
 			}
 		});
 	});
 
 	$(document).on('click', 'button#comment-edit-cancel', function() {
-		var content = $(this).parent().find('textarea#comment-edit-content').text();
+		var content = $(this).parent().find('textarea#comment-edit-content').val();
 
 		$(this).parent().parent().append('<span id="content" for="'+$(this).parent().parent().attr('id')+'">'+content+'</span>');
 		$('<span id="comment-edit" for="'+$(this).parent().parent().attr('id')+'"> - <a href="" id="comment-edit">EDIT</a></span>').insertAfter($(this).parent().parent().find('span#date'));
@@ -75,41 +84,37 @@ $(document).ready(function(){
 		var comment_id = $(this).attr('for');
 		var post_id = path.post_id;
 		var data = {
-			content: "",
 			current_user: path.current_user
 		};
 		$('textarea#comment-edit-content').each(function(){
 			var temp_id = $(this).attr('for');
-			console.log(temp_id);
-			if($(this).attr('for') == comment_id) {
-				data.content = $(this).val();
+			if($(this).attr('for') === comment_id) {
+				if($(this).val() === "" && $(this).val() === null) {
+					$(this).attr("placeholder", "Text area is empty!")
+				} else {
+					data.content = $(this).val();
+				}
 			}
 		});
 
 		var temp_url = path.post_comment_edit;
 		temp_url = temp_url.replace(/__post-id__/g, post_id);
 		temp_url = temp_url.replace(/__comment-id__/g, comment_id);
-		if(data.content != "") {
+		if(data.content !== null && data.content !== "") {
 			$.ajax({
 				url: temp_url,
 				type: 'POST',
 				data: data,
 
-				success: function(data, status) {
-					if(data.message == "str") {
-						console.log("data is not of type string");
-					} else if(data.message == "perm") {
-						console.log("user is unauthorized to edit this comment");
-					} else {
-						console.log("success, " + status);
-						_self.parent().parent().append('<span id="content" for="'+$(this).parent().parent().attr('id')+'">'+data.message["content"]+'</span>');
-						$('<span id="comment-edit" for="'+$(this).parent().parent().attr('id')+'"> - <a href="" id="comment-edit">EDIT</a></span>').insertAfter(_self.parent().parent().find('span#date'));
-						_self.parent().parent().find('div.comment-edit').remove();
-					}
+				success: function (data, status) {
+					_self.parent().parent().append('<span id="content" for="' + $(this).parent().parent().attr('id') + '">' + data["content"] + '</span>');
+					$('<span id="comment-edit" for="' + $(this).parent().parent().attr('id') + '"> - <a href="" id="comment-edit">EDIT</a></span>').insertAfter(_self.parent().parent().find('span#date'));
+					_self.parent().parent().find('div.comment-edit').remove();
+				},
+				error: function (xhr, status, errorThrown) {
+					console.log(xhr.responseText);
 				}
 			});
-		} else {
-			console.log("content is empty");
 		}
 	});
 });

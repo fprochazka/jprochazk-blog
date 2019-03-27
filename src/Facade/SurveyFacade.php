@@ -21,10 +21,10 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class SurveyFacade
 {
-    /** @var UserInterface|null  */
-    private $user;
+    /** @var CurrentUserProvider */
+    private $userProvider;
 
-    /** @var EntityManagerInterface  */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
     /** @var FormFactoryInterface */
@@ -40,7 +40,7 @@ class SurveyFacade
     private $surveyOptionRepository;
 
     public function __construct(
-        CurrentUserProvider $security,
+        CurrentUserProvider $userProvider,
         UserRepository $userRepository,
         SurveyRepository $surveyRepository,
         SurveyOptionRepository $surveyOptionRepository,
@@ -48,7 +48,7 @@ class SurveyFacade
         FormFactoryInterface $formFactory
     )
     {
-        $this->user = $security->getUser();
+        $this->userProvider = $userProvider;
         $this->userRepository = $userRepository;
         $this->surveyRepository = $surveyRepository;
         $this->surveyOptionRepository = $surveyOptionRepository;
@@ -62,7 +62,7 @@ class SurveyFacade
         if($survey !== null) {
             $survey = $survey->toArray();
             /** @var User $user */
-            $user = $this->user;
+            $user = $this->userProvider->getUser();
             if($user != null) {
                 $survey['voted'] = $user->hasVoted($survey['id']);
             } else {

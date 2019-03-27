@@ -70,8 +70,8 @@
 			'',
 		{% endif %}
 		
-		"post_id": '{{ post["id"] }}',
-		"post_comment": '{{ path("app_blog_post_comment", {"post_id" : post["id"]}) }}',
+		"post_id": '{{ post.id }}',
+		"post_comment": '{{ path("app_blog_post_comment", {"post_id" : post.id}) }}',
 		"post_comment_edit": '/post/__post-id__/comment/edit/__comment-id__',
 		"post_comment_delete": '/post/__post-id__/comment/delete/__comment-id__',
 	};
@@ -86,10 +86,10 @@
 {% endblock %}
 {% block content %}
 	<div class="post">
-		<div class="post title">{{ post["title"] }}</div>
-		by {{ post["author"]}}, {{ post["date"] }}{% if is_granted('ROLE_ADMIN') %} - <a href="{{ path('app_blog_post_edit', {'id': post["id"]}) }}">EDIT</a> - <a href="{{ path('app_blog_post_delete', {'id': post["id"]}) }}">DELETE</a>{% endif %}
+		<div class="post title">{{ post.title }}</div>
+		by {{ post.author.username}}, {{ post.subtime|date() }}{% if is_granted('ROLE_ADMIN') %} - <a href="{{ path('app_blog_post_edit', {'id': post.id}) }}">EDIT</a> - <a href="{{ path('app_blog_post_delete', {'id': post.id}) }}">DELETE</a>{% endif %}
 		<hr>
-		<p class="post content">{{ post["content"] }}</p>
+		<p class="post content">{{ post.content }}</p>
 	</div>
 	<hr>
 	<div class="comment-section">
@@ -102,9 +102,17 @@
 		{% endif %}
 		</div>
 		<div class="comments">
-		{% for comment in post["comments"]|reverse %}
-			<div class="comment" id="{{ comment["id"] }}">
-				<span id="author">{{ comment["author"] }}</span>: <br><span id="date">({{ comment["date"] }})</span>{% if comment["canEdit"] %}<span id="comment-edit" for="{{ comment["id"] }}"> - <a href="" id="comment-edit">EDIT</a></span><span id="comment-delete" for="{{ comment["id"] }}"> - <a href="" id="comment-delete">DELETE</a></span>{% endif %}<br><span id="content" for="{{ comment["id"] }}">{{ comment["content"] }}</span>
+		{% for comment in post.comments|reverse %}
+			<div class="comment" id="{{ comment.id }}">
+				<span id="author">{{ comment.author.username }}</span>: <br><span id="date">({{ comment.date|date() }})</span>
+				{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_USER') %}
+					{% if comment.author.username == app.user.username %}
+						<span id="comment-edit" for="{{ comment.id }}"> - <a href="" id="comment-edit">EDIT</a></span>
+						<span id="comment-delete" for="{{ comment.id }}"> - <a href="" id="comment-delete">DELETE</a></span>
+					{% endif %}
+				{% endif %}
+				<br>
+				<span id="content" for="{{ comment.id }}">{{ comment.content }}</span>
 			</div>
 		{% endfor %}
 		</div>

@@ -33,28 +33,26 @@ class Comment
     private $content;
 
     /**
-     * @ORM\Column(type="string", length=255)
-     *
-     * @var string
-     */
-    private $author;
-
-    /**
      * @ORM\Column(type="datetime")
      *
      * @var \DateTimeInterface
      */
     private $date;
 
-    public function toArray(): array
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="comments")
+     */
+    private $author;
+
+    public function __construct
+    (
+        Post $post,
+        User $author
+    )
     {
-        return [
-            'id' => $this->id,
-            'content' => $this->content,
-            'author' => $this->author,
-            'date' => $this->date->format('Y-m-d, H:i:s'),
-            'canEdit' => false,
-        ];
+        $this->post = $post;
+        $this->author = $author;
+        $this->date = new \DateTimeImmutable();
     }
 
     public function getId(): int
@@ -70,6 +68,7 @@ class Comment
     public function setPost(Post $post): self
     {
         $this->post = $post;
+        $post->addComment($this);
 
         return $this;
     }
@@ -86,18 +85,6 @@ class Comment
         return $this;
     }
 
-    public function getAuthor(): string
-    {
-        return $this->author;
-    }
-
-    public function setAuthor(string $author): self
-    {
-        $this->author = $author;
-
-        return $this;
-    }
-
     public function getDate(): \DateTimeInterface
     {
         return $this->date;
@@ -106,6 +93,19 @@ class Comment
     public function setDate(\DateTimeInterface $date): self
     {
         $this->date = $date;
+
+        return $this;
+    }
+
+    public function getAuthor(): ?User
+    {
+        return $this->author;
+    }
+
+    public function setAuthor(?User $author): self
+    {
+        $this->author = $author;
+        $author->addComment($this);
 
         return $this;
     }

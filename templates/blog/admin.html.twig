@@ -45,55 +45,66 @@
 </div>
 <div class="list">
 {% if tab != "error" %}
-	{% if tab == "users" and data != null %}
-		{% for user in data %}
+	{% if tab == "users" and data['users'] != null %}
+		{% for user in data['users'] %}
 			<div class="list-item user">
-				ID: {{ user['id'] }} | Username: {{ user['name'] }} | Role: {{ user['role'] }}<br>
-				Voted on: <button class="show-hide small" id="{{ user['id'] }}" name="voted">+</button><br>
-				<span id="{{ user['id'] }}" name="voted" hidden>
-					{% for key,value in user['votes'] %}
+				ID: {{ user.id }} | Username: {{ user.username }} <br>
+				Roles:
+				{% for role in user.roles %}
+					{{ role }}{% if not loop.last %}, {% endif %}
+				{% endfor %}
+				<br>
+				Voted on: <button class="show-hide small" id="{{ user.id }}" name="voted">+</button><br>
+				<span id="{{ user.id }}" name="voted" hidden>
+					{% for vote in user.votes %}
 					<div class="list-item vote">
-					Q: {{ key }}<br>
-					A: {{ value }}
+					Q: {{ vote.survey.id }}<br>
+					A: {{ vote.id }}
 					</div>
 					{% endfor %}
 				</span>
 			</div>
 		{% endfor %}
-	{% elseif tab == "posts" and data != null %}
-		{% for post in data|reverse %}
+	{% elseif tab == "posts" and data['posts'] != null %}
+		{% for post in data['posts']|reverse %}
 			<div class="list-item post">
-				ID: {{ post['id'] }} | Title: {{ post['title'] }} | Date: {{ post['date'] }} | Author: {{ post['author'] }}
-					<span id="post-edit" for="{{ post["id"] }}"> - <a href="{{ path("app_blog_post_edit", {"id": post["id"]}) }}" id="post-edit">EDIT</a></span>
-					<span id="post-delete" for="{{ post["id"] }}"> - <a href="{{ path("app_blog_post_delete", {"id": post["id"]}) }}" id="post-delete">DELETE</a></span>
+				ID: {{ post.id }} | Title: {{ post.title }} | Date: {{ post.date }} | Author: {{ post.author.username }}
+					<span id="post-edit" for="{{ post.id }}"> - <a href="{{ path("app_blog_post_edit", {"id": post.id}) }}" id="post-edit">EDIT</a></span>
+					<span id="post-delete" for="{{ post.id }}"> - <a href="{{ path("app_blog_post_delete", {"id": post.id}) }}" id="post-delete">DELETE</a></span>
 					<br>
-				Content: <button class="show-hide small" id="{{ post['id'] }}" name="content">+</button>
-				<span id="{{ post['id'] }}" name="content" hidden>
+				Content: <button class="show-hide small" id="{{ post.id }}" name="content">+</button>
+				<span id="{{ post.id }}" name="content" hidden>
 					<div class="list-item content">
-						{{ post['content'] }}
+						{{ post.content }}
 					</div>
 				</span>
-				Comments: <button class="show-hide small" id="{{ post['id'] }}" name="comments">+</button><br>
-				<span id="{{ post['id'] }}" name="comments" hidden>
-				{% for comment in post['comments'] %}
+				Comments: <button class="show-hide small" id="{{ post.id }}" name="comments">+</button><br>
+				<span id="{{ post.id }}" name="comments" hidden>
+				{% for comment in post.comments %}
 					<div class="list-item comment">
-						ID: {{ comment['id'] }} | Date: {{ comment['date'] }} | Author: {{ comment['author'] }}<br>
-						Content: {{ comment['content'] }}
+						ID: {{ comment.id }} | Date: {{ comment.date|date() }} | Author: {{ comment.author.username }}<br>
+						Content: {{ comment.content }}
 					</div>
 				{% endfor %}
 				</span>
 				<br>
 			</div>
 		{% endfor %}
-	{% elseif tab == "surveys" and data != null %}
-		{% for survey in data|reverse %}
-		<div class="list-item survey" id="{{ survey['id'] }}">
-			<span class="list-item title">{{ survey["title"] }}</span><button class="show-hide small" id="{{ survey['id'] }}" name="option">+</button>
-			<span id="survey-delete" for="{{ survey["id"] }}"> - <a href="{{ path("app_blog_survey_delete", {"id": survey["id"]}) }}" id="survey-delete">DELETE</a></span>
+	{% elseif tab == "surveys" and data['surveys'] != null %}
+		{% for survey in data['surveys']|reverse %}
+		<div class="list-item survey" id="{{ survey.id }}">
+			<span class="list-item title">{{ survey.title }}</span>
+			<button class="show-hide small" id="{{ survey.id }}" name="option">+</button>
+			<span id="survey-delete" for="{{ survey.id }}">
+				- <a href="{{ path("app_blog_survey_delete", {"id": survey.id }) }}" id="survey-delete">DELETE</a>
+			</span>
 			<br>
-			<span id="{{ survey['id'] }}" name="option" hidden>
-				{% for option in survey["options"] %}
-					<ul class="list-item option" id="{{ survey['id'] }}"><span>{{ option["name"] }}:</span><span class="votecount" id="{{ survey['id'] }}" value="{{ option['votes'] }}"></span></ul>
+			<span id="{{ survey.id }} }}" name="option" hidden>
+				{% for option in survey.options %}
+					<ul class="list-item option" id="{{ option.id }}">
+						<span>{{ option.name }}:</span>
+						<span class="votecount" id="{{ option.id }}" value="{{ option.votes }}"></span>
+					</ul>
 				{% endfor %}
 			</span>
 		</div>

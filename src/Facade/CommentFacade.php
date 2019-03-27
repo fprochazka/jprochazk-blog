@@ -3,162 +3,109 @@
 
 namespace App\Facade;
 
-use App\Entity\User;
+use App\DTO\CreateCommentDto;
+use App\DTO\DeleteCommentDto;
+use App\DTO\EditCommentDto;
 use App\Repository\CommentRepository;
 use App\Repository\PostRepository;
+use App\Repository\UserRepository;
+use App\Security\CurrentUserProvider;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\ORMException;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Security\Core\Security;
+use App\Exception\CommentPersistenceException;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 use App\Entity\Comment;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 class CommentFacade
 {
-    /** @var UserInterface|null  */
-    private $user;
+    /** @var UserInterface|null */
+    private $userProvider;
 
-    /** @var PostRepository  */
+    /** @var PostRepository */
     private $postRepository;
 
-    /** @var CommentRepository  */
+    /** @var CommentRepository */
     private $commentRepository;
 
-    /** @var EntityManagerInterface  */
+    /** @var UserRepository */
+    private $userRepository;
+
+    /** @var EntityManagerInterface */
     private $entityManager;
 
     public function __construct(
-        Security $security,
+        CurrentUserProvider $userProvider,
         PostRepository $postRepository,
         CommentRepository $commentRepository,
+        UserRepository $userRepository,
         EntityManagerInterface $entityManager
     )
     {
-        $this->user = $security->getUser();
+        $this->userProvider = $userProvider;
         $this->postRepository = $postRepository;
         $this->commentRepository = $commentRepository;
+        $this->userRepository = $userRepository;
         $this->entityManager = $entityManager;
     }
 
-    private function saveComment(Comment $comment): bool
+    /**
+     * @throws CommentPersistenceException
+     */
+    public function createComment(CreateCommentDto $commentDto): Comment
     {
-        try {
+        $post = $this->postRepository->find($commentDto->getPostId());
+        $author = $this->userProvider->getUser();
+        $comment = new Comment($post, $author);
+
+        $comment->setContent($commentDto->getContent());
+        $post->addComment($comment);
+        $author->addComment($comment);
+
+        $this->entityManager->persist($comment);
+        $this->entityManager->flush();
+
+        return $comment;
+    }
+
+
+    /**
+     * @throws CommentPersistenceException
+     * @throws AccessDeniedException
+     */
+    public function editComment(EditCommentDto $commentDto): Comment
+    {
+        $current_user = $this->userProvider->getUser();
+        $comment = $this->commentRepository->find($commentDto->getCommentId());
+
+        if($current_user->getUsername() === $commentDto->getAuthorUsername()) {
+            $comment->setContent($commentDto->getContent());
             $this->entityManager->persist($comment);
             $this->entityManager->flush();
-            return true;
-        } catch (ORMException $e) {
-            return false;
+        } else {
+            throw new AccessDeniedException();
         }
+
+        return $comment;
     }
 
-    private function removeComment(Comment $comment): bool
+
+    /**
+     * @throws CommentPersistenceException
+     * @throws AccessDeniedException
+     */
+    public function deleteComment(DeleteCommentDto $commentDto): void
     {
-        try {
+        $current_user = $this->userProvider->getUser();
+        $comment = $this->commentRepository->find($commentDto->getCommentId());
+        $post = $this->postRepository->find($commentDto->getPostId());
+
+        if($current_user->getUsername() === $commentDto->getAuthorUsername()) {
+            $post->removeComment($comment);
             $this->entityManager->remove($comment);
             $this->entityManager->flush();
-            return true;
-        } catch (ORMException $e) {
-            return false;
+        } else {
+            throw new AccessDeniedException();
         }
-    }
-
-    public function createComment(int $post_id, Request $request): array
-    {
-        $responseData = [
-            'status' => 'Error',
-            'message' => 'xml'
-        ];
-
-        if($request->isXmlHttpRequest() || $request->query->get('showJson') === 1) {
-            /** @var string $content */
-            $content = $request->request->get('content');
-            /** @var User $user */
-            $user = $this->user;
-
-            $post = $this->postRepository->find($post_id);
-            $comment = new Comment();
-
-            $date = new \DateTimeImmutable();
-            $comment->setDate($date);
-            $comment->setAuthor($user->getUsername());
-            $comment->setContent($content);
-
-            $post->addComment($comment);
-            $this->saveComment($comment);
-
-            $responseData['status'] = 'OK';
-            $responseData['message'] = [
-                'id' => $comment->getId(),
-                'author' => $user->getUsername(),
-                'date' => $date->format('Y-m-d, H:i:s'),
-                'content' => $content,
-            ];
-        }
-
-        return $responseData;
-    }
-
-    public function editComment(int $post_id, int $comment_id, Request $request): array
-    {
-        $responseData = [
-            'status' => 'Error',
-            'message' => 'xml'
-        ];
-
-        if($request->isXmlHttpRequest() || $request->query->get('showJson') === 1) {
-            /** @var string $content */
-            $content = $request->request->get('content');
-            $request_username = $request->request->get('current_user');
-
-            /** @var User $user */
-            $user = $this->user;
-            if($user->getUsername() === $request_username) {
-                $post = $this->postRepository->find($post_id);
-                $comment = $this->commentRepository->find($comment_id);
-
-                if($post->getComments()->contains($comment)) {
-                    $comment->setContent($content);
-                    $this->saveComment($comment);
-                }
-
-                $responseData['status'] = 'OK';
-                $responseData['message'] = [
-                    'content' => $content
-                ];
-            } else {
-                $responseData['message'] = 'perm';
-            }
-        }
-        return $responseData;
-    }
-
-    public function deleteComment(int $post_id, int $comment_id, Request $request): array
-    {
-        $responseData = [
-            'status' => 'Error',
-            'message' => 'xml'
-        ];
-
-        if($request->isXmlHttpRequest() || $request->query->get('showJson') == 1) {
-            /** @var User $user */
-            $user = $this->user;
-            $request_username = $request->request->get('current_user');
-            if($user->getUsername() == $request_username) {
-
-                $comment = $this->commentRepository->find($comment_id);
-                $post = $this->postRepository->find($post_id);
-
-                $post->removeComment($comment);
-                $this->removeComment($comment);
-
-                $responseData['status'] = 'OK';
-                $responseData['message'] = 'deleted';
-            } else {
-                $responseData['message'] = 'perm';
-            }
-        }
-
-        return $responseData;
     }
 }

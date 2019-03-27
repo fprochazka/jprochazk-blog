@@ -25,6 +25,7 @@ class CurrentUserProvider
         if (!$this->currentUser) {
             $this->currentUser = $this->fromToken($this->tokenStorage->getToken());
         }
+
         return $this->currentUser;
     }
     public function fromToken(TokenInterface $token): ?User

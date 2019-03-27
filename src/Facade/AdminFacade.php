@@ -29,53 +29,14 @@ class AdminFacade
         $this->surveyRepository = $surveyRepository;
     }
 
-    private function getAdminData(?string $tab): ?array
+    public function getAdminData(): array
     {
-        $data = null;
-        switch($tab) {
-            case 'users':
-                foreach($this->userRepository->findAll() as $user) {
-                    $data[] = $user->toArray();
-                }
-                break;
-            case 'posts':
-                foreach($this->postRepository->findAll() as $post) {
-                    $data[] = $post->toArray();
-                }
-                break;
-            case 'surveys':
-                foreach($this->surveyRepository->findAll() as $survey) {
-                    $data[] = $survey->toArray();
-                }
-                break;
-        }
+        $data = [
+            'users' => $this->userRepository->findAll(),
+            'posts' => $this->postRepository->findAll(),
+            'surveys' => $this->surveyRepository->findAll()
+        ];
 
         return $data;
-    }
-
-    public function adminDataList(Request $request): array
-    {
-        $tab = $request->query->get('p');
-        $data = $this->getAdminData($tab);
-
-        switch($tab) {
-            case null:
-                $tab = null;
-                break;
-            case 'users':
-                break;
-            case 'posts':
-                break;
-            case 'surveys':
-                break;
-            default:
-                $tab = 'error';
-                break;
-        }
-
-        return [
-            'tab' => $tab,
-            'data' => $data
-        ];
     }
 }
