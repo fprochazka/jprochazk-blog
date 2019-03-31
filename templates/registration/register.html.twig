@@ -10,7 +10,7 @@
     {% if error_container is not null %}
     <div class="error">
         {% for error in error_container %}
-            <span>{{ error }}</span></br>
+            <span>{{ error.message }}</span></br>
         {% endfor %}
     </div>
     <br>
