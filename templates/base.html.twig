@@ -1,50 +1,56 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>{% block title %}{% endblock %}</title>
-        <link rel="stylesheet" href="/css/main.css">
-        {% block stylesheets %}{% endblock %}
+	<head>
+		<meta charset="UTF-8">
+		<title>{% block title %}{% endblock %}</title>
+		<link rel="stylesheet" href="/css/main.css">
+		{% block stylesheets %}{% endblock %}
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 		<script src="/js/autosize.min.js"></script>
 		<script src="/js/renderSurvey.js"></script>
 		<script src="/js/resizeBody.js"></script>
 		<script src="/js/post/parseTags.js"></script>
-        {% block javascripts %}
-		{% endblock %}
-    </head>
-    <body>
-        {% block body %}
-        
-        <div class="container-main">
-        	<div class="container-menu">
-				<a href="{{ path('app_blog_post_list') }}"><button>Home</button></a>
-				{% if is_granted('ROLE_ADMIN') %}
+		<script src="/js/flashMessageFade.js"></script>
+		{% block javascripts %}{% endblock %}
+	</head>
+	<body>
+{% block body %}
+	<div class="container-flash">
+		{% for message in app.flashes('notice') %}
+			<div class="notice">
+				{{ message }}
+			</div>
+		{% endfor %}
+	</div>
+	<div class="container-main">
+		<div class="container-menu">
+			<a href="{{ path('app_blog_post_list') }}"><button>Home</button></a>
+			{% if is_granted('ROLE_ADMIN') %}
 				<a href="{{ path('app_blog_admin') }}"><button>Admin</button></a>
 				<a href="{{ path('app_blog_post_new') }}"><button>New post</button></a>
 				<a href="{{ path('app_blog_survey_new') }}"><button>New survey</button></a>
-				{% endif %}
-				<span style="float:right; margin-right: 2em">
-					{{ render(path('app_blog_search_form')) }}
-				</span>
-	        </div>
-	        <div class="container-side">
-		        {% block side %}
-					{{ include('security/welcome.html.twig')}}
-					<br>
-					<br>
-					{{ render('/survey') }}
-		        {% endblock %}
-	        </div>
-	        <div class="container-left">
-		    {% block main %}
+			{% endif %}
+			<span style="float:right; margin-right: 2em">
+			{{ render(path('app_blog_search_form')) }}
+			</span>
+		</div>
+		<div class="container-side">
+			{% block side %}
+				{{ include('security/welcome.html.twig')}}
+				<br>
+				<br>
+				{{ render('/survey') }}
+			{% endblock %}
+		</div>
+		<div class="container-left">
+			{% block main %}
 				<h1>Blog</h1>
-			    <div class="wrapper content">
-			    {% block content %}{% endblock %}
+				<div class="wrapper content">
+					{% block content %}{% endblock %}
 				</div>
-	        {% endblock %}
-	    	</div>
-	    </div>
-        {% endblock %}
+			{% endblock %}
+		</div>
+	</div>
+{% endblock %}
     </body>
 </html>

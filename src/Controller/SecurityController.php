@@ -2,9 +2,10 @@
 
 namespace App\Controller;
 
+use App\DTO\RegistrationDto;
 use App\Facade\AuthenticationFacade;
+use App\Security\SecurityUser;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -12,7 +13,6 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 use App\Form\RegistrationFormType;
 use App\Security\LoginFormAuthenticator;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Security\Guard\GuardAuthenticatorHandler;
 
 use App\Entity\User;
@@ -32,26 +32,39 @@ class SecurityController extends AbstractController
     /**
      * @Route("/register", name="app_register")
      */
-    public function register(Request $request, GuardAuthenticatorHandler $guardHandler): ?Response
+    public function register(Request $request, GuardAuthenticatorHandler $guardHandler, LoginFormAuthenticator $authenticator): Response
     {
-        $response = $this->authFacade->register($request);
+        $form = $this->createForm(RegistrationFormType::class, new User());
 
-        if($response['status'] === 200) {
-            return $guardHandler->authenticateUserAndHandleSuccess(
-                $response['data']['user'],
-                $request,
-                $response['data']['authenticator'],
-                $response['data']['providerKey']
-            );
-        } elseif($response['status'] === 500) {
-            return $this->render('registration/register.html.twig', [
-                'registrationForm' => $this->authFacade->getRegistrationFormView(),
-                'error_container' => $response['message']
-            ]);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                $user = $this->authFacade->register(
+                    new RegistrationDto(
+                        $form->get('username')->getData(),
+                        $form->get('plainPassword')->getData()
+                    )
+                );
+
+                $this->addFlash('notice', 'Registration successful!');
+
+                return $guardHandler->authenticateUserAndHandleSuccess(
+                    new SecurityUser($user),
+                    $request,
+                    $authenticator,
+                    'main'
+                );
+            } else {
+                return $this->render('registration/register.html.twig', [
+                    'registrationForm' => $form->createView(),
+                    'error_container' => $form->getErrors()
+                ]);
+            }
         }
 
         return $this->render('registration/register.html.twig', [
-            'registrationForm' => $this->authFacade->getRegistrationFormView(),
+            'registrationForm' => $form->createView(),
             'error_container' => null
         ]);
     }

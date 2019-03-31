@@ -78,6 +78,8 @@ class SurveyController extends AbstractController
                     )
                 );
 
+                $this->addFlash('notice', 'Survey successfully created');
+
                 return $this->redirectToRoute('app_blog_post_list');
             }
         }
@@ -99,9 +101,9 @@ class SurveyController extends AbstractController
 
         try {
             $this->surveyFacade->deleteSurvey($id);
+            $this->addFlash('notice', 'Survey successfully deleted');
         } catch(SurveyNotFoundException $e) {
-            //TODO: implement flash messages
-            //TODO: use flash messages to notify the user that the deletion has failed
+            $this->addFlash('notice', 'Survey deletion failed');
         }
 
         return new RedirectResponse($request->headers->get('referer'));

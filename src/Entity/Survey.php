@@ -66,23 +66,6 @@ class Survey
         return $this;
     }
 
-    public function resetOptions(): self
-    {
-        $this->Options = new ArrayCollection();
-
-        return $this;
-    }
-
-    public function getOptionById(int $id): SurveyOption
-    {
-        foreach($this->Options as $option) {
-            if($option->getId() == $id) {
-                return $option;
-            }
-        } 
-        throw new \LogicException('could not find SurveyOption(id: '.$id.') in Survey(id: '.$this->getId().')');
-    }
-
     public function getOptions(): ?Collection
     {   
         return $this->Options;

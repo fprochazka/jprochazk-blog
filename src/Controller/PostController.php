@@ -2,9 +2,7 @@
 
 namespace App\Controller;
 
-use App\Repository\PostRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,9 +17,6 @@ class PostController extends AbstractController
 
 	/** @var AuthenticationFacade */
     private $authFacade;
-
-    /** @var PostRepository */
-	private $postRepository;
 
 	public function __construct(
 	    AuthenticationFacade $authFacade,
@@ -59,8 +54,10 @@ class PostController extends AbstractController
     /**
       * @Route("/post/new", name="app_blog_post_new")
       */
-    public function createPost(Request $request): Response {
-        if(($authenticationError = $this->authFacade->getAuthenticationError()) !== null) {
+    public function createPost(Request $request): Response
+    {
+        $authenticationError = $this->authFacade->getAuthenticationError();
+        if($authenticationError !== null) {
             return $this->redirectToRoute('app_blog_error', ['msg' => $authenticationError]);
         }
 
@@ -78,8 +75,10 @@ class PostController extends AbstractController
     /**
       * @Route("/post/edit/{id<\d+>}", name="app_blog_post_edit")
       */
-    public function editPost(int $id, Request $request): Response {
-        if(($authenticationError = $this->authFacade->getAuthenticationError()) !== null) {
+    public function editPost(int $id, Request $request): Response
+    {
+        $authenticationError = $this->authFacade->getAuthenticationError();
+        if($authenticationError !== null) {
             return $this->redirectToRoute('app_blog_error', ['msg' => $authenticationError]);
         }
 
@@ -112,3 +111,4 @@ class PostController extends AbstractController
         return $this->redirectToRoute('app_blog_post_list');
     }
 }
+
