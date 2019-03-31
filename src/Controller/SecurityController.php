@@ -2,7 +2,9 @@
 
 namespace App\Controller;
 
+use App\DTO\RegistrationDto;
 use App\Facade\AuthenticationFacade;
+use App\Security\SecurityUser;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Routing\Annotation\Route;
@@ -32,26 +34,39 @@ class SecurityController extends AbstractController
     /**
      * @Route("/register", name="app_register")
      */
-    public function register(Request $request, GuardAuthenticatorHandler $guardHandler): ?Response
+    public function register(Request $request, GuardAuthenticatorHandler $guardHandler, LoginFormAuthenticator $authenticator): ?Response
     {
-        $response = $this->authFacade->register($request);
+        $form = $this->createForm(RegistrationFormType::class, new User());
 
-        if($response['status'] === 200) {
-            return $guardHandler->authenticateUserAndHandleSuccess(
-                $response['data']['user'],
-                $request,
-                $response['data']['authenticator'],
-                $response['data']['providerKey']
-            );
-        } elseif($response['status'] === 500) {
-            return $this->render('registration/register.html.twig', [
-                'registrationForm' => $this->authFacade->getRegistrationFormView(),
-                'error_container' => $response['message']
-            ]);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                $user = $this->authFacade->register(
+                    new RegistrationDto(
+                        $form->get('username')->getData(),
+                        $form->get('plainPassword')->getData()
+                    )
+                );
+
+                return new Response(var_dump($user));
+
+                /*return $guardHandler->authenticateUserAndHandleSuccess(
+                    new SecurityUser($user),
+                    $request,
+                    $authenticator,
+                    'main'
+                );*/
+            } else {
+                return $this->render('registration/register.html.twig', [
+                    'registrationForm' => $form->createView(),
+                    'error_container' => $form->getErrors()
+                ]);
+            }
         }
 
         return $this->render('registration/register.html.twig', [
-            'registrationForm' => $this->authFacade->getRegistrationFormView(),
+            'registrationForm' => $form->createView(),
             'error_container' => null
         ]);
     }
