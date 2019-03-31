@@ -58,6 +58,7 @@ class Post
 
     public function __construct()
     {
+        $this->subtime = new \DateTimeImmutable();
         $this->comments = new ArrayCollection();
     }
 

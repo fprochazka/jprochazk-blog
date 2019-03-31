@@ -46,8 +46,10 @@ $(document).ready(function(){ autosize($('textarea.form-control')); });
 </script>
 {% endblock %}
 {% block content %}
-	{% if error %}
-		<div class="error">{{ error }}</div>
+	{% if errors %}
+		{% for error in errors %}
+			<div class="error">{{ error.message }}</div><br>
+		{% endfor %}
 	{% endif %}
 	{{ form_start(form, {'attr' : {'class' : 'newpost'}}) }}
 	<span>Title:</span>

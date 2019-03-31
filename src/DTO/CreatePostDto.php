@@ -3,24 +3,24 @@
 
 namespace App\DTO;
 
-use Doctrine\Common\Collections\Collection;
+use App\Entity\User;
 
-class CreateSurveyDto
+class CreatePostDto
 {
     /** @var string */
     private $title;
 
-    /** @var Collection */
-    private $options;
+    /** @var string */
+    private $content;
 
     public function __construct
     (
         string $title,
-        Collection $options
+        string $content
     )
     {
         $this->title = $title;
-        $this->options = $options;
+        $this->content = $content;
     }
 
     public function getTitle(): string
@@ -28,8 +28,10 @@ class CreateSurveyDto
         return $this->title;
     }
 
-    public function getOptions(): Collection
+    public function getContent(): string
     {
-        return $this->options;
+        return $this->content;
     }
+
+
 }

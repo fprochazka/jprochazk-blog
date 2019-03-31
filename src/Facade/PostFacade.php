@@ -3,6 +3,9 @@
 
 namespace App\Facade;
 
+use App\DTO\CreatePostDto;
+use App\DTO\DeletePostDto;
+use App\DTO\EditPostDto;
 use App\Entity\Post;
 use App\Form\PostFormType;
 use App\Repository\PostRepository;
@@ -21,22 +24,17 @@ class PostFacade
     /** @var PostRepository */
     private $postRepository;
 
-    /** @var FormFactoryInterface */
-    private $formFactory;
-
     /** @var EntityManagerInterface  */
     private $entityManager;
 
     public function __construct(
         CurrentUserProvider $userProvider,
         PostRepository $postRepository,
-        FormFactoryInterface $formFactory,
         EntityManagerInterface $entityManager
     )
     {
         $this->postRepository = $postRepository;
         $this->userProvider = $userProvider;
-        $this->formFactory = $formFactory;
         $this->entityManager = $entityManager;
     }
 
@@ -45,136 +43,46 @@ class PostFacade
         return $this->postRepository->findAllByOffsetCount($start, 10);
     }
 
-    public function getSinglePost(int $id): ?Post
+    public function getPostById(int $id): ?Post
     {
-        $post = $this->postRepository->find($id);
+        return $this->postRepository->find($id);
+    }
+
+    public function createPost(CreatePostDto $dto): Post
+    {
+        $post = new Post();
+
+        $post
+            ->setTitle($dto->getTitle())
+            ->setContent($dto->getContent())
+            ->setAuthor($this->userProvider->getUser());
+
+        $this->entityManager->persist($post);
+        $this->entityManager->flush();
+
         return $post;
     }
 
-    public function getPostFormView(?Post $post = null): FormView
+    public function updatePost(EditPostDto $dto): Post
     {
-        if($post === null) $post = new Post();
-        return $this->formFactory->create(PostFormType::class, $post)->createView();
+        $post = $this->postRepository->find($dto->getId());
+
+        $post
+            ->setTitle($dto->getTitle())
+            ->setContent($dto->getContent());
+
+        $this->entityManager->persist($post);
+        $this->entityManager->flush();
+
+        return $post;
     }
 
-    private function savePost(Post $post): bool
+    public function deletePost(DeletePostDto $dto): void
     {
-        try {
-            $this->entityManager->persist($post);
-            $this->entityManager->flush();
-            return true;
-        } catch (ORMException $e) {
-            return false;
-        }
+        $post = $this->postRepository->find($dto->getId());
 
-    }
-
-    public function createPost(Request $request): array
-    {
-        $returnArray = [
-            'status' => 500,
-            'error' => null
-        ];
-        $user = $this->userProvider->getUser();
-
-        if($user === null) {
-            $returnArray['error'] = 'Unauthenticated';
-            return $returnArray;
-        }
-
-        $form = $this->formFactory->create(PostFormType::class, new Post());
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted()) {
-            if($form->isValid()) {
-                $post = $form->getData();
-                $post->setSubtime(new \DateTimeImmutable());
-                $post->setAuthor($user);
-
-                if($this->savePost($post)) {
-                    $returnArray['status'] = 200;
-                    $returnArray['post_id'] = $post->getId();
-                } else {
-                    $returnArray['error'] = 'Post could not be saved';
-                }
-            } else {
-                $returnArray['error'] = 'Form is invalid';
-            }
-        }
-
-        return $returnArray;
-    }
-
-    public function editPost(int $id, Request $request): array
-    {
-        $returnArray = [
-            'status' => 500,
-            'error' => null
-        ];
-
-        $post = $this->postRepository->find($id);
-        if($post !== null) {
-            $form = $this->formFactory->create(PostFormType::class, $post);
-            $form->handleRequest($request);
-
-            if ($form->isSubmitted()) {
-                if ($form->isValid()) {
-                    $post = $form->getData();
-                    $post->setSubtime(new \DateTimeImmutable());
-
-                    if ($this->savePost($post)) {
-                        $returnArray['status'] = 200;
-                        $returnArray['post_id'] = $post->getId();
-                    } else {
-                        $returnArray['error'] = 'Post could not be saved';
-                    }
-                } else {
-                    $returnArray['error'] = 'Form is invalid';
-                }
-            } else {
-                $returnArray['post_data'] = $post;
-            }
-        } else {
-            $returnArray['status'] = 404;
-        }
-
-        return $returnArray;
-    }
-
-    private function removePost(int $id): bool
-    {
-        $post = $this->postRepository->find($id);
-        if($post !== null) {
-            try {
-                foreach ($post->getComments() as $comment) {
-                    $post->removeComment($comment);
-                    $this->entityManager->remove($comment);
-                }
-
-                $this->entityManager->remove($post);
-                $this->entityManager->flush();
-                return true;
-            } catch (ORMException $e) {
-                return false;
-            }
-        }
-        return false;
-    }
-
-    public function deletePost(int $id): array
-    {
-
-        if($this->removePost($id)) {
-            return [
-                'status' => 200,
-                'error' => null
-            ];
-        } else {
-            return [
-                'status' => 404,
-                'error' => 'Could not find post'
-            ];
-        }
+        $this->entityManager->remove($post);
+        $this->entityManager->flush();
     }
 
 }

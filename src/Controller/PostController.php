@@ -2,6 +2,12 @@
 
 namespace App\Controller;
 
+use App\DTO\CreateCommentDto;
+use App\DTO\CreatePostDto;
+use App\DTO\DeletePostDto;
+use App\DTO\EditPostDto;
+use App\Entity\Post;
+use App\Form\PostFormType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
@@ -41,7 +47,7 @@ class PostController extends AbstractController
       * @Route("/post/{id<\d+>}", name="app_blog_post_show")
       */
     public function showPost(int $id): Response {
-        $post = $this->postFacade->getSinglePost($id);
+        $post = $this->postFacade->getPostById($id);
         if($post !== null) {
             return $this->render('blog/post/show.html.twig', [
                 'post' => $post
@@ -61,14 +67,34 @@ class PostController extends AbstractController
             return $this->redirectToRoute('app_blog_error', ['msg' => $authenticationError]);
         }
 
-        $response = $this->postFacade->createPost($request);
-        if($response['status'] === 200) {
-            return $this->redirectToRoute('app_blog_post_show', ['id' => $response['post_id']]);
+        $form = $this->createForm(PostFormType::class, new Post());
+
+        $form->handleRequest($request);
+
+        if($form->isSubmitted()) {
+            if($form->isValid()) {
+                $formData = $form->getData();
+                $post = $this->postFacade->createPost(
+                    new CreatePostDto(
+                        $formData->getTitle(),
+                        $formData->getContent()
+                    )
+                );
+
+                $this->addFlash('notice', 'Post created');
+
+                return $this->redirectToRoute('app_blog_post_show', ['id' => $post->getId()]);
+            } else {
+                return $this->render('blog/post/form.html.twig', [
+                    'form' => $form->createView(),
+                    'errors' => $form->getErrors()
+                ]);
+            }
         }
 
         return $this->render('blog/post/form.html.twig', [
-            'form' => $this->postFacade->getPostFormView(),
-            'error' => $response['error']
+            'form' => $form->createView(),
+            'errors' => null
         ]);
     }
 
@@ -82,31 +108,63 @@ class PostController extends AbstractController
             return $this->redirectToRoute('app_blog_error', ['msg' => $authenticationError]);
         }
 
-        $response = $this->postFacade->editPost($id, $request);
-        if($response['status'] === 200) {
-            return $this->redirectToRoute('app_blog_post_show', ['id' => $response['post_id']]);
-        } else if($response['status'] === 404) {
+        $post = $this->postFacade->getPostById($id);
+        if($post === null) {
             return $this->redirectToRoute('app_blog_error', ['msg' => '404']);
         }
 
+        $form = $this->createForm(PostFormType::class, $post);
+
+        $form->handleRequest($request);
+
+        if($form->isSubmitted()) {
+            if($form->isValid()) {
+                $formData = $form->getData();
+                $this->postFacade->updatePost(
+                    new EditPostDto(
+                        $id,
+                        $formData->getTitle(),
+                        $formData->getContent()
+                    )
+                );
+
+                $this->addFlash('notice', 'Post updated');
+
+                return $this->redirectToRoute('app_blog_post_show', ['id' => $post->getId()]);
+            } else {
+                return $this->render('blog/post/form.html.twig', [
+                    'form' => $form->createView(),
+                    'errors' => $form->getErrors()
+                ]);
+            }
+        }
+
         return $this->render('blog/post/form.html.twig', [
-            'form' => $this->postFacade->getPostFormView($response['post_data']),
-            'error' => $response['error']
+            'form' => $form->createView(),
+            'errors' => null
         ]);
     }
 
     /**
       * @Route("/post/delete/{id<\d+>}", name="app_blog_post_delete")
       */
-    public function deletePost(int $id, Request $request): Response {
-        if(($authenticationError = $this->authFacade->getAuthenticationError()) !== null) {
+    public function deletePost(int $id, Request $request): Response
+    {
+        $authenticationError = $this->authFacade->getAuthenticationError();
+        if($authenticationError !== null) {
             return $this->redirectToRoute('app_blog_error', ['msg' => $authenticationError]);
         }
 
-        $response = $this->postFacade->deletePost($id);
-        if($response['status'] === 404) {
+        $post = $this->postFacade->getPostById($id);
+        if($post === null) {
             return $this->redirectToRoute('app_blog_error', ['msg' => '404']);
         }
+
+        $this->postFacade->deletePost(
+            new DeletePostDto($id)
+        );
+
+        $this->addFlash('notice', 'Post successfully deleted');
 
         return $this->redirectToRoute('app_blog_post_list');
     }

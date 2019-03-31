@@ -57,10 +57,12 @@ class SurveyFacade
 
     public function createSurvey(CreateSurveyDto $dto): void
     {
+        $survey = new Survey();
+
         $title = $dto->getTitle();
         $options = $dto->getOptions();
 
-        $survey = new Survey($title);
+        $survey->setTitle($title);
 
         foreach ($options as $option) {
             $survey->addOption($option);
