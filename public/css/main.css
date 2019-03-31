@@ -141,3 +141,25 @@ button.search-submit {
 	padding-left: 9px; 
 	padding-right: 9px;
 }
+
+div.container-flash {
+	position: fixed;
+	top: 2%;
+	right: 50%;
+	z-index: 5000;
+}
+
+div.notice {
+	margin: 6px;
+	padding: 12px;
+	border-radius: 3px;
+	border: #222222 solid;
+	background: #222222;
+	color: #ffffff;
+}
+
+.hidden {
+	visibility: hidden;
+	opacity: 0;
+	transition: all 1s ease-out;
+}

@@ -6,7 +6,6 @@ use App\DTO\RegistrationDto;
 use App\Facade\AuthenticationFacade;
 use App\Security\SecurityUser;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,7 +13,6 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 use App\Form\RegistrationFormType;
 use App\Security\LoginFormAuthenticator;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Security\Guard\GuardAuthenticatorHandler;
 
 use App\Entity\User;
@@ -34,7 +32,7 @@ class SecurityController extends AbstractController
     /**
      * @Route("/register", name="app_register")
      */
-    public function register(Request $request, GuardAuthenticatorHandler $guardHandler, LoginFormAuthenticator $authenticator): ?Response
+    public function register(Request $request, GuardAuthenticatorHandler $guardHandler, LoginFormAuthenticator $authenticator): Response
     {
         $form = $this->createForm(RegistrationFormType::class, new User());
 
@@ -49,14 +47,14 @@ class SecurityController extends AbstractController
                     )
                 );
 
-                return new Response(var_dump($user));
+                $this->addFlash('notice', 'Registration successful!');
 
-                /*return $guardHandler->authenticateUserAndHandleSuccess(
+                return $guardHandler->authenticateUserAndHandleSuccess(
                     new SecurityUser($user),
                     $request,
                     $authenticator,
                     'main'
-                );*/
+                );
             } else {
                 return $this->render('registration/register.html.twig', [
                     'registrationForm' => $form->createView(),
