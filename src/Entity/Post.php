@@ -42,13 +42,6 @@ class Post
     private $subtime;
 
     /**
-     * @ORM\Column(type="string", length=255)
-     *
-     * @var string
-     */
-    private $author;
-
-    /**
      * @ORM\OneToMany(targetEntity="App\Entity\Comment", mappedBy="post")
      * @ORM\OrderBy({"id" = "ASC"})
      *
@@ -56,24 +49,16 @@ class Post
      */
     private $comments;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="posts")
+     *
+     * @var User
+     */
+    private $author;
+
     public function __construct()
     {
         $this->comments = new ArrayCollection();
-    }
-
-    public function toArray(): array
-    {
-        $comments = [];
-        foreach($this->comments as $comment) $comments[] = $comment->toArray();
-
-        return [
-            'id' => $this->id,
-            'title' => $this->title,
-            'content' => $this->content,
-            'date' => $this->subtime->format('H:i:s, Y-m-d'),
-            'author' => $this->author,
-            'comments' => $comments
-        ];
     }
 
     public function getId(): int
@@ -117,18 +102,6 @@ class Post
         return $this;
     }
 
-    public function getAuthor(): ?string
-    {
-        return $this->author;
-    }
-
-    public function setAuthor(string $author): self
-    {
-        $this->author = $author;
-
-        return $this;
-    }
-
     public function getComments(): Collection
     {
         return $this->comments;
@@ -149,6 +122,19 @@ class Post
         if ($this->getComments()->contains($comment)) {
             $this->comments->removeElement($comment);
         }
+
+        return $this;
+    }
+
+    public function getAuthor(): User
+    {
+        return $this->author;
+    }
+
+    public function setAuthor(User $author): self
+    {
+        $this->author = $author;
+        $author->addPost($this);
 
         return $this;
     }

@@ -6,19 +6,17 @@ namespace App\Facade;
 use App\Entity\Post;
 use App\Form\PostFormType;
 use App\Repository\PostRepository;
+use App\Security\CurrentUserProvider;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\ORMException;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormView;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\RouterInterface;
-use Symfony\Component\Security\Core\Security;
-use Symfony\Component\Security\Core\User\UserInterface;
 
 class PostFacade
 {
-    /** @var UserInterface|null  */
-    private $user;
+    /** @var CurrentUserProvider  */
+    private $userProvider;
 
     /** @var PostRepository */
     private $postRepository;
@@ -30,53 +28,27 @@ class PostFacade
     private $entityManager;
 
     public function __construct(
-        Security $security,
+        CurrentUserProvider $userProvider,
         PostRepository $postRepository,
         FormFactoryInterface $formFactory,
         EntityManagerInterface $entityManager
     )
     {
         $this->postRepository = $postRepository;
-        $this->user = $security->getUser();
+        $this->userProvider = $userProvider;
         $this->formFactory = $formFactory;
         $this->entityManager = $entityManager;
     }
 
     public function getFrontPagePosts(int $start = 0): ?array
     {
-        /** @var Post[] $posts */
-        $unformatted_posts = $this->postRepository->findAllByOffsetCount($start, 10);
-
-        if($unformatted_posts != null) {
-            $posts = [];
-            $c = 0;
-            foreach ($unformatted_posts as $post) {
-                /** @var Post $post */
-                $posts[$c] = $post->toArray();
-                if (strlen($posts[$c]['content']) > 100) {
-                    $posts[$c]['content'] = substr($posts[$c]['content'], 0, 100) . '...';
-                }
-                ++$c;
-            }
-
-            return $posts;
-        }
-
-        return null;
+        return $this->postRepository->findAllByOffsetCount($start, 10);
     }
 
-    public function getSinglePost(int $id): ?array
+    public function getSinglePost(int $id): ?Post
     {
-        if($post = $this->postRepository->find($id)->toArray()) {
-            $current_user_username = ($this->user !== null) ? $this->user->getUsername() : 'guest';
-            foreach($post['comments'] as $key => $value) {
-                $post['comments'][$key]['canEdit'] = ($current_user_username == $post['comments'][$key]['author']) ? true : false;
-            }
-
-            return $post;
-        } else {
-            return null;
-        }
+        $post = $this->postRepository->find($id);
+        return $post;
     }
 
     public function getPostFormView(?Post $post = null): FormView
@@ -103,8 +75,9 @@ class PostFacade
             'status' => 500,
             'error' => null
         ];
+        $user = $this->userProvider->getUser();
 
-        if($this->user === null) {
+        if($user === null) {
             $returnArray['error'] = 'Unauthenticated';
             return $returnArray;
         }
@@ -116,7 +89,7 @@ class PostFacade
             if($form->isValid()) {
                 $post = $form->getData();
                 $post->setSubtime(new \DateTimeImmutable());
-                $post->setAuthor($this->user->getUsername());
+                $post->setAuthor($user);
 
                 if($this->savePost($post)) {
                     $returnArray['status'] = 200;

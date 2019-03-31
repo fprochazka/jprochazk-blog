@@ -43,21 +43,15 @@ class SurveyOption
 
     /**
      * @ORM\ManyToMany(targetEntity="App\Entity\User", mappedBy="votes")
+     *
+     * @var Collection
      */
     private $users;
 
     public function __construct()
     {
+        $this->votes = 0;
         $this->users = new ArrayCollection();
-    }
-
-    public function toArray(): array
-    {
-        return [
-            'id' => $this->id,
-            'name' => $this->title,
-            'votes' => $this->votes,
-        ];
     }
 
     public function getId(): int

@@ -80,7 +80,7 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator
         return $credentials;
     }
 
-    public function getUser($credentials, UserProviderInterface $userProvider): SecurityUser
+    public function getUser($credentials, UserProviderInterface $userProvider): UserInterface
     {
         $token = new CsrfToken('authenticate', $credentials['csrf_token']);
         if (!$this->csrfTokenManager->isTokenValid($token)) {
@@ -89,7 +89,7 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator
 
         $user = $this->security->loadUserByUsername($credentials['username']);
 
-        if ($user === null) {
+        if ($user == null) {
             // fail authentication with a custom error
             throw new CustomUserMessageAuthenticationException('Username could not be found.');
         }

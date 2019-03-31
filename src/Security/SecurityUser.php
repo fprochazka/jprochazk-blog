@@ -8,23 +8,32 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class SecurityUser implements UserInterface, \Serializable
 {
+    /** @var string $username */
     private $username;
+
+    /** @var string $password */
     private $password;
+
+    /** @var array $roles */
     private $roles;
+
+    /** @var array $votes */
+    private $votes;
 
     public function __construct(User $user)
     {
         $this->username = $user->getUsername();
         $this->password = $user->getPassword();
         $this->roles = $user->getRoles();
+        $this->votes = $user->getVotedOnSurveys();
     }
 
-    public function getUsername(): ?string
+    public function getUsername(): string
     {
         return $this->username;
     }
 
-    public function getPassword(): ?string
+    public function getPassword(): string
     {
         return $this->password;
     }
@@ -35,7 +44,7 @@ class SecurityUser implements UserInterface, \Serializable
     }
 
     /** @see \Serializable::serialize() */
-    public function serialize()
+    public function serialize(): string
     {
         return serialize(array(
             $this->username,
@@ -52,12 +61,17 @@ class SecurityUser implements UserInterface, \Serializable
             ) = unserialize($serialized, array('allowed_classes' => false));
     }
 
-    public function getRoles()
+    public function getRoles(): array
     {
         return $this->roles;
     }
 
-    public function eraseCredentials()
+    public function getVotes(): array
+    {
+        return $this->votes;
+    }
+
+    public function eraseCredentials(): void
     {
     }
 }

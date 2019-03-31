@@ -11,8 +11,13 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
 class CurrentUserProvider
 {
+    /** @var TokenStorageInterface */
     private $tokenStorage;
+
+    /** @var UserRepository */
     private $userRepo;
+
+    /** @var User|null */
     private $currentUser;
 
     public function __construct(TokenStorageInterface $tokenStorage, UserRepository $userRepo)
@@ -25,6 +30,7 @@ class CurrentUserProvider
         if (!$this->currentUser) {
             $this->currentUser = $this->fromToken($this->tokenStorage->getToken());
         }
+
         return $this->currentUser;
     }
     public function fromToken(TokenInterface $token): ?User

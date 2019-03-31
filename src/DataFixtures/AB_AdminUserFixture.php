@@ -14,6 +14,7 @@ class AB_AdminUserFixture extends Fixture
     /** @var UserPasswordEncoderInterface */
 	private $encoder;
 
+	/** @var RoleRepository */
 	private $roleRepo;
 
 	public function __construct(UserPasswordEncoderInterface $encoder, RoleRepository $roleRepo)
