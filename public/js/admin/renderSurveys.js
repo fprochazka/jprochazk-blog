@@ -1,24 +1,30 @@
 
 var admin = {
-	countVotes: function() {
+	countOptions: function() {
 		var total_votes = [];
 		$("div.list-item.survey").each(function(){
 			var id = $(this).attr("id");
 			total_votes[id] = 0;
 		});
+
 		var n = 0;
 		$("span.votecount").each(function(){
-			console.log(n);
 			var id = $(this).attr("id");
 			var val = $(this).attr("value");
-			console.log("id: "+id+", value: "+val);
+			console.log(n + ", " + "id: "+id+", value: "+val);
 			total_votes[id] += parseInt(val);
 			n++;
 		});
+
+		return total_votes;
+	},
+	countVotes: function() {
+		var total_votes = admin.countOptions();
+		console.log(total_votes);
 		$("span.votecount").each(function(){
 			var id = $(this).attr("id");
 			$(this).css("padding-left", function(){
-				if(total_votes[id] != 0) {
+				if(total_votes[id] !== 0) {
 					var val = $(this).attr("value");
 					var str = ((val/total_votes[id])*100)+"px";
 					var f_str = (Math.floor((val/total_votes[id])*100))+"%";
@@ -31,8 +37,8 @@ var admin = {
 			});
 		});
 	}
-}
+};
+
 $(document).ready(function(){
 	admin.countVotes();
-	$(document).on('click', '', admin.countVotes());
 });

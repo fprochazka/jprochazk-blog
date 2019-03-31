@@ -137,10 +137,15 @@ class User
         return $this;
     }
 
-    /**
-     * @return Collection|Survey[]
-     */
     public function getVotes(): Collection
+    {
+        return $this->votes;
+    }
+
+    /**
+     * @return array|Survey[]
+     */
+    public function getVotedOnSurveys(): array
     {
         $votedOn = $this->votes;
         $votes = [];
@@ -149,7 +154,7 @@ class User
             $votes[] = $vote->getSurvey();
         }
 
-        return $this->votes;
+        return $votes;
     }
 
     public function hasVoted(int $id): bool

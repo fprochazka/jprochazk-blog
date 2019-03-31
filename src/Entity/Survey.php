@@ -42,21 +42,11 @@ class Survey
      */
     private $Options;
 
-    public function __construct()
+    public function __construct(string $title = "")
     {
+        $this->title = $title;
+        $this->unlock();
         $this->Options = new ArrayCollection();
-    }
-
-    public function toArray(): array 
-    {
-        $options = [];
-        foreach($this->getSortedOptions() as $option) $options[] = $option->toArray();
-
-        return [
-            'id' => $this->id,
-            'title' => $this->title,
-            'options' => $options
-        ];
     }
 
     public function getId(): int
@@ -96,28 +86,6 @@ class Survey
     public function getOptions(): ?Collection
     {   
         return $this->Options;
-    }
-
-    public function getSortedOptions(): Collection
-    {   
-        $sorted_options = new ArrayCollection;
-        $unsorted_options = $this->Options;
-        $temp_ids = [];
-
-        //first retrieve id of each option
-        foreach($unsorted_options as $option) {
-            $temp_ids[] = $option->getId();
-        }
-
-        //sort these ids in ascending order (highest last)
-        sort($temp_ids);
-
-        //add each option in by its ID, thereby adding them in ascending order sorted by the ID
-        foreach($temp_ids as $id) {
-            $sorted_options[] = $this->getOptionById($id);
-        }
-
-        return $sorted_options;
     }
 
     public function addOption(SurveyOption $option): self

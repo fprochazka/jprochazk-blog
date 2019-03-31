@@ -1,15 +1,14 @@
-{% if true %}
-{% else %}
-	<div class="survey container" id="{{ survey["id"] }}">
-	<span class="survey-title">{{ survey["title"] }}</span>
-	{% if survey["voted"] %}
-		{% for option in survey["options"] %}
-			<ul class="survey option output"> {{ option["name"] }}:&#32;&#32;<span class="survey option votes" id="{{ option["id"] }}" value="{{ option["votes"] }}"></span></ul>
+{% if survey is not null %}
+	<div class="survey container" id="{{ survey.id }}">
+	<span class="survey-title">{{ survey.title }}</span>
+	{% if app.user is null or survey in app.user.votes %}
+		{% for option in survey.options %}
+			<ul class="survey option output"> {{ option.title }}:&#32;&#32;<span class="survey option votes" id="{{ option.id }}" value="{{ option.votes }}"></span></ul>
 		{% endfor %}
 	{% else %}
-		{% for option in survey["options"] %}
-			<ul class="survey option input"><input type="checkbox" class="survey checkbox" value="{{ option["id"] }}">{{ option["name"] }}</ul>
-			<ul class="survey option output" hidden> {{ option["name"] }}:&#32;&#32;<span class="survey option votes" id="{{ option["id"] }}" value="{{ option["votes"] }}"></span></ul>
+		{% for option in survey.options %}
+			<ul class="survey option input"><input type="checkbox" class="survey checkbox" value="{{ option.id }}">{{ option.title }}</ul>
+			<ul class="survey option output" hidden> {{ option.title }}:&#32;&#32;<span class="survey option votes" id="{{ option.id }}" value="{{ option.votes }}"></span></ul>
 		{% endfor %}
 	<button class="survey option send">Send</button>
 	{% endif %}

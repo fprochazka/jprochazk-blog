@@ -2,11 +2,12 @@
 
 namespace App\Controller;
 
+use App\DTO\CreateSurveyDto;
+use App\DTO\SurveyVoteDto;
+use App\Exception\SurveyNotFoundException;
 use App\Facade\AuthenticationFacade;
 use App\Facade\SurveyFacade;
-use App\Repository\PersonRepository;
-use App\Repository\SurveyOptionRepository;
-use App\Repository\SurveyRepository;
+use App\ResponseFactory\SurveyVoteResponseFactory;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,13 +26,18 @@ class SurveyController extends AbstractController
     /** @var SurveyFacade */
     private $surveyFacade;
 
+    /** @var SurveyVoteResponseFactory */
+    private $responseFactory;
+
 	public function __construct(
 	    AuthenticationFacade $authFacade,
-        SurveyFacade $surveyFacade
+        SurveyFacade $surveyFacade,
+        SurveyVoteResponseFactory $responseFactory
 	)
 	{
 	    $this->authFacade = $authFacade;
         $this->surveyFacade = $surveyFacade;
+        $this->responseFactory = $responseFactory;
 	}
 
     /**
@@ -50,19 +56,35 @@ class SurveyController extends AbstractController
       */
     public function createSurvey(Request $request): Response
     {
-        if(($authenticationError = $this->authFacade->getAuthenticationError()) !== null) {
+        $authenticationError = $this->authFacade->getAuthenticationError();
+        if($authenticationError !== null) {
             return $this->redirectToRoute('app_blog_error', ['msg' => $authenticationError]);
         }
 
-        $response = $this->surveyFacade->createSurvey($request);
+        $form = $this->createForm(SurveyType::class, new Survey());
 
-        if($response['status'] === 200) {
-            return $this->redirectToRoute('app_blog_post_list');
-        } else {
-            return $this->render('blog/survey/new.html.twig', [
-                'form' => $this->surveyFacade->getSurveyFormView(),
-            ]);
+        $form->handleRequest($request);
+
+        if($form->isSubmitted()) {
+            if($form->isValid()) {
+                $formData = $form->getData();
+                $title = $formData->getTitle();
+                $options = $formData->getOptions();
+
+                $this->surveyFacade->createSurvey(
+                    new CreateSurveyDto(
+                        $title,
+                        $options
+                    )
+                );
+
+                return $this->redirectToRoute('app_blog_post_list');
+            }
         }
+
+        return $this->render('blog/survey/new.html.twig', [
+            'form' => $form->createView(),
+        ]);
     }
 
     /**
@@ -70,17 +92,19 @@ class SurveyController extends AbstractController
       */
     public function deleteSurvey(int $id, Request $request): Response
     {
-        if(($authenticationError = $this->authFacade->getAuthenticationError()) !== null) {
+        $authenticationError = $this->authFacade->getAuthenticationError();
+        if($authenticationError !== null) {
             return $this->redirectToRoute('app_blog_error', ['msg' => $authenticationError]);
         }
 
-        $response = $this->surveyFacade->deleteSurvey($id);
-        if($response['status'] === 200) {
-            return new RedirectResponse($request->headers->get('referer'));
-        } else {
-            return $this->redirectToRoute('app_blog_error', ['msg' => '500']);
+        try {
+            $this->surveyFacade->deleteSurvey($id);
+        } catch(SurveyNotFoundException $e) {
+            //TODO: implement flash messages
+            //TODO: use flash messages to notify the user that the deletion has failed
         }
 
+        return new RedirectResponse($request->headers->get('referer'));
     }
 
     /**
@@ -88,11 +112,13 @@ class SurveyController extends AbstractController
       */
     public function surveyVote(Request $request): JsonResponse
     {
-        $response = $this->surveyFacade->surveyVote($request);
+        $survey_id = (int)$request->request->get('survey_id');
+        $option_id = (int)$request->request->get('vote_id');
 
-        return new JsonResponse([
-        	'status' => $response['status'],
-        	'message' => $response['message'],
-	        200]);
+        $this->surveyFacade->surveyVote(new SurveyVoteDto($survey_id, $option_id));
+
+        return new JsonResponse(
+            $this->responseFactory->getSurveyVoteJson($option_id)
+        );
     }
 }

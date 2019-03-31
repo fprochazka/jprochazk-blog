@@ -58,8 +58,8 @@
 				<span id="{{ user.id }}" name="voted" hidden>
 					{% for vote in user.votes %}
 					<div class="list-item vote">
-					Q: {{ vote.survey.id }}<br>
-					A: {{ vote.id }}
+					Q: {{ vote.survey.title }}<br>
+					A: {{ vote.title }}
 					</div>
 					{% endfor %}
 				</span>
@@ -99,11 +99,11 @@
 				- <a href="{{ path("app_blog_survey_delete", {"id": survey.id }) }}" id="survey-delete">DELETE</a>
 			</span>
 			<br>
-			<span id="{{ survey.id }} }}" name="option" hidden>
+			<span id="{{ survey.id }}" name="option" hidden>
 				{% for option in survey.options %}
 					<ul class="list-item option" id="{{ option.id }}">
-						<span>{{ option.name }}:</span>
-						<span class="votecount" id="{{ option.id }}" value="{{ option.votes }}"></span>
+						<span>{{ option.title }}:</span>
+						<span class="votecount" id="{{ survey.id }}" value="{{ option.votes }}"></span>
 					</ul>
 				{% endfor %}
 			</span>

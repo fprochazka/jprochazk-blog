@@ -11,11 +11,9 @@ use App\Repository\PostRepository;
 use App\Repository\UserRepository;
 use App\Security\CurrentUserProvider;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Exception\CommentPersistenceException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 use App\Entity\Comment;
-use Symfony\Component\Security\Core\User\UserInterface;
 
 class CommentFacade
 {
@@ -49,9 +47,6 @@ class CommentFacade
         $this->entityManager = $entityManager;
     }
 
-    /**
-     * @throws CommentPersistenceException
-     */
     public function createComment(CreateCommentDto $commentDto): Comment
     {
         $post = $this->postRepository->find($commentDto->getPostId());
@@ -70,7 +65,6 @@ class CommentFacade
 
 
     /**
-     * @throws CommentPersistenceException
      * @throws AccessDeniedException
      */
     public function editComment(EditCommentDto $commentDto): Comment
@@ -91,7 +85,6 @@ class CommentFacade
 
 
     /**
-     * @throws CommentPersistenceException
      * @throws AccessDeniedException
      */
     public function deleteComment(DeleteCommentDto $commentDto): void

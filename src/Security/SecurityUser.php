@@ -17,11 +17,15 @@ class SecurityUser implements UserInterface, \Serializable
     /** @var array $roles */
     private $roles;
 
+    /** @var array $votes */
+    private $votes;
+
     public function __construct(User $user)
     {
         $this->username = $user->getUsername();
         $this->password = $user->getPassword();
         $this->roles = $user->getRoles();
+        $this->votes = $user->getVotedOnSurveys();
     }
 
     public function getUsername(): string
@@ -40,7 +44,7 @@ class SecurityUser implements UserInterface, \Serializable
     }
 
     /** @see \Serializable::serialize() */
-    public function serialize(): array
+    public function serialize(): string
     {
         return serialize(array(
             $this->username,
@@ -60,6 +64,11 @@ class SecurityUser implements UserInterface, \Serializable
     public function getRoles(): array
     {
         return $this->roles;
+    }
+
+    public function getVotes(): array
+    {
+        return $this->votes;
     }
 
     public function eraseCredentials(): void

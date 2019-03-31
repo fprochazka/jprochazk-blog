@@ -3,14 +3,14 @@ var init = function() {
 		var id = $(this).attr('id');
 		var name = $(this).attr('name');
 
-		if($(this).html() == "+") {
+		if($(this).html() === "+") {
 			$(this).html("-");
 		} else {
 			$(this).html("+");
 		}
 
 		$("span").each(function(){
-			if($(this).attr("id") == id && $(this).attr("name") == name) {
+			if($(this).attr("id") === id && $(this).attr("name") === name) {
 				if($(this).attr("hidden")) {
 					$(this).attr("hidden", false);
 				} else {

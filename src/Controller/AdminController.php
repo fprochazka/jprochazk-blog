@@ -33,7 +33,8 @@ class AdminController extends AbstractController
     /**
      * @Route("/admin", name="app_blog_admin")
      */
-    public function showAdmin(Request $request): Response {
+    public function showAdmin(Request $request): Response
+    {
         $authenticationError = $this->authFacade->getAuthenticationError();
         if($authenticationError !== null) {
             return $this->redirectToRoute('app_blog_error', ['msg' => $authenticationError]);
@@ -52,3 +53,4 @@ class AdminController extends AbstractController
         ]);
     }
 }
+
