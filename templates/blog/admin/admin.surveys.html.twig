@@ -1,0 +1,68 @@
+{% extends 'base.html.twig' %}
+{% block javascripts %}
+<script src="/js/admin/showHideButton.js"></script>
+<script src="/js/admin/renderSurveys.js"></script>
+{% endblock %}
+{% block stylesheets %}
+<style>
+	.highlight {
+		background-color: #888888;
+	}
+	.list-item {
+		padding: 5px;
+	}
+	.list-item.survey {
+		width: 50%;
+	}
+	.list-item.option {
+		padding: 5px;
+		margin: 0;
+	}
+
+	span.votecount {
+		background-color: #BBBBBB;
+		float: right;
+	}
+
+	button.delete-survey {
+		font-size: 14px;
+		background-color: inherit;
+		color: #0000ee;
+		margin: 0;
+		padding: 2px;
+		cursor: pointer;
+	}
+
+</style>
+{% endblock %}
+{% block content %}
+<h1>Administration</h1>
+<hr>
+<div class="navbar">
+	<a href="{{ path("app_blog_admin_users", {'p': 'users'}) }}"><button type="button">Users</button> </a>
+	<a href="{{ path("app_blog_admin_posts", {'p': 'posts'}) }}"><button type="button">Posts</button> </a>
+	<a href="{{ path("app_blog_admin_surveys", {'p': 'surveys'}) }}"><button class="highlight" type="button">Surveys</button></a>
+</div>
+<div class="list">
+	{% if data['surveys'] != null %}
+		{% for survey in data['surveys']|reverse %}
+		<div class="list-item survey" id="{{ survey.id }}">
+			<span class="list-item title">{{ survey.title }}</span>
+			<button type="button" class="show-hide small" id="{{ survey.id }}" name="option">+</button>
+			<span id="survey-delete" for="{{ survey.id }}" style="display: inline-flex">
+				- {{ render(path('app_blog_survey_delete', {'id': survey.id})) }}
+			</span>
+			<br>
+			<span id="{{ survey.id }}" name="option" hidden>
+				{% for option in survey.options %}
+					<ul class="list-item option" id="{{ option.id }}">
+						<span>{{ option.title }}:</span>
+						<span class="votecount" id="{{ survey.id }}" value="{{ option.votes }}"></span>
+					</ul>
+				{% endfor %}
+			</span>
+		</div>
+		{% endfor %}
+	{% endif %}
+</div>
+{% endblock %}

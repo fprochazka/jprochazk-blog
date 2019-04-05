@@ -3,7 +3,9 @@
 namespace App\Controller;
 
 use App\Facade\SearchFacade;
+use App\Form\SearchFormType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -25,15 +27,24 @@ class SearchController extends AbstractController
      */
     public function sendSearch(Request $request): Response
     {
-        $query = $this->searchFacade->getQuery($request);
-        if($query !== null) {
-            return $this->redirectToRoute('app_blog_search_result', [
-                's' => $query,
-            ]);
+        $form = $this->createForm(SearchFormType::class);
+        $form->handleRequest($request);
+
+        if($form->isSubmitted()){
+            if($form->isValid()) {
+                $query = $form->getData()['query'];
+                if($query !== null) {
+                    return $this->redirectToRoute('app_blog_search_result', [
+                        's' => $query,
+                    ]);
+                }
+            } else {
+                return new RedirectResponse($request->headers->get('referer'));
+            }
         }
 
         return $this->render('blog/search/form.twig', [
-            'search_form' => $this->searchFacade->getSearchFormView()
+            'search_form' => $form->createView()
         ]);
     }
 
@@ -47,7 +58,7 @@ class SearchController extends AbstractController
         $results = $this->searchFacade->findPosts($query);
 
         return $this->render('blog/search/results.html.twig', [
-            'search_string' => $query,
+            'query' => $query,
             'results' => $results,
         ]);
     }

@@ -3,11 +3,9 @@
 
 namespace App\ResponseFactory;
 
-use App\Entity\SurveyOption;
-
 class SurveyVoteResponseFactory
 {
-    public function getSurveyVoteJson(int $survey_option_id)
+    public function getSurveyVoteJson(int $survey_option_id): array
     {
         return [
             'status' => 'OK',

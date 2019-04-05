@@ -24,12 +24,12 @@ class PostRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('p')
             ->orderBy('p.subtime', 'DESC')
             ->getQuery()
-            ->setFirstResult(($offset-1))
+            ->setFirstResult(($offset-1)*10)
             ->setMaxResults($count)
             ->getResult();
     }
 
-    public function findByContent(string $content, int $count = 10, int $offset = 0): array
+    public function findByContent(string $content, int $offset = 0, int $count = 10): array
     {
         return $this->createQueryBuilder('p')
             ->andWhere('p.content LIKE :str')
@@ -41,7 +41,7 @@ class PostRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function findByTitle(string $title, int $count = 10, int $offset = 0): array
+    public function findByTitle(string $title, int $offset = 0, int $count = 10): array
     {
         return $this->createQueryBuilder('p')
             ->andWhere('p.title LIKE :str')

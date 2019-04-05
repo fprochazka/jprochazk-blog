@@ -37,9 +37,18 @@
 	</script>
 	{% for post in posts %}
 		<div class="post">
-			<a href="{{ path('app_blog_post_show', {'id': post.id}) }}"><span class="post title">{{ post.title }}</span></a>
+			<a href="{{ path('app_blog_post_show', {'post_id': post.id}) }}"><span class="post title">{{ post.title }}</span></a>
 			<span class="post content">{{ post.content }}</span>
 		</div><br>
 	{% endfor %}
 
+{% endblock %}
+
+{% block footer %}
+	{% if pageNum > 1 %}
+		<a href="{{ path('app_blog_post_list', {'page': pageNum-1}) }}" style="padding-left: 5%;">Previous page</a>
+	{% endif %}
+	{% if hasNextPage %}
+		<a href="{{ path('app_blog_post_list', {'page': pageNum+1}) }}" style="float:right; padding-right: 5%">Next page</a>
+	{% endif %}
 {% endblock %}

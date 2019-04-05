@@ -95,6 +95,7 @@ class CommentFacade
 
         if($current_user->getUsername() === $commentDto->getAuthorUsername()) {
             $post->removeComment($comment);
+            $current_user->removeComment($comment);
             $this->entityManager->remove($comment);
             $this->entityManager->flush();
         } else {

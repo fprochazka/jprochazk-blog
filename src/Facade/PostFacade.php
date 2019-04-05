@@ -48,6 +48,20 @@ class PostFacade
         return $this->postRepository->find($id);
     }
 
+    public function hasNextPage(int $page = 0): bool
+    {
+        $nextPagePosts = $this->postRepository->findAllByOffsetCount($page+1, 10);
+        $postCount = 0;
+        foreach($nextPagePosts as $post) {
+            ++$postCount;
+        }
+        if($postCount > 0) {
+            return true;
+        }
+
+        return false;
+    }
+
     public function createPost(CreatePostDto $dto): Post
     {
         $post = new Post();
@@ -80,6 +94,11 @@ class PostFacade
     public function deletePost(DeletePostDto $dto): void
     {
         $post = $this->postRepository->find($dto->getId());
+
+        foreach($post->getComments() as $comment) {
+            $comment->getAuthor()->removeComment($comment);
+            $this->entityManager->remove($comment);
+        }
 
         $this->entityManager->remove($post);
         $this->entityManager->flush();

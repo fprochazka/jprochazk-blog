@@ -90,7 +90,6 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator
         $user = $this->security->loadUserByUsername($credentials['username']);
 
         if ($user === null) {
-            // fail authentication with a custom error
             throw new CustomUserMessageAuthenticationException('Username could not be found.');
         }
 

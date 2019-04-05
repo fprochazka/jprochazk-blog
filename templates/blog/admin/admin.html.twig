@@ -1,0 +1,10 @@
+{% extends 'base.html.twig' %}
+{% block content %}
+<h1>Administration</h1>
+<hr>
+<div class="navbar">
+	<a href="{{ path("app_blog_admin_users") }}"><button type="button" >Users</button> </a>
+	<a href="{{ path("app_blog_admin_posts") }}"><button type="button" >Posts</button> </a>
+	<a href="{{ path("app_blog_admin_surveys") }}"><button type="button" >Surveys</button></a>
+</div>
+{% endblock %}

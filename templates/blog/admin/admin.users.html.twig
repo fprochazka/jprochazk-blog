@@ -1,0 +1,96 @@
+{% extends 'base.html.twig' %}
+{% block javascripts %}
+<script src="/js/admin/showHideButton.js"></script>
+<script src="/js/admin/renderSurveys.js"></script>
+{% endblock %}
+{% block stylesheets %}
+<style>
+	.highlight {
+		background-color: #888888;
+	}
+	.list-item {
+		padding: 5px;
+	}
+	.list-item.post {
+		margin-left: 1em;
+	}
+	.list-item.comment {
+		margin-left: 2em;
+	}
+	.list-item.content {
+		margin-left: 2em;
+	}
+	.list-item.survey {
+		width: 50%;
+	}
+	.list-item.option {
+		padding: 5px;
+		margin: 0;
+	}
+
+	span.votecount {
+		background-color: #BBBBBB;
+		float: right;
+	}
+
+	button.delete-post {
+		font-size: 14px;
+		background-color: inherit;
+		color: #0000ee;
+		margin: 0;
+		padding: 2px;
+		cursor: pointer;
+	}
+
+	button.edit-post {
+		font-size: 14px;
+		background-color: inherit;
+		color: #0000ee;
+		margin: 0;
+		padding: 2px;
+		cursor: pointer;
+	}
+
+	button.delete-survey {
+		font-size: 14px;
+		background-color: inherit;
+		color: #0000ee;
+		margin: 0;
+		padding: 2px;
+		cursor: pointer;
+	}
+
+</style>
+{% endblock %}
+{% block content %}
+<h1>Administration</h1>
+<hr>
+<div class="navbar">
+	<a href="{{ path("app_blog_admin_users") }}"><button type="button" class="highlight">Users</button> </a>
+	<a href="{{ path("app_blog_admin_posts") }}"><button type="button" >Posts</button> </a>
+	<a href="{{ path("app_blog_admin_surveys") }}"><button type="button" >Surveys</button></a>
+</div>
+<div class="list">
+	{% if data['users'] != null %}
+		{% for user in data['users'] %}
+			<div class="list-item user">
+				ID: {{ user.id }} | Username: {{ user.username }} <br>
+				Roles:
+				{% for role in user.roles %}
+					{{ role }}{% if not loop.last %}, {% endif %}
+				{% endfor %}
+				<br>
+				Voted on: <button type="button" class="show-hide small" id="{{ user.id }}" name="voted">+</button><br>
+				<span id="{{ user.id }}" name="voted" hidden>
+					{% for vote in user.votes %}
+					<div class="list-item vote">
+					Q: {{ vote.survey.title }}<br>
+					A: {{ vote.title }}
+					</div>
+					{% endfor %}
+				</span>
+			</div>
+		{% endfor %}
+	{% endif %}
+</div>
+{% endblock %}

@@ -31,14 +31,24 @@ class AdminFacade
         $this->surveyRepository = $surveyRepository;
     }
 
-    public function getAdminData(): array
+    public function getAdminUserData(): array
     {
-        $data = [
-            'users' => $this->userRepository->findAll(),
-            'posts' => $this->postRepository->findAll(),
+        return [
+            'users' => $this->userRepository->findAll()
+        ];
+    }
+
+    public function getAdminPostData(): array
+    {
+        return [
+            'posts' => $this->postRepository->findAll()
+        ];
+    }
+
+    public function getAdminSurveyData(): array
+    {
+        return [
             'surveys' => $this->surveyRepository->findAll()
         ];
-
-        return $data;
     }
 }

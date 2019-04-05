@@ -1,7 +1,8 @@
 $(document).ready(function(){
 	$("button#comment-send").click(function(){
 		var data = {
-			content: $('textarea#comment-content').val()
+			content: $('textarea#comment-content').val(),
+			csrf_token: path.csrf_token
 		};
 		if(data.content !== null && data.content !== "") {
 			$.ajax({
@@ -10,18 +11,17 @@ $(document).ready(function(){
 				data: data,
 
 				success: function (data, status) {
-					console.log("success");
-					console.log(data);
 					$('div.comments').prepend('<div class="comment" id="' + data["id"] + '"></div>');
 					$('div.comment#' + data["id"]).append('<span id="author">' + data["author"] + '</span><br>');
 					$('div.comment#' + data["id"]).append('<span id="date">(' + data["date"] + ')</span>');
 					$('div.comment#' + data["id"]).append('<span id="comment-edit" for="' + data["id"] + '"> - <a href="" id="comment-edit">EDIT</a></span>');
 					$('div.comment#' + data["id"]).append('<span id="comment-delete" for="' + data["id"] + '"> - <a href="" id="comment-delete">DELETE</a></span><br>');
 					$('div.comment#' + data["id"]).append('<span id="content" for="' + data["id"] + '">' + data["content"] + '</span>');
+					$('textarea#comment-content').val("");
 				},
 				error: function (xhr, status, errorThrown) {
-					console.log("error");
-					console.log(xhr);
+					var response = xhr.responseText;
+					notice.create(response);
 				}
 			});
 		} else {
@@ -48,7 +48,8 @@ $(document).ready(function(){
 		var post_id = path.post_id;
 
 		var data = {
-			current_user: path.current_user
+			current_user: path.current_user,
+			csrf_token: path.csrf_token
 		};
 
 		var temp_url = path.post_comment_delete;
@@ -61,12 +62,11 @@ $(document).ready(function(){
 			data: data,
 
 			success: function(data, status) {
-				console.log("success");
 				parentDiv.remove();
 			},
 			error: function(xhr, status, errorThrown) {
-				console.log(status);
-				console.log(xhr.responseText);
+				var response = xhr.responseText;
+				notice.create(response);
 			}
 		});
 	});
@@ -84,7 +84,8 @@ $(document).ready(function(){
 		var comment_id = $(this).attr('for');
 		var post_id = path.post_id;
 		var data = {
-			current_user: path.current_user
+			current_user: path.current_user,
+			csrf_token: path.csrf_token
 		};
 		$('textarea#comment-edit-content').each(function(){
 			var temp_id = $(this).attr('for');
@@ -112,7 +113,8 @@ $(document).ready(function(){
 					_self.parent().parent().find('div.comment-edit').remove();
 				},
 				error: function (xhr, status, errorThrown) {
-					console.log(xhr.responseText);
+					var response = xhr.responseText;
+					notice.create(response);
 				}
 			});
 		}

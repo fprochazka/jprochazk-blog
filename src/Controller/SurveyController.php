@@ -7,7 +7,9 @@ use App\DTO\SurveyVoteDto;
 use App\Exception\SurveyNotFoundException;
 use App\Facade\AuthenticationFacade;
 use App\Facade\SurveyFacade;
+use App\Form\SurveyDeleteType;
 use App\ResponseFactory\SurveyVoteResponseFactory;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
@@ -29,15 +31,20 @@ class SurveyController extends AbstractController
     /** @var SurveyVoteResponseFactory */
     private $responseFactory;
 
+    /** @var LoggerInterface */
+    private $logger;
+
 	public function __construct(
 	    AuthenticationFacade $authFacade,
         SurveyFacade $surveyFacade,
-        SurveyVoteResponseFactory $responseFactory
+        SurveyVoteResponseFactory $responseFactory,
+        LoggerInterface $logger
 	)
 	{
 	    $this->authFacade = $authFacade;
         $this->surveyFacade = $surveyFacade;
         $this->responseFactory = $responseFactory;
+        $this->logger = $logger;
 	}
 
     /**
@@ -71,16 +78,20 @@ class SurveyController extends AbstractController
                 $title = $formData->getTitle();
                 $options = $formData->getOptions();
 
-                $this->surveyFacade->createSurvey(
-                    new CreateSurveyDto(
-                        $title,
-                        $options
-                    )
-                );
+                try {
+                    $this->surveyFacade->createSurvey(
+                        new CreateSurveyDto(
+                            $title,
+                            $options
+                        )
+                    );
 
-                $this->addFlash('notice', 'Survey successfully created');
-
-                return $this->redirectToRoute('app_blog_post_list');
+                    $this->addFlash('notice', 'Survey successfully created');
+                    return $this->redirectToRoute('app_blog_post_list');
+                } catch(\Exception $e) {
+                    $this->logger->error($e->getMessage());
+                    $this->addFlash('notice', 'Failed to save survey');
+                }
             }
         }
 
@@ -99,14 +110,39 @@ class SurveyController extends AbstractController
             return $this->redirectToRoute('app_blog_error', ['msg' => $authenticationError]);
         }
 
-        try {
-            $this->surveyFacade->deleteSurvey($id);
-            $this->addFlash('notice', 'Survey successfully deleted');
-        } catch(SurveyNotFoundException $e) {
-            $this->addFlash('notice', 'Survey deletion failed');
+        $form = $this->createForm(SurveyDeleteType::class);
+
+        $form->handleRequest($request);
+
+        if($form->isSubmitted()) {
+            if($form->isValid()) {
+                try {
+                    $this->surveyFacade->deleteSurvey($id);
+                    $this->addFlash('notice', 'Survey successfully deleted');
+                    return new RedirectResponse($request->headers->get('referer'));
+                } catch(SurveyNotFoundException $e) {
+                    $this->addFlash('notice', 'Survey does not exist');
+                    return new RedirectResponse($request->headers->get('referer'));
+                } catch(\Exception $e) {
+                    $this->addFlash('notice', 'Error while deleting survey');
+                    $this->logger->error($e->getMessage());
+                    return new RedirectResponse($request->headers->get('referer'));
+                }
+            } else {
+                $error_string = "";
+                foreach($form->getErrors() as $error) {
+                    $error_string .= $error->getMessage();
+                }
+                $this->logger->error($error_string);
+                $this->addFlash('notice', 'Failed to delete post');
+                return new RedirectResponse($request->headers->get('referer'));
+            }
         }
 
-        return new RedirectResponse($request->headers->get('referer'));
+        return $this->render('blog/survey/delete.button.html.twig', [
+            'survey_delete_form' => $form->createView(),
+            'survey_id' => $id
+        ]);
     }
 
     /**

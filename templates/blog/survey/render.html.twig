@@ -10,7 +10,7 @@
 			<ul class="survey option input"><input type="checkbox" class="survey checkbox" value="{{ option.id }}">{{ option.title }}</ul>
 			<ul class="survey option output" hidden> {{ option.title }}:&#32;&#32;<span class="survey option votes" id="{{ option.id }}" value="{{ option.votes }}"></span></ul>
 		{% endfor %}
-	<button class="survey option send">Send</button>
+	<button type="button" class="survey option send">Send</button>
 	{% endif %}
 	</div>
 {% endif %}

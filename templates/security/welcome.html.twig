@@ -1,6 +1,6 @@
 {% if is_granted('IS_AUTHENTICATED_REMEMBERED') %}
 	<h3>Hello, {{ app.user.username }}</h3>
-	<a href="{{ path('app_logout') }}"><button>Logout</button></a>
+	<a href="{{ path('app_logout') }}"><button type="button">Logout</button></a>
 {% else %}
 	<h3>Welcome, guest!</h3>
 	<form method="post" action="{{ path('app_login') }}">

@@ -6,10 +6,10 @@ namespace App\DTO;
 
 class RegistrationDto
 {
-
+    /** @var string */
     private $username;
 
-
+    /** @var string */
     private $plainPassword;
 
     public function __construct

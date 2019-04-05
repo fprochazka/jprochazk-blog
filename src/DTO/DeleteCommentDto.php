@@ -27,7 +27,7 @@ class DeleteCommentDto
         $this->author_username = $author_username;
     }
 
-    public function getCommentId(): string
+    public function getCommentId(): int
     {
         return $this->comment_id;
     }

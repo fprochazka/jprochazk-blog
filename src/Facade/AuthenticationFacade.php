@@ -23,6 +23,7 @@ class AuthenticationFacade
     /** @var UserPasswordEncoderInterface */
     private $passwordEncoder;
 
+    /** @var RoleRepository */
     private $roleRepo;
 
     public function __construct(
@@ -40,7 +41,6 @@ class AuthenticationFacade
 
     public function getAuthenticationError(): ?string
     {
-        /** @var User $user */
         $user = $this->userProvider->getUser();
         $authenticationError = null;
 

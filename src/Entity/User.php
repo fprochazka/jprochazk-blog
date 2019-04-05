@@ -211,10 +211,6 @@ class User
     {
         if ($this->comments->contains($comment)) {
             $this->comments->removeElement($comment);
-            // set the owning side to null (unless already changed)
-            if ($comment->getAuthor() === $this) {
-                $comment->setAuthor(null);
-            }
         }
 
         return $this;
@@ -242,10 +238,6 @@ class User
     {
         if ($this->posts->contains($post)) {
             $this->posts->removeElement($post);
-            // set the owning side to null (unless already changed)
-            if ($post->getAuthor() === $this) {
-                $post->setAuthor(null);
-            }
         }
 
         return $this;

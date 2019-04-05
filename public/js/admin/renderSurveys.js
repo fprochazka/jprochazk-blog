@@ -11,7 +11,6 @@ var admin = {
 		$("span.votecount").each(function(){
 			var id = $(this).attr("id");
 			var val = $(this).attr("value");
-			console.log(n + ", " + "id: "+id+", value: "+val);
 			total_votes[id] += parseInt(val);
 			n++;
 		});
@@ -20,7 +19,6 @@ var admin = {
 	},
 	countVotes: function() {
 		var total_votes = admin.countOptions();
-		console.log(total_votes);
 		$("span.votecount").each(function(){
 			var id = $(this).attr("id");
 			$(this).css("padding-left", function(){

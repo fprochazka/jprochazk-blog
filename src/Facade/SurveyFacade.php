@@ -5,6 +5,7 @@ namespace App\Facade;
 
 use App\DTO\CreateSurveyDto;
 use App\DTO\SurveyVoteDto;
+use App\Entity\SurveyOption;
 use App\Entity\User;
 use App\Entity\Survey;
 use App\Exception\SurveyNotFoundException;
@@ -79,17 +80,17 @@ class SurveyFacade
     public function deleteSurvey(int $id): void
     {
         if($survey = $this->surveyRepository->find($id)) {
-            $users = $this->userRepository->findAll();
-            foreach($users as $user) {
-                foreach($survey->getOptions() as $option) {
+            /** @var SurveyOption $option */
+            foreach($survey->getOptions() as $option) {
+                $users = $option->getUsers();
+                /** @var User $user */
+                foreach($users as $user) {
                     $user->removeVote($option);
                 }
-            }
-
-            foreach($survey->getOptions() as $option) {
                 $survey->removeOption($option);
                 $this->entityManager->remove($option);
             }
+
             $this->entityManager->remove($survey);
             $this->entityManager->flush();
         } else {

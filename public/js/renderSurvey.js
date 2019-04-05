@@ -68,8 +68,7 @@ $(document).ready(function(){
 
 					sidebar.countVotes();
 				},
-				error: function(xhr, textStatus, errorThrown) { 
-					//console.log(textStatus+": "+xhr.responseJSON);
+				error: function(xhr, textStatus, errorThrown) {
 	       		}  
 			});
 		}

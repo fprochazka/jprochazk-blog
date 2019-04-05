@@ -32,7 +32,7 @@ class SecurityController extends AbstractController
     /**
      * @Route("/register", name="app_register")
      */
-    public function register(Request $request, GuardAuthenticatorHandler $guardHandler, LoginFormAuthenticator $authenticator): Response
+    public function register(Request $request, GuardAuthenticatorHandler $guardHandler, LoginFormAuthenticator $authenticator): ?Response
     {
         $form = $this->createForm(RegistrationFormType::class, new User());
 
@@ -88,6 +88,7 @@ class SecurityController extends AbstractController
      */
     public function login(): Response
     {
+        if($this->getUser() === null) $this->addFlash('notice', 'Please use the login form in the sidebar.');
         return $this->redirectToRoute('app_blog_post_list');
     }
     

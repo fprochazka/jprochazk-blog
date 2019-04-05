@@ -22,7 +22,7 @@ class LogoutSuccessHandler implements LogoutSuccessHandlerInterface
         $referer = (is_string($request->headers->get('referer')) && $request->headers->get('referer') !== null) ? $request->headers->get('referer') : '';
 
         $urlArray = explode('/', str_replace('http://', '', $referer));
-        if($urlArray[1] === 'post' && $urlArray[2] !== 'new') {
+        if($urlArray[1] == 'post' && $urlArray[2] != 'new' && $urlArray[1] != 'admin') {
             return new RedirectResponse($referer);
         }
 

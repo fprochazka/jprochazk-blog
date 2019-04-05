@@ -23,15 +23,20 @@
 
 {% block content %}
 
-Search results for "<span id="query">{{ search_string }}</span>":
+Search results for "<span id="query">{{ query }}</span>":
 
-{% for key,value in results %}
+{% for post in results %}
 <div class="list-item post">
-	ID: {{ key }} | Title:<span class="list-item title">{{ value['title'] }}</span> | Date: {{ value['date'] }} | Author: {{ value['author'] }}<br>
-	Content: <button class="show-hide small" id="{{ key }}" name="content">+</button>
-	<span id="{{ key }}" name="content" hidden>
+	ID: {{ post.id }} |
+	Title:<span class="list-item title">{{ post.title }}</span> |
+	Date: {{ post.subtime|date() }} |
+	Author: {{ post.author.username }} |
+	<a href="{{ path('app_blog_post_show', {'post_id': post.id}) }}">Link</a>
+	<br>
+	Content: <button type="button" class="show-hide small" id="{{ post.id }}" name="content">+</button>
+	<span id="{{ post.id }}" name="content" hidden>
 		<div class="list-item content">
-			{{ value['content'] }}
+			{{ post.content }}
 		</div>
 	</span>
 </div>
