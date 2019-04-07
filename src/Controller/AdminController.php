@@ -29,9 +29,6 @@ class AdminController extends AbstractController
         $this->authFacade = $authFacade;
     }
 
-    //todo: write individual controller functions for each administration tab
-    //todo: allow changing of roles through an admin panel
-
     /**
      * @Route("/admin/user", name="app_blog_admin_users")
      */
